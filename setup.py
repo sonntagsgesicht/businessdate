@@ -8,9 +8,9 @@
 #  Beside dates generic business periods offer to create time periods like
 #  '10Y', '3 Months' or '2b'. Periods can easily added to business dates.
 #
-#  Author:  sonntagsgesicht <sonntagsgesicht@github.com>
+#  Author:  pbrisk <pbrisk@github.com>
 #  Copyright: 2016, 2017 Deutsche Postbank AG
-#  Website: https://github.com/sonntagsgesicht/businessdate
+#  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
 
 
@@ -25,10 +25,10 @@ setup(
     name='businessdate',
     description='Python library for generating business dates for fast date operations and rich functionality.',
     version='0.2',
-    author='Deutsche Postbank AG [sonntagsgesicht]',
-    author_email='sonntagsgesicht@icloud.com',
-    url='https://github.com/sonntagsgesicht/businessdate',
-    bugtrack_url='https://github.com/sonntagsgesicht/businessdate/issues',
+    author='Deutsche Postbank AG [pbrisk]',
+    author_email='pbrisk@icloud.com',
+    url='https://github.com/pbrisk/businessdate',
+    bugtrack_url='https://github.com/pbrisk/businessdate/issues',
     license='Apache License 2.0',
     packages=['businessdate'],
     long_description=codecs.open('README.rst', encoding='utf-8').read(),
