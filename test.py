@@ -8,7 +8,7 @@
 #  Beside dates generic business periods offer to create time periods like
 #  '10Y', '3 Months' or '2b'. Periods can easily added to business dates.
 #
-#  Author:  pbrisk <pbrisk@github.com>
+#  Author:  pbrisk <pbrisk@icloud.com>
 #  Website: https://github.com/pbrisk/businessdate
 #  License: MIT (see LICENSE file)
 
