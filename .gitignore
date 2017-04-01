@@ -2,7 +2,8 @@ build/
 dist/
 MANIFEST
 .coverage
-*.egg-info
+*.egg-info/
 *.pyc
 .idea/
 .cache/
+businessdate.egg-info/
