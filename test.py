@@ -8,18 +8,120 @@
 #  Beside dates generic business periods offer to create time periods like
 #  '10Y', '3 Months' or '2b'. Periods can easily added to business dates.
 #
-#  Author:  pbrisk <pbrisk@icloud.com>
+#  Author:  pbrisk <pbrisk_at_github@icloud.com>
 #  Website: https://github.com/pbrisk/businessdate
-#  License: MIT (see LICENSE file)
+#  License: APACHE Version 2 License (see LICENSE file)
 
 import os
 import unittest
 
 from datetime import datetime, date, timedelta
 
-from businessdate.basedate import BaseDate, DAYS_IN_YEAR
-from businessdate.businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule
-from businessdate import easter, target_days, BusinessHolidays
+from businessdate.basedate import BaseDate, DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd
+from businessdate.businessdate import easter, target_days
+from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
+
+
+class BaseDateUnitTest(unittest.TestCase):
+    def setUp(self):
+        self.pairs = list()  # to store date(as string), exceldate[int](as string)
+        f = open("test_data/excel_date_test_data.csv")
+        for line in f:
+            self.pairs.append(line.split(';'))
+        f.close()
+
+    def test_from_ymd_to_excel(self):
+        for pair in self.pairs:
+            d, m, y = [int(part) for part in pair[0].split('.')]
+            i = int(pair[1])
+            self.assertEqual(i, from_ymd_to_excel(y, m, d))
+
+    def test_from_excel_to_ymd(self):
+        for pair in self.pairs:
+            d, m, y = [int(part) for part in pair[0].split('.')]
+            i = int(pair[1])
+            self.assertEqual((y, m, d), from_excel_to_ymd(i))
+
+    def test_base_date(self):
+        import businessdate
+        businessdate.businessdate.BASE_DATE = '20160606'
+        self.assertEqual(businessdate.BusinessDate(), businessdate.BusinessDate('20160606'))
+        businessdate.businessdate.BASE_DATE = date.today()
+
+
+class DayCountUnitTests(unittest.TestCase):
+    # n(ame) cor(respocence)
+    # correspondence between dcc and the functions
+    ncor = {'30/360': 'get_30_360',
+            'ACT/360': 'get_act_360',
+            'ACT/365': 'get_act_365',
+            '30E/360': 'get_30E_360',
+            'ACT/ACT': 'get_act_act',
+            'ACT/365.25': 'get_act_36525'
+            }
+
+    def setUp(self):
+        self.testfile = open('test_data/daycount_test_data.csv')
+        self.header = self.testfile.readline().rstrip().split(';')
+        self.test_data = list()
+        for line in self.testfile:
+            self.test_data.append(line.rstrip().split(';'))
+        self.startdate_idx = self.header.index('StartDate')
+        self.enddate_idx = self.header.index('EndDate')
+
+    def test_get_30_360(self):
+        methodname = '30/360'
+        method_idx = self.header.index(methodname)
+        f = BusinessDate.__dict__[DayCountUnitTests.ncor[methodname]]
+        for data in self.test_data:
+            start_date = BusinessDate(data[self.startdate_idx])
+            end_date = BusinessDate(data[self.enddate_idx])
+            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+
+    def test_get_30E_360(self):
+        methodname = '30E/360'
+        method_idx = self.header.index(methodname)
+        f = BusinessDate.__dict__[DayCountUnitTests.ncor[methodname]]
+        for data in self.test_data:
+            start_date = BusinessDate(data[self.startdate_idx])
+            end_date = BusinessDate(data[self.enddate_idx])
+            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+
+    def test_get_act_act(self):
+        methodname = 'ACT/ACT'
+        method_idx = self.header.index(methodname)
+        f = BusinessDate.__dict__[DayCountUnitTests.ncor[methodname]]
+        for data in self.test_data:
+            start_date = BusinessDate(data[self.startdate_idx])
+            end_date = BusinessDate(data[self.enddate_idx])
+            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+
+    def test_get_ACT_360(self):
+        methodname = 'ACT/360'
+        method_idx = self.header.index(methodname)
+        f = BusinessDate.__dict__[DayCountUnitTests.ncor[methodname]]
+        for data in self.test_data:
+            start_date = BusinessDate(data[self.startdate_idx])
+            end_date = BusinessDate(data[self.enddate_idx])
+            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+
+    def test_get_ACT_365(self):
+        methodname = 'ACT/365'
+        method_idx = self.header.index(methodname)
+        f = BusinessDate.__dict__[DayCountUnitTests.ncor[methodname]]
+        for data in self.test_data:
+            start_date = BusinessDate(data[self.startdate_idx])
+            end_date = BusinessDate(data[self.enddate_idx])
+            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+
+    def test_get_ACT_36525(self):
+        methodname = 'ACT/365.25'
+        method_idx = self.header.index(methodname)
+        f = BusinessDate.__dict__[DayCountUnitTests.ncor[methodname]]
+        for data in self.test_data:
+            start_date = BusinessDate(data[self.startdate_idx])
+            end_date = BusinessDate(data[self.enddate_idx])
+            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
 
 
 class BusinessHolidaysUnitTests(unittest.TestCase):
@@ -81,7 +183,7 @@ class BusinessDateUnitTests(unittest.TestCase):
                       self.feb01, self.feb28, self.feb29, self.mar31, self.jun30, self.sep30]
 
     def test_constructors(self):
-        self.assertEqual(self.dec31, BusinessDate())
+        self.assertEqual(BusinessDate(date.today()), BusinessDate())
         self.assertEqual(self.jan02, BusinessDate('2016-01-02'))
         self.assertEqual(self.jan02, BusinessDate('01/02/2016'))
         self.assertEqual(self.jan02, BusinessDate('02.01.2016'))
@@ -153,7 +255,7 @@ class BusinessDateUnitTests(unittest.TestCase):
             self.assertEqual(BusinessDate.from_string(d.to_string()), d)
             self.assertEqual(BusinessDate.from_ymd(*d.to_ymd()), d)
 
-    def test_day_count(self):
+    def test_day_count(self):  # The daycount methods are also tested separately
         delta = float((self.mar31.to_date() - self.jan01.to_date()).days)
         total = float(((self.jan01 + '1y').to_date() - self.jan01.to_date()).days)
         self.assertAlmostEqual(self.jan01.get_30_360(self.mar31), 90. / 360.)
@@ -173,7 +275,7 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01.adjust_cds_imm(), BusinessDate(20160120))
 
     def test_business_day_is(self):
-        self.assertFalse(self.jan01.is_businessday())
+        self.assertFalse(self.jan01.is_business_day())
         self.assertTrue(BusinessDate.is_leap_year(2016))
         self.assertTrue(BusinessDate.is_businessdate('20160101'))
         self.assertFalse(BusinessDate.is_businessdate('ABC'))
@@ -193,7 +295,6 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self._5y = BusinessPeriod('5y')
         self._2q = BusinessPeriod('2q')
         self._2w = BusinessPeriod('2w')
-
 
     def test_constructors(self):
         self.assertEqual(self._1y, BusinessPeriod(years=1))
@@ -230,7 +331,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(self._1y.to_businessdate(BusinessDate(20150101)), BusinessDate(20160101))
         self.assertEqual(self._1y6m.to_businessdate(BusinessDate(20150101)), BusinessDate(20160701))
         self.assertEqual(self._1y.to_businessdate(BusinessDate(20160229)), BusinessDate(20170228))
-        self.assertEqual(self._1y.to_date(BusinessDate(20160229)), date(2017,02,28))
+        self.assertEqual(self._1y.to_date(BusinessDate(20160229)), date(2017, 02, 28))
         self.assertEqual(self._1y.to_businessperiod(BusinessDate(20160229)), self._1y)
         self.assertEqual(self._1y.to_string(), '1Y')
         self.assertEqual(self._2q.to_string(), '6M')
@@ -243,12 +344,12 @@ class BusinessRangeUnitTests(unittest.TestCase):
         self.ed = BusinessDate(20201231)
 
     def test_constructors(self):
-        br = BusinessRange(self.ed)
+        br = BusinessRange(self.sd, self.ed)
         self.assertEqual(len(br), 5)
-        self.assertEqual(br[0], BusinessDate())
+        self.assertEqual(br[0], self.sd)
         self.assertEqual(br[-1], BusinessDate.add_years(self.ed, -1))
 
-        br = BusinessRange(self.ed)
+        br = BusinessRange(self.sd, self.ed)
         b2 = BusinessRange(self.sd, self.ed, '1y', self.ed)
         ck = BusinessRange(self.sd, self.ed, '1y', self.sd)
         ex = BusinessRange(self.sd, self.ed, '1y', self.ed + '1y')
@@ -299,7 +400,7 @@ class BusinessScheduleUnitTests(unittest.TestCase):
 class BusinessHolidayUnitTests(unittest.TestCase):
     def setUp(self):
         self.bd = BusinessDate(19730226)
-        self.list = [str(i)+'0301' for i in range(1973, 2016)]
+        self.list = [str(i) + '0301' for i in range(1973, 2016)]
 
     def test_holiday(self):
         h = BusinessHolidays(self.list)
@@ -399,7 +500,7 @@ class OldBusinessPeriodUnittests(unittest.TestCase):
 
     def test_to_date(self):
         p = BusinessPeriod(years=1, months=2, days=3)
-        self.assertEqual(p.to_bankdate(BusinessDate('20160101')), BusinessDate('20170304'))
+        self.assertEqual(p.to_businessdate(BusinessDate('20160101')), BusinessDate('20170304'))
 
     def test_wrapper_methods(self):
         p = BusinessPeriod(years=1, months=1, days=1)
@@ -411,6 +512,8 @@ class OldBusinessPeriodUnittests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+
+    import sys
     start_time = datetime.now()
 
     print('')
@@ -423,7 +526,9 @@ if __name__ == "__main__":
     print('----------------------------------------------------------------------')
     print('')
 
-    unittest.main(verbosity=2)
+    suite = unittest.TestLoader().loadTestsFromModule(__import__("__main__"))
+    testrunner = unittest.TextTestRunner(stream=sys.stdout , descriptions=2, verbosity=2)
+    testrunner.run(suite)
 
     print('')
     print('======================================================================')

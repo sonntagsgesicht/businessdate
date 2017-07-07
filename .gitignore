@@ -1,9 +1,10 @@
 build/
 dist/
-MANIFEST
-.coverage
-*.egg-info/
+*.egg-info
 *.pyc
 .idea/
 .cache/
-businessdate.egg-info/
+doc/sphinx/_build/
+doc/sphinx/_static/
+doc/sphinx/_templates/
+.DS_Store

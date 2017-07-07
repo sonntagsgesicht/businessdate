@@ -8,7 +8,7 @@
 #  Beside dates generic business periods offer to create time periods like
 #  '10Y', '3 Months' or '2b'. Periods can easily added to business dates.
 #
-#  Author:  pbrisk <pbrisk@icloud.com>
+#  Author:  pbrisk <pbrisk_at_github@icloud.com>
 #  Copyright: 2016, 2017 Deutsche Postbank AG
 #  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
@@ -18,13 +18,13 @@ from calendar import monthrange, weekday, WEDNESDAY, FRIDAY
 from copy import copy
 from datetime import date, datetime, timedelta
 
-from basedate import BaseDate, BaseDateFloat, BaseDatetimeDate, \
+from basedate import BaseDate, BaseDateFloat, BaseDateTuple, BaseDateDatetimeDate, \
     is_leap_year, is_valid_ymd, days_in_year, days_in_month, \
     from_ymd_to_excel, from_excel_to_ymd
 from baseperiod import BasePeriod
 
-#: int: Excel representation of 31.12.2015
-BASE_DATE = 42369
+#: base date
+BASE_DATE = '20151231' # date.today()  # BusinessDate() initializes with date of today
 #: string: basic date format as string
 DATE_FORMAT = '%Y%m%d'
 
@@ -85,15 +85,15 @@ class BusinessDate(BaseDate):
             BusinessDate(735963.0)
             BusinessDate()
 
-        **caution:** recommended is the use of classmethods BusinessDate.from_string, from_date etc.
+        **caution:** recommended is the use of class methods BusinessDate.from_string, from_date etc.
 
         """
 
         if date_value is None:
-            new_date = BusinessDate.from_excel(BASE_DATE)
+            new_date = BusinessDate(BASE_DATE)
         elif isinstance(date_value, BaseDateFloat):
             return super(BusinessDate, cls).__new__(cls, float(date_value))
-        elif isinstance(date_value, BaseDatetimeDate):
+        elif isinstance(date_value, (BaseDateDatetimeDate, BaseDateTuple)):
             return super(BusinessDate, cls).__new__(cls, date_value.year, date_value.month, date_value.day)
         elif isinstance(date_value, (int, float)):
             if date_value >= 18990101:
@@ -113,6 +113,14 @@ class BusinessDate(BaseDate):
 
         return new_date
 
+    def __copy__(self):
+
+        return BusinessDate(date(*self.to_ymd()))
+
+    def __deepcopy__(self, memodict={}):
+
+        return BusinessDate(date(*self.to_ymd()))
+
     # --- operator methods ---------------------------------------------------
     def __add__(self, other):
         """
@@ -126,7 +134,7 @@ class BusinessDate(BaseDate):
         elif BusinessPeriod.is_businessperiod(other):
             return self + BusinessPeriod(other)
         else:
-            raise TypeError('substraction of BusinessDates cannot handle objects of type %s.' % type(other))
+            raise TypeError('addition of BusinessDates cannot handle objects of type %s.' % type(other))
 
     def __sub__(self, other):
         """
@@ -144,7 +152,7 @@ class BusinessDate(BaseDate):
         elif BusinessPeriod.is_businessperiod(other):
             return self - BusinessPeriod(other)
         else:
-            raise TypeError('substraction of BusinessDates connot handle objects of type %s.' % type(other))
+            raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % type(other))
 
     def __str__(self):
         # return self.__class__.__name__ + '(' + self.to_string() + ')'
@@ -157,12 +165,8 @@ class BusinessDate(BaseDate):
     @staticmethod
     def from_ymd(y, m, d):
         # return super(BusinessDate, cls).__new__(BaseDate.from_ymd(y, m, d))
-        return BusinessDate(BaseDate.from_ymd(y, m, d))
 
-    @staticmethod
-    def from_bankdate(d):
-        # deprecated
-        return BusinessDate.from_businessdate(d)
+        return BusinessDate(BaseDate.from_ymd(y, m, d))
 
     @staticmethod
     def from_businessdate(d):
@@ -208,29 +212,36 @@ class BusinessDate(BaseDate):
         :param str date_str:
         :return BusinessDate:
         """
-
         if date_str.count('-'):
             str_format = '%Y-%m-%d'
         elif date_str.count('.'):
             str_format = '%d.%m.%Y'
         elif date_str.count('/'):
             str_format = '%m/%d/%Y'
-        else:
+        elif len(date_str) == 8:
             str_format = '%Y%m%d'
+        elif len(date_str) == 4:
+            year = ord(date_str[0]) * 256 + ord(date_str[1])
+            month = ord(date_str[2])
+            day = ord(date_str[3])
+            return BusinessDate.from_ymd(year, month, day)
+        else:
+            msg = "the date string " + date_str + " has not the right format"
+            raise ValueError(msg)
+
         d = datetime.strptime(date_str, str_format)
+
         return BusinessDate.from_ymd(d.year, d.month, d.day)
 
     # --- cast methods -------------------------------------------------------
-    def to_bankdate(self, origin_date):
-        # deprecated
-        return self.to_businessdate(origin_date)
+    def __float__(self):
+        return float(self.to_excel())
+
+    def __int__(self):
+        return int(self.to_excel())
 
     def to_businessdate(self, origin_date=None):
         return self
-
-    def to_period(self, origin_date=None):
-        # deprecated
-        return self.to_businessperiod(origin_date)
 
     def to_businessperiod(self, origin_date=None):
         if origin_date is None:
@@ -302,10 +313,6 @@ class BusinessDate(BaseDate):
         return days_in_month(year, month)
 
     # --- own validation and information methods -----------------------------
-    @staticmethod
-    def is_date(in_date):
-        # deprecated
-        return BusinessDate.is_businessdate(in_date)
 
     @staticmethod
     def is_businessdate(in_date):
@@ -339,18 +346,9 @@ class BusinessDate(BaseDate):
             month += 1
         return BusinessDate.end_of_month(year, month)
 
-    def is_businessday(self, holiday_obj=None):
-        """
-        :param holiday_obj:
-        :return:
-
-        deprecated method
-        """
-        return self.is_business_day(holiday_obj)
-
     def is_business_day(self, holiday_obj=None):
         """
-        :param list holiday_obj : datetime.date list defining businessholidays
+        :param list holiday_obj : datetime.date list defining business holidays
         :return: bool
 
         method to check if a date falls neither on weekend nor is holiday
@@ -431,10 +429,6 @@ class BusinessDate(BaseDate):
         l = monthrange(self.year, month_int)[1]
         return BusinessDate.from_ymd(self.year, month_int, min(l, self.day))
 
-    def add_businessdays(self, days_int, holiday_obj=None):
-        # deprecated
-        return BusinessDate.add_business_days(self, days_int, holiday_obj)
-
     def add_business_days(self, days_int, holiday_obj=None):
         """
         private method for the addition of business days, used in the addition of a BusinessPeriod only
@@ -499,9 +493,19 @@ class BusinessDate(BaseDate):
         return int(y), int(m), int(d)
 
     # --- day count fraction methods -----------------------------------------
+
+
+    # List of day count conventions
+    # 30/360 (4.16(f) 2006 ISDA Definitions) [other names: 360/360]
+    # Act/365.25 (not in ISDA Definitions)
+    # Act/365 (4.16(d) 2006 ISDA Definitions) [other names: actual/365 (Fixed), act/365 (Fixed), A/365 (Fixed), A/365F
+    # Act/360 (4.16(e) 2006 ISDA Definitions) [other names: actual/360, A/360
+    # Act/ACT (4.16(b) 2006 ISDA Definitions) [other names: actual/actual [(ISDA)], act/act (ISDA)]
+    # 30E/360 (4.16(g) 2006 ISDA Definitions) [other names: Eurobond Basis]
+
     def get_30_360(self, end):
         """
-            implements 30/360 day count convention
+            implements 30/360 Day Count Convention (4.16(f) 2006 ISDA Definitions)
         """
         start_day = min(self.day, 30)
         end_day = 30 if (start_day == 30 and end.day == 31) else end.day
@@ -509,56 +513,119 @@ class BusinessDate(BaseDate):
 
     def get_act_36525(self, end):
         """
-            implements Act/365.25 day count convention
+            implements Act/365.25 Day Count Convention
         """
         return BusinessDate.diff_in_days(self, end) / 365.25
 
     def get_act_365(self, end):
         """
-            implements Act/365 day count convention
+            implements Act/365 day count convention (4.16(d) 2006 ISDA Definitions)
         """
         return BusinessDate.diff_in_days(self, end) / 365.0
 
     def get_act_360(self, end):
         """
-            implements Act/360 day count convention
+            implements Act/360 day count convention (4.16(e) 2006 ISDA Definitions)
         """
         return BusinessDate.diff_in_days(self, end) / 360.0
 
     def get_act_act(self, end):
         """
-            implements Act/Act day count convention
+            implements Act/Act day count convention (4.16(b) 2006 ISDA Definitions)
         """
         # split end-self in year portions
+
+        # if the period does not lie within a year split the days in the period as following:
+        #           restdays of start year / years in between / days in the end year
+        # REMARK: following the affore mentioned ISDA Definition the first day of the period is included whereas the
+        # last day will be excluded
+        # What remains to check now is only whether the start and end year are leap or non-leap years. The quotients
+        # can be easily calculated and for the years in between they are always one (365/365 = 1; 366/366 = 1)
+
         if end.year - self.year == 0:
             if BusinessDate.is_leap_year(self.year):
-                return BusinessDate.diff_in_days(self, end) / 366.0
+                return BusinessDate.diff_in_days(self, end) / 366.0     # leap year: 366 days
             else:
-                return BusinessDate.diff_in_days(self, end) / 366.0
-        elif end.year - self.year == 1:
-            if BusinessDate.is_leap_year(self.year):
-                return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 366.0 + \
-                       BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 365.0
-            elif BusinessDate.is_leap_year(end.year):
-                return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 365.0 + \
-                       BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 366.0
-            else:
-                return BusinessDate.diff_in_days(self, end) / 365.0
+               # return BusinessDate.diff_in_days(self, end) / 366.0
+                return BusinessDate.diff_in_days(self, end) / 365.0     # non-leap year: 365 days
         else:
-            raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
+            rest_year1 = BusinessDate.diff_in_days(self, BusinessDate(
+                date(self.year, 12, 31))) + 1  # since the first day counts
+
+            rest_year2 = abs(BusinessDate.diff_in_days(end, BusinessDate(
+                date(end.year, 1, 1))))                         # here the last day is automatically not counted
+
+            years_in_between = end.year - self.year - 1
+
+            return years_in_between + rest_year1/(366.0 if is_leap_year(self.year) else 365.0) + rest_year2/(366.0 if is_leap_year(end.year) else 365.0)
+
+
+        #elif end.year - self.year == 1:
+        #   if BusinessDate.is_leap_year(self.year):
+        #       return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 366.0 + \
+        #              BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 365.0
+        #   elif BusinessDate.is_leap_year(end.year):
+        #       return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 365.0 + \
+        #              BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 366.0
+        #   else:
+        #       return BusinessDate.diff_in_days(self, end) / 365.0
+        #else:
+          #  raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
+
+    def get_30E_360(self, end):
+        """
+        implements the 30E/360 Day Count Convention (4.16(g) 2006 ISDA Definitons)
+        """
+
+        y1, m1, d1 = self.to_ymd()
+        #adjust to date immediately following the the last day
+        y2, m2, d2 = end.add_days(0).to_ymd()
+
+        d1 = min(d1, 30)
+        d2 = min(d2, 30)
+
+        return (360*(y2-y1)+30*(m2-m1)+(d2-d1))/360.0
+
+    def get_30E_360_ISDA(self, end):
+        """
+        implements the 30E/360 (ISDA) Day Count Convention (4.16(h) 2006 ISDA Definitions)
+        :param end:
+        :return:
+        """
+        y1, m1, d1 = self.to_ymd()
+        #ajdust to date immediately following the last day
+        y2, m2, d2 = end.add_days(0).to_ymd()
+
+        if (m1 == 2 and d1 >= 28) or d1 == 31:
+            d1 = 30
+        if (m2 == 2 and d2 >= 28) or d2 == 31:
+            d2 = 30
+
+        return (360*(y2-y1)+30*(m2-m1)+(d2-d1))/360.0
+
 
     # --- business day adjustment methods ------------------------------------
+
     def adjust_previous(self, holidays_obj=None):
-        while not BusinessDate.is_businessday(self, holidays_obj):
+        """
+        adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions).
+        """
+        while not BusinessDate.is_business_day(self, holidays_obj):
             self = BusinessDate.add_days(self, -1)
         return self
 
     def adjust_follow(self, holidays_obj=None):
-        while not BusinessDate.is_businessday(self, holidays_obj):
+        """
+        adjusts to Business Day Convention "Following" (4.12(a) (i) 2006 ISDA Definitions).
+        """
+        while not BusinessDate.is_business_day(self, holidays_obj):
             self = BusinessDate.add_days(self, 1)
         return self
 
     def adjust_mod_follow(self, holidays_obj=None):
+        """
+        adjusts to Business Day Convention "Modified [Following]" (4.12(a) (ii) 2006 ISDA Definitions).
+        """
         month = self.month
         new = BusinessDate.adjust_follow(self, holidays_obj)
         if month != new.month:
@@ -567,6 +634,9 @@ class BusinessDate(BaseDate):
         return self
 
     def adjust_mod_previous(self, holidays_obj=None):
+        """
+        ajusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons).
+        """
         month = self.month
         new = BusinessDate.adjust_previous(self, holidays_obj)
         if month != new.month:
@@ -687,11 +757,6 @@ class BusinessPeriod(BasePeriod):
         return (y, m, d)
 
     @classmethod
-    def is_period(cls, in_period):
-        # deprecated
-        return cls.is_businessperiod(in_period)
-
-    @classmethod
     def is_businessperiod(cls, in_period):
         """
         :param in_period: object to be checked
@@ -711,7 +776,6 @@ class BusinessPeriod(BasePeriod):
             return False
 
     # --- property methods ---------------------------------------------------
-    pass
 
     # --- operator methods ---------------------------------------------------
     def __repr__(self):
@@ -749,7 +813,7 @@ class BusinessPeriod(BasePeriod):
             return [self.__add__(o) for o in other]
         elif isinstance(other, BusinessPeriod):
             return BusinessPeriod(self).add_businessperiod(other)
-        elif BusinessPeriod.is_period(other):
+        elif BusinessPeriod.is_businessperiod(other):
             return self + BusinessPeriod(other)
         else:
             raise TypeError
@@ -761,7 +825,7 @@ class BusinessPeriod(BasePeriod):
     def __rsub__(self, other):
         if isinstance(other, (list, tuple)):
             return [self.__rsub__(o) for o in other]
-        elif BusinessPeriod.is_period(other):
+        elif BusinessPeriod.is_businessperiod(other):
             p = BusinessPeriod(other)
             y = self.years + p.years
             m = self.months + p.months
@@ -813,24 +877,16 @@ class BusinessPeriod(BasePeriod):
 
     # --- cast methods -------------------------------------------------------
     def to_date(self, start_date=None):
-        return self.to_bankdate(start_date).to_date()
+        return self.to_businessdate(start_date).to_date()
 
     def to_datetime(self, start_date=None):
         return self.to_bankdate(start_date).to_datetime()
-
-    def to_bankdate(self, start_date=None):
-        # deprecated
-        return self.to_businessdate(start_date)
 
     def to_businessdate(self, start_date=None):
         if start_date:
             return BusinessDate.add_period(start_date, self)
         else:
             return BusinessDate.add_period(BusinessDate(), self)
-
-    def to_period(self, start_date=None):
-        # deprecated
-        return self.to_businessperiod(start_date)
 
     def to_businessperiod(self, start_date=None):
         return self
