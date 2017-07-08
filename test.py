@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #  businessdate
 #  -----------
 #  A fast, efficient Python library for generating business dates inherited
