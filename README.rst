@@ -5,6 +5,9 @@ businessdate
 .. image:: https://img.shields.io/codeship/5ba35f10-9caf-0134-8b2b-4e318545e956/master.svg
     :target: https://codeship.com//projects/188434
 
+.. image:: https://readthedocs.org/projects/businessdate/badge
+    :target: https://codeship.com//projects/businessdate
+
 A fast, efficient Python library for generating business dates inherited
 from float for fast date operations. Typical banking business methods
 are provided like business holidays adjustment, day count fractions.
