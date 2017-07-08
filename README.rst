@@ -2,8 +2,8 @@
 businessdate
 ============
 
-.. image:: https://img.shields.io/codeship/5ba35f10-9caf-0134-8b2b-4e318545e956/master.svg
-    :target: https://codeship.com//projects/188434
+.. image:: https://img.shields.io/codeship/8b027c40-45fa-0135-6835-62afb45a34d4/master.svg
+    :target: https://codeship.com//projects/231308
 
 .. image:: https://readthedocs.org/projects/businessdate/badge
     :target: https://codeship.com//projects/businessdate
