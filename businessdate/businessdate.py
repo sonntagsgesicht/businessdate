@@ -794,7 +794,7 @@ class BusinessPeriod(BasePeriod):
     def __cmp__(self, other):
         assert type(self) == type(other), "types don't match %s" % str((type(self), type(other)))
         d = BusinessDate()
-        return BusinessDate.diff_in_days(BusinessDate.add_period(d, self), BusinessDate.add_period(d, other))
+        return -BusinessDate.diff_in_days(BusinessDate.add_period(d, self), BusinessDate.add_period(d, other))
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -805,6 +805,10 @@ class BusinessPeriod(BasePeriod):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __hash__(self):
+        h = 365 * self.years + 30 * self.months + self.days + self.businessdays
+        return hash(str(h))
+
     def __nonzero__(self):
         return True if self.years or self.months or self.days or self.businessdays else False
 
@@ -812,7 +816,7 @@ class BusinessPeriod(BasePeriod):
         if isinstance(other, (list, tuple)):
             return [self.__add__(o) for o in other]
         elif isinstance(other, BusinessPeriod):
-            return BusinessPeriod(self).add_businessperiod(other)
+            return self.add_businessperiod(other)
         elif BusinessPeriod.is_businessperiod(other):
             return self + BusinessPeriod(other)
         else:
