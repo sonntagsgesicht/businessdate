@@ -767,7 +767,7 @@ class BusinessPeriod(BasePeriod):
         checks is argument con becasted to BusinessPeriod
         """
         try:  # to be removed
-            if in_period.upper() == '0D':
+            if str(in_period).upper() == '0D':
                 return True
             else:
                 p = BusinessPeriod(str(in_period))
@@ -814,43 +814,35 @@ class BusinessPeriod(BasePeriod):
 
     def __add__(self, other):
         if isinstance(other, (list, tuple)):
-            return [self.__add__(o) for o in other]
+            return [self + o for o in other]
         elif isinstance(other, BusinessPeriod):
-            return self.add_businessperiod(other)
+            return BusinessPeriod(str(self)).add_businessperiod(other)
         elif BusinessPeriod.is_businessperiod(other):
             return self + BusinessPeriod(other)
         else:
             raise TypeError
 
     def __sub__(self, other):
-        per = self.__rsub__(other)
-        return BusinessPeriod(years=-per.years, months=-per.months, days=-per.days, businessdays=-per.businessdays)
-
-    def __rsub__(self, other):
         if isinstance(other, (list, tuple)):
-            return [self.__rsub__(o) for o in other]
+            return [self - o for o in other]
+        elif isinstance(other, BusinessPeriod):
+            return BusinessPeriod(str(self)).add_businessperiod(-1*other)
         elif BusinessPeriod.is_businessperiod(other):
-            p = BusinessPeriod(other)
-            y = self.years + p.years
-            m = self.months + p.months
-            d = self.days + p.days
-            b = self.businessdays + p.businessdays
-            other = BusinessPeriod(years=y, months=m, days=d, businessdays=b)
+            return self - BusinessPeriod(other)
         else:
             raise TypeError
-        return other
 
     def __mul__(self, other):
         if isinstance(other, (list, tuple)):
-            return [self.__mul__(o) for o in other]
-        if not isinstance(other, (int, long)):
-            pass
-        assert isinstance(other, (int, long)), "expected int or long but got %s" % str(type(other))
-        y = self.years * other
-        m = self.months * other
-        d = self.days * other
-        b = self.businessdays * other
-        return BusinessPeriod(years=y, months=m, days=d, businessdays=b)
+            return [self * o for o in other]
+        if isinstance(other, (int, long)):
+            y = other * self.years
+            m = other * self.months
+            d = other * self.days
+            b = other * self.businessdays
+            return BusinessPeriod(years=y, months=m, days=d, businessdays=b)
+        else:
+            raise TypeError("expected int or long but got %s" % str(type(other)))
 
     def __rmul__(self, other):
         return self.__mul__(other)
