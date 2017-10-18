@@ -44,19 +44,20 @@ class BusinessHolidays(list):
         else:
             super(BusinessHolidays, self).__init__()
 
+class TargetHolidays(BusinessHolidays):
+    def __init__(self):
+        self._target_days = dict()
+
     def __contains__(self, item):
         if super(BusinessHolidays, self).__contains__(item):
             return True
-        target_days_in_year = target_days(item.year)
-        self.extend(target_days_in_year.keys())
-        if item in target_days_in_year:
-            return True
-        else:
-            return False
+        if item.year not in self._target_days:
+            self._target_days[item.year] = target_days(item.year).keys()
+        return item in self._target_days[item.year]
 
 
 #: list: list of dates of default holiday calendar
-DEFAULT_HOLIDAYS = BusinessHolidays()
+DEFAULT_HOLIDAYS = TargetHolidays()
 
 
 class BusinessDate(BaseDate):
@@ -268,14 +269,14 @@ class BusinessDate(BaseDate):
     def to_ordinal(self):
         return self.to_date().toordinal()
 
-    def to_string(self):
+    def to_string(self, date_format=DATE_FORMAT):
         """
         return BusinessDate as 'date.strftime(DATE_FORMAT)'
 
         :return string:
         """
 
-        return self.to_date().strftime(DATE_FORMAT)
+        return self.to_date().strftime(date_format)
 
     # --- inherited validation and validation methods ------------------------
     @staticmethod
@@ -353,18 +354,15 @@ class BusinessDate(BaseDate):
 
         method to check if a date falls neither on weekend nor is holiday
         """
-        if holiday_obj is None:
-            holiday_obj = DEFAULT_HOLIDAYS
-
         y, m, d = BusinessDate.to_ymd(self)
         if weekday(y, m, d) > FRIDAY:
             return False
-        elif self in holiday_obj:
+        holiday_list = holiday_obj if holiday_obj is not None else DEFAULT_HOLIDAYS
+        if self in holiday_list:
             return False
-        elif date(y, m, d) in holiday_obj:
+        elif date(y, m, d) in holiday_list:
             return False
-        else:
-            return True
+        return True
 
     # --- inherited calculation methods --------------------------------------
     def add_days(self, days):
@@ -1094,16 +1092,16 @@ def easter(year):
     p = i - j + e
     d = 1 + (p + 27 + (p + 6) // 40) % 31
     m = 3 + (p + 26) // 30
-    return date(int(y), int(m), int(d))
+    return BusinessDate.from_ymd(int(y), int(m), int(d))
 
 
 def target_days(year):
-    self = dict()
-    self[date(year, 1, 1)] = "New Year's Day"
+    ret = dict()
+    ret[BusinessDate.from_ymd(year, 1, 1)] = "New Year's Day"
     e = easter(year)
-    self[e + timedelta(-2)] = "Black Friday"
-    self[e + timedelta(1)] = "Easter Monday"
-    self[date(year, 5, 1)] = "Labour Day"
-    self[date(year, 12, 25)] = "First Christmas Day"
-    self[date(year, 12, 26)] = "Second Christmas Day"
-    return self
+    ret[e.add_days(-2)] = "Black Friday"
+    ret[e.add_days(1)] = "Easter Monday"
+    ret[BusinessDate.from_ymd(year, 5, 1)] = "Labour Day"
+    ret[BusinessDate.from_ymd(year, 12, 25)] = "First Christmas Day"
+    ret[BusinessDate.from_ymd(year, 12, 26)] = "Second Christmas Day"
+    return ret

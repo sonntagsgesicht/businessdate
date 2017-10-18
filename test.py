@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #  businessdate
 #  -----------
 #  A fast, efficient Python library for generating business dates inherited
@@ -17,6 +19,7 @@ from datetime import datetime, date, timedelta
 
 from businessdate.basedate import BaseDate, DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd
 from businessdate.businessdate import easter, target_days
+from businessdate.businessdate import TargetHolidays
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
 
 
@@ -124,7 +127,7 @@ class DayCountUnitTests(unittest.TestCase):
 
 class BusinessHolidaysUnitTests(unittest.TestCase):
     def setUp(self):
-        self.holidays = BusinessHolidays()
+        self.holidays = TargetHolidays()
         self.easter = dict()
         self.easter[2015] = date(2015, 04, 05)
         self.easter[2016] = date(2016, 03, 27)
@@ -154,12 +157,12 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
                 d += timedelta(1)
 
     def test_business_holidays(self):
-        self.assertTrue(date(2016, 01, 01) in self.holidays)
-        self.assertFalse(date(2016, 01, 02) in self.holidays)
-        self.assertTrue(date(2016, 01, 02) not in self.holidays)
-        self.assertTrue(date(2016, 03, 25) in self.holidays)
-        self.assertTrue(date(2016, 03, 28) in self.holidays)
-        self.assertTrue(date(2016, 05, 01) in self.holidays)
+        self.assertTrue(BusinessDate(20160101) in self.holidays)
+        self.assertFalse(BusinessDate(20160102) in self.holidays)
+        self.assertTrue(BusinessDate(20160102) not in self.holidays)
+        self.assertTrue(BusinessDate(20160325) in self.holidays)
+        self.assertTrue(BusinessDate(20160328) in self.holidays)
+        self.assertTrue(BusinessDate(20160501) in self.holidays)
 
 
 class BusinessDateUnitTests(unittest.TestCase):
@@ -280,6 +283,22 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertFalse(BusinessDate.is_businessdate('20160230'))
         self.assertTrue(BusinessDate.is_businessdate('20160229'))
         self.assertFalse(BusinessDate.is_businessdate('20150229'))
+
+    def test_is_business_date(self):
+        d = self.dec31
+        holi = BusinessHolidays()
+        bdate = BusinessDate.from_ymd(2016, 1, 1)
+        is_bday_empty_calendar = bdate.is_business_day(holi)
+        self.assertTrue(is_bday_empty_calendar)
+        is_bday_default_calendar = bdate.is_business_day()
+        self.assertFalse(is_bday_default_calendar)
+
+        target_a= BusinessDate.from_ymd(2016, 1, 4)
+        a = d.add_business_days(2, holi)
+        self.assertEqual(target_a, a)
+        target_b = BusinessDate.from_ymd(2016, 1, 5)
+        b = d.add_business_days(2) # default holidays contains the target days, i.e. the 1.1.2016
+        self.assertEqual(target_b, b)
 
 
 class BusinessPeriodUnitTests(unittest.TestCase):
