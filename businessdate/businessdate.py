@@ -103,8 +103,8 @@ class BusinessDate(BaseDate):
                 new_date = BusinessDate.from_excel(date_value)
             else:
                 new_date = BusinessDate.from_ordinal(date_value)
-        elif isinstance(date_value, str):
-            new_date = BusinessDate.from_string(date_value)
+        elif isinstance(date_value, (str, unicode)):
+            new_date = BusinessDate.from_string(str(date_value))
         elif isinstance(date_value, (date, datetime)):
             new_date = BusinessDate.from_date(date_value)
         elif isinstance(date_value, list):
@@ -699,7 +699,8 @@ class BusinessPeriod(BasePeriod):
                 years += y
                 months += m
                 days += d
-        elif isinstance(period_in, str):
+        elif isinstance(period_in, (str, unicode)):
+            period_in = str(period_in)
             if period_in.startswith('-'):
                 p = BusinessPeriod(period_in[1:])
                 years -= p.years
