@@ -24,7 +24,7 @@ except ImportError:
 setup(
     name='businessdate',
     description='Python library for generating business dates for fast date operations and rich functionality.',
-    version='0.3',
+    version='0.4',
     author='Deutsche Postbank AG [pbrisk]',
     author_email='pbrisk_at_github@icloud.com',
     url='https://github.com/pbrisk/businessdate',
