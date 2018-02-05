@@ -304,7 +304,7 @@ class BusinessDateUnitTests(unittest.TestCase):
 class BusinessPeriodUnitTests(unittest.TestCase):
     def setUp(self):
         self._1y = BusinessPeriod('1y')
-        self._3m = BusinessPeriod('1m')
+        self._3m = BusinessPeriod('3m')
         self._1y6m = BusinessPeriod('1y6m')
         self._1b = BusinessPeriod('1b')
         self._2y = BusinessPeriod('2y')
@@ -317,6 +317,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(self._1y, BusinessPeriod(years=1))
         self.assertEqual(self._1y6m, BusinessPeriod(years=1, months=6))
         self.assertEqual(self._1y6m, BusinessPeriod('6m', years=1))
+        self.assertEqual(self._1y6m, BusinessPeriod('18m'))
         self.assertEqual(-1 * self._1y6m, BusinessPeriod('-6m', years=-1))
         self.assertEqual(self._2q, BusinessPeriod(months=6))
 

@@ -753,6 +753,8 @@ class BusinessPeriod(BasePeriod):
         y = int(Y)
         m = int(Q) * 3 + int(M)
         d = int(W) * 7 + int(D)
+        y += m//12
+        m = m%12
         return (y, m, d)
 
     @classmethod
