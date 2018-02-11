@@ -24,7 +24,7 @@ from basedate import BaseDate, BaseDateFloat, BaseDateTuple, BaseDateDatetimeDat
 from baseperiod import BasePeriod
 
 #: base date
-BASE_DATE = '20151231' # date.today()  # BusinessDate() initializes with date of today
+BASE_DATE = '20151231'  # date.today()  # BusinessDate() initializes with date of today
 #: string: basic date format as string
 DATE_FORMAT = '%Y%m%d'
 
@@ -44,6 +44,7 @@ class BusinessHolidays(list):
         else:
             super(BusinessHolidays, self).__init__()
 
+
 class TargetHolidays(BusinessHolidays):
     def __init__(self):
         self._target_days = dict()
@@ -61,7 +62,6 @@ DEFAULT_HOLIDAYS = TargetHolidays()
 
 
 class BusinessDate(BaseDate):
-
     def __new__(cls, date_value=None):
         r"""
         fundamental date class
@@ -396,8 +396,9 @@ class BusinessDate(BaseDate):
         else:
             period = p
 
-        res = BusinessDate.add_years(self, period.years)
+        res = self
         res = BusinessDate.add_months(res, period.months)
+        res = BusinessDate.add_years(res, period.years)
         res = BusinessDate.add_days(res, period.days)
 
         if period.businessdays:
@@ -488,7 +489,7 @@ class BusinessDate(BaseDate):
 
         d = BusinessDate.diff_in_days(s, end_date)
 
-        return int(y), int(m), int(d)
+        return -int(y), -int(m), -int(d)
 
     # --- day count fraction methods -----------------------------------------
 
@@ -542,33 +543,34 @@ class BusinessDate(BaseDate):
 
         if end.year - self.year == 0:
             if BusinessDate.is_leap_year(self.year):
-                return BusinessDate.diff_in_days(self, end) / 366.0     # leap year: 366 days
+                return BusinessDate.diff_in_days(self, end) / 366.0  # leap year: 366 days
             else:
-               # return BusinessDate.diff_in_days(self, end) / 366.0
-                return BusinessDate.diff_in_days(self, end) / 365.0     # non-leap year: 365 days
+                # return BusinessDate.diff_in_days(self, end) / 366.0
+                return BusinessDate.diff_in_days(self, end) / 365.0  # non-leap year: 365 days
         else:
             rest_year1 = BusinessDate.diff_in_days(self, BusinessDate(
                 date(self.year, 12, 31))) + 1  # since the first day counts
 
             rest_year2 = abs(BusinessDate.diff_in_days(end, BusinessDate(
-                date(end.year, 1, 1))))                         # here the last day is automatically not counted
+                date(end.year, 1, 1))))  # here the last day is automatically not counted
 
             years_in_between = end.year - self.year - 1
 
-            return years_in_between + rest_year1/(366.0 if is_leap_year(self.year) else 365.0) + rest_year2/(366.0 if is_leap_year(end.year) else 365.0)
+            return years_in_between + rest_year1 / (366.0 if is_leap_year(self.year) else 365.0) + rest_year2 / (
+            366.0 if is_leap_year(end.year) else 365.0)
 
 
-        #elif end.year - self.year == 1:
-        #   if BusinessDate.is_leap_year(self.year):
-        #       return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 366.0 + \
-        #              BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 365.0
-        #   elif BusinessDate.is_leap_year(end.year):
-        #       return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 365.0 + \
-        #              BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 366.0
-        #   else:
-        #       return BusinessDate.diff_in_days(self, end) / 365.0
-        #else:
-          #  raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
+            # elif end.year - self.year == 1:
+            #   if BusinessDate.is_leap_year(self.year):
+            #       return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 366.0 + \
+            #              BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 365.0
+            #   elif BusinessDate.is_leap_year(end.year):
+            #       return BusinessDate.diff_in_days(self, BusinessDate.from_date(date(self.year, 12, 31))) / 365.0 + \
+            #              BusinessDate.diff_in_days(BusinessDate.from_date(date(self.year, 12, 31)), end) / 366.0
+            #   else:
+            #       return BusinessDate.diff_in_days(self, end) / 365.0
+            # else:
+            #  raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
 
     def get_30E_360(self, end):
         """
@@ -576,13 +578,13 @@ class BusinessDate(BaseDate):
         """
 
         y1, m1, d1 = self.to_ymd()
-        #adjust to date immediately following the the last day
+        # adjust to date immediately following the the last day
         y2, m2, d2 = end.add_days(0).to_ymd()
 
         d1 = min(d1, 30)
         d2 = min(d2, 30)
 
-        return (360*(y2-y1)+30*(m2-m1)+(d2-d1))/360.0
+        return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0
 
     def get_30E_360_ISDA(self, end):
         """
@@ -591,7 +593,7 @@ class BusinessDate(BaseDate):
         :return:
         """
         y1, m1, d1 = self.to_ymd()
-        #ajdust to date immediately following the last day
+        # ajdust to date immediately following the last day
         y2, m2, d2 = end.add_days(0).to_ymd()
 
         if (m1 == 2 and d1 >= 28) or d1 == 31:
@@ -599,8 +601,7 @@ class BusinessDate(BaseDate):
         if (m2 == 2 and d2 >= 28) or d2 == 31:
             d2 = 30
 
-        return (360*(y2-y1)+30*(m2-m1)+(d2-d1))/360.0
-
+        return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0
 
     # --- business day adjustment methods ------------------------------------
 
@@ -666,7 +667,6 @@ class BusinessDate(BaseDate):
 
 
 class BusinessPeriod(BasePeriod):
-
     def __new__(cls, *args, **kwargs):
         new = super(BusinessPeriod, cls).__new__(cls)
         return new
@@ -753,8 +753,8 @@ class BusinessPeriod(BasePeriod):
         y = int(Y)
         m = int(Q) * 3 + int(M)
         d = int(W) * 7 + int(D)
-        y += m//12
-        m = m%12
+        y += m // 12
+        m = m % 12
         return (y, m, d)
 
     @classmethod
@@ -827,7 +827,7 @@ class BusinessPeriod(BasePeriod):
         if isinstance(other, (list, tuple)):
             return [self - o for o in other]
         elif isinstance(other, BusinessPeriod):
-            return BusinessPeriod(str(self)).add_businessperiod(-1*other)
+            return BusinessPeriod(str(self)).add_businessperiod(-1 * other)
         elif BusinessPeriod.is_businessperiod(other):
             return self - BusinessPeriod(other)
         else:
@@ -1044,12 +1044,12 @@ class BusinessSchedule(BusinessRange):
             self.append(end)
 
     def first_stub_long(self):
-        if len(self)>2:
+        if len(self) > 2:
             self.pop(1)
         return self
 
     def last_stub_long(self):
-        if len(self)>2:
+        if len(self) > 2:
             self.pop(-2)
         return self
 

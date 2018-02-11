@@ -238,6 +238,24 @@ class BusinessDateUnitTests(unittest.TestCase):
                             BusinessDate(20160630).add_period(BusinessPeriod('2B', BusinessHolidays(['20160704']))))
         self.assertEqual(self.jan01 + '1b', self.jan02 + '1b')
 
+        rng = range(1,10)
+        periods = list()
+        for y in rng:
+            for m in rng:
+                for d in rng:
+                    periods.append(BusinessPeriod(str(y)+'y'+str(m)+'m'+str(d)+'d'))
+
+        for d in self.dates:
+            for p in periods:
+                c = d + p
+                self.assertEqual((c - d), BusinessPeriod(p), (c, d, c-d, p))
+
+        d = BusinessDate(20160229)
+        self.assertEqual(d + '1y' + '1m',  BusinessDate(20170328))
+        self.assertEqual(d + '1m' + '1y',  BusinessDate(20170329))
+        self.assertEqual(d + '1y1m',  BusinessDate(20170329))
+
+
     def test_cast_to(self):
         self.assertTrue(isinstance(self.jan01.to_date(), date))
         self.assertTrue(isinstance(self.jan01.to_businessdate(), BusinessDate))
@@ -437,35 +455,35 @@ class OldDateUnitTests(unittest.TestCase):
         d1 = BusinessDate.from_ymd(2016, 1, 31)
         d2 = BusinessDate.from_ymd(2017, 11, 1)
 
-        diff = BusinessDate.diff(d1, d2)
-        diff = BusinessPeriod(years=diff[0], months=diff[1], days=diff[2])
+        y, m, d = BusinessDate.diff(d2, d1)
+        diff = BusinessPeriod(years=y, months=m, days=d)
         self.assertEqual('1Y9M1D', diff.to_string())
 
         d1 = BusinessDate.from_ymd(2016, 2, 29)
         d2 = BusinessDate.from_ymd(2017, 3, 1)
 
-        diff = BusinessDate.diff(d1, d2)
-        diff = BusinessPeriod(years=diff[0], months=diff[1], days=diff[2])
+        y, m, d = BusinessDate.diff(d2, d1)
+        diff = BusinessPeriod(years=y, months=m, days=d)
         self.assertEqual('1Y1D', diff.to_string())
 
         d2 = BusinessDate.from_ymd(2017, 2, 28)
 
-        diff = BusinessDate.diff(d1, d2)
-        diff = BusinessPeriod(years=diff[0], months=diff[1], days=diff[2])
+        y, m, d = BusinessDate.diff(d2, d1)
+        diff = BusinessPeriod(years=y, months=m, days=d)
         self.assertEqual('1Y', diff.to_string())
 
         d1 = BusinessDate.from_ymd(2016, 11, 15)
         d2 = BusinessDate.from_ymd(2017, 1, 15)
 
-        diff = BusinessDate.diff(d1, d2)
-        diff = BusinessPeriod(years=diff[0], months=diff[1], days=diff[2])
+        y, m, d = BusinessDate.diff(d2, d1)
+        diff = BusinessPeriod(years=y, months=m, days=d)
         self.assertEqual('2M', diff.to_string())
 
         d1 = BusinessDate.from_ymd(2015, 7, 31)
         d2 = BusinessDate.from_ymd(2017, 2, 20)
 
-        diff = BusinessDate.diff(d1, d2)
-        diff = BusinessPeriod(years=diff[0], months=diff[1], days=diff[2])
+        y, m, d = BusinessDate.diff(d2, d1)
+        diff = BusinessPeriod(years=y, months=m, days=d)
         self.assertEqual('1Y6M20D', diff.to_string())
 
 
