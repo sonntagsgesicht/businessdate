@@ -794,6 +794,7 @@ class BusinessPeriod(BasePeriod):
 
     def __cmp__(self, other):
         """ compare BusinessPeriods, comparison by (years*12+months)*31+days
+
         :param BusinessPeriod other:
         :return: int
         """
