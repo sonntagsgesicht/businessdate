@@ -348,9 +348,15 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(self._1b.businessdays, 1)
 
     def test_operators(self):
+        self.assertNotEqual(BusinessPeriod("3M"), BusinessPeriod("1M"))
+        self.assertNotEqual(BusinessPeriod("31D"), BusinessPeriod("1M"))
+        self.assertEqual(BusinessPeriod("3M"), BusinessPeriod("1M") + "2m")
+        self.assertEqual(BusinessPeriod("1Y"), BusinessPeriod("12M"))
+        self.assertEqual(BusinessPeriod("1Y"), BusinessPeriod("12M0D"))
         self.assertTrue(self._2y < BusinessPeriod('10Y'))
+        self.assertTrue(self._2y < BusinessPeriod('1m')*12*2+'1d')
         self.assertFalse(self._3y < BusinessPeriod('1Y'))
-        self.assertEqual(self._2y.__cmp__(BusinessPeriod('10Y')), -2922.0)
+        self.assertEqual(self._2y.__cmp__(BusinessPeriod('10Y')), -2976.0)
         self.assertNotEqual(self._2y, self._5y)
         self.assertEqual(BusinessPeriod('5y'), self._5y)
 

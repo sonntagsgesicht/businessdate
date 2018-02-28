@@ -793,13 +793,20 @@ class BusinessPeriod(BasePeriod):
         self.businessdays = abs(self.businessdays)
 
     def __cmp__(self, other):
+        """ compare BusinessPeriods, comparison by (years*12+months)*31+days
+
+        :param BusinessPeriod other:
+        :return: int
+        """
         assert type(self) == type(other), "types don't match %s" % str((type(self), type(other)))
-        d = BusinessDate()
-        return -BusinessDate.diff_in_days(BusinessDate.add_period(d, self), BusinessDate.add_period(d, other))
+        s = (self.years*12 + self.months)*31 + self.days
+        o = (other.years*12 + other.months)*31 + other.days
+        return s-o
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
-            return 0.0 == self.__cmp__(other)
+            attr = 'years', 'months', 'days', 'businessdays'
+            return all(getattr(self, a) == getattr(other, a) for a in attr)
         else:
             return False
 
