@@ -406,6 +406,18 @@ class BusinessRangeUnitTests(unittest.TestCase):
         self.assertEqual(ck, ex)
         self.assertEqual(ex, sx)
 
+        bs = BusinessRange(20151231, 20160630, '1M', 20151231)
+        ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430, 20160531])
+        self.assertEqual(bs, ck)
+
+        bs = BusinessRange(20151231, 20160531, '1M', 20151231)
+        ck = BusinessRange(20151231, 20160531, '1M', 20160531)
+        self.assertEqual(bs, ck)
+
+        bs = BusinessRange(20151231, 20160531, '1M', 20151231)
+        ck = BusinessRange(20151231, 20160531, '-1M', 20151231)
+        self.assertEqual(bs, ck)
+
 
 class BusinessScheduleUnitTests(unittest.TestCase):
     def setUp(self):
@@ -432,6 +444,18 @@ class BusinessScheduleUnitTests(unittest.TestCase):
 
         bs = BusinessSchedule(20150101, 20170101, '3M', 20170101)
         ck = BusinessDate([20150101, 20150401, 20150701, 20151001, 20160101, 20160401, 20160701, 20161001, 20170101])
+        self.assertEqual(bs, ck)
+
+        bs = BusinessSchedule(20151231, 20160630, '1M', 20151231)
+        ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430, 20160531, 20160630])
+        self.assertEqual(bs, ck)
+
+        bs = BusinessSchedule(20151231, 20160630, '1M', 20151231)
+        ck = BusinessSchedule(20151231, 20160630, '-1M', 20151231)
+        self.assertEqual(bs, ck)
+
+        bs = BusinessSchedule(20151231, 20160630, '1M', 20151231)
+        ck = BusinessSchedule(20151231, 20160630, '-1M', 20160331)
         self.assertEqual(bs, ck)
 
     def test_methods(self):
