@@ -557,7 +557,7 @@ class BusinessDate(BaseDate):
             years_in_between = end.year - self.year - 1
 
             return years_in_between + rest_year1 / (366.0 if is_leap_year(self.year) else 365.0) + rest_year2 / (
-            366.0 if is_leap_year(end.year) else 365.0)
+                366.0 if is_leap_year(end.year) else 365.0)
 
 
             # elif end.year - self.year == 1:
@@ -799,9 +799,9 @@ class BusinessPeriod(BasePeriod):
         :return: int
         """
         assert type(self) == type(other), "types don't match %s" % str((type(self), type(other)))
-        s = (self.years*12 + self.months)*31 + self.days
-        o = (other.years*12 + other.months)*31 + other.days
-        return s-o
+        s = (self.years * 12 + self.months) * 31 + self.days
+        o = (other.years * 12 + other.months) * 31 + other.days
+        return s - o
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -926,8 +926,24 @@ class BusinessRange(list):
             if not given default will be start
         :type rolling: BusinessDate or int or str
 
-        range like class to build BusinessDate schedule from rolling date and BusinessPeriod
+        range like class to build BusinessDate list from rolling date and BusinessPeriod
+
+        First, :code:`rolling` and :code:`step` defines a infinite grid of dates.
+        Second, this grid is sliced by :code:`start` (included , if meeting the grid) and
+        :code:`end` (excluded).
+
         """
+
+        # set default args and build range grid
+        start, stop, step, rolling = self._default_args(start, stop, step, rolling)
+        schedule = self._build_grid(start, stop, step, rolling)
+
+        # push to super and sort
+        super(BusinessRange, self).__init__(set(schedule))
+        self.sort()
+
+    @staticmethod
+    def _default_args(start, stop, step, rolling):
         if stop is None:
             stop = start
             start = BusinessDate()
@@ -956,31 +972,31 @@ class BusinessRange(list):
                 step = step.to_businessperiod()
             else:
                 step = BusinessPeriod(step)
-        # roll schedule
-        current = BusinessDate(rolling)
-        schedule = [BusinessDate(rolling)]
-        # roll backward
-        current = BusinessDate.add_period(current, step)
-        while current < start:
-            current = BusinessDate.add_period(current, step)
-        while current < stop:
-            schedule.append(current)
-            current = BusinessDate.add_period(current, step)
-        # roll forward
-        back_step = -1 * BusinessPeriod(step)
-        current = BusinessDate(rolling)
-        current = BusinessDate.add_period(current, back_step)
-        while stop <= current:
-            current = BusinessDate.add_period(current, back_step)
+        return BusinessDate(start), BusinessDate(stop), BusinessPeriod(step), BusinessDate(rolling)
+
+    @staticmethod
+    def _build_grid(start, stop, step, rolling):
+        # setup grid and turn step into positive direction
+        grid = list()
+        step = step if rolling <= rolling.add_period(step) else -1 * step
+        current = rolling
+
+        # roll backward before start
+        i = 0
+        current = BusinessDate.add_period(rolling, step * i)
         while start <= current:
-            schedule.append(current)
-            current = BusinessDate.add_period(current, back_step)
-        # remove rolldate if rolldate is enddate or later
-        if not start <= rolling < stop:
-            schedule.remove(rolling)
-        # push to super
-        super(BusinessRange, self).__init__(set(schedule))
-        self.sort()
+            i -= 1
+            current = BusinessDate.add_period(rolling, step * i)
+
+        # fill grid from start until end
+        current = BusinessDate.add_period(rolling, step * i)
+        while current < stop:
+            current = BusinessDate.add_period(rolling, step * i)
+            if start <= current < stop:
+                grid.append(current)
+            i += 1
+
+        return grid
 
     def adjust(self, convention=None, holidays_obj=None):
         if convention is None:
@@ -1034,7 +1050,6 @@ class BusinessSchedule(BusinessRange):
         """
         if not roll:
             roll = end
-        super(BusinessSchedule, self).__init__(start, end, step, roll)
         if not isinstance(start, BusinessDate):
             if isinstance(start, BusinessPeriod):
                 start = start.to_businessdate()
@@ -1045,6 +1060,7 @@ class BusinessSchedule(BusinessRange):
                 end = end.to_businessdate()
             else:
                 end = BusinessDate(end)
+        super(BusinessSchedule, self).__init__(start, end, step, roll)
         if start not in self:
             self.insert(0, start)
         if end not in self:
