@@ -17,15 +17,18 @@ import unittest
 
 from datetime import datetime, date, timedelta
 
-from businessdate.basedate import BaseDate, DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd
+from businessdate.basedate import (
+    BaseDate, DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd)
 from businessdate.businessdate import easter, target_days
 from businessdate.businessdate import TargetHolidays
-from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
+from businessdate import (BusinessDate, BusinessPeriod, BusinessRange,
+    BusinessSchedule, BusinessHolidays)
 
 
 class BaseDateUnitTest(unittest.TestCase):
     def setUp(self):
-        self.pairs = list()  # to store date(as string), exceldate[int](as string)
+        # to store date(as string), exceldate[int](as string)
+        self.pairs = list()
         f = open("test_data/excel_date_test_data.csv")
         for line in f:
             self.pairs.append(line.split(';'))
@@ -46,7 +49,8 @@ class BaseDateUnitTest(unittest.TestCase):
     def test_base_date(self):
         import businessdate
         businessdate.businessdate.BASE_DATE = '20160606'
-        self.assertEqual(businessdate.BusinessDate(), businessdate.BusinessDate('20160606'))
+        self.assertEqual(
+            businessdate.BusinessDate(), businessdate.BusinessDate('20160606'))
         businessdate.businessdate.BASE_DATE = date.today()
 
 
@@ -77,7 +81,8 @@ class DayCountUnitTests(unittest.TestCase):
         for data in self.test_data:
             start_date = BusinessDate(data[self.startdate_idx])
             end_date = BusinessDate(data[self.enddate_idx])
-            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+            self.assertAlmostEqual(
+                f(start_date, end_date), float(data[method_idx]))
 
     def test_get_30E_360(self):
         methodname = '30E/360'
@@ -86,7 +91,8 @@ class DayCountUnitTests(unittest.TestCase):
         for data in self.test_data:
             start_date = BusinessDate(data[self.startdate_idx])
             end_date = BusinessDate(data[self.enddate_idx])
-            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+            self.assertAlmostEqual(
+                f(start_date, end_date), float(data[method_idx]))
 
     def test_get_act_act(self):
         methodname = 'ACT/ACT'
@@ -95,7 +101,8 @@ class DayCountUnitTests(unittest.TestCase):
         for data in self.test_data:
             start_date = BusinessDate(data[self.startdate_idx])
             end_date = BusinessDate(data[self.enddate_idx])
-            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+            self.assertAlmostEqual(
+                f(start_date, end_date), float(data[method_idx]))
 
     def test_get_ACT_360(self):
         methodname = 'ACT/360'
@@ -104,7 +111,8 @@ class DayCountUnitTests(unittest.TestCase):
         for data in self.test_data:
             start_date = BusinessDate(data[self.startdate_idx])
             end_date = BusinessDate(data[self.enddate_idx])
-            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+            self.assertAlmostEqual(
+                f(start_date, end_date), float(data[method_idx]))
 
     def test_get_ACT_365(self):
         methodname = 'ACT/365'
@@ -113,7 +121,8 @@ class DayCountUnitTests(unittest.TestCase):
         for data in self.test_data:
             start_date = BusinessDate(data[self.startdate_idx])
             end_date = BusinessDate(data[self.enddate_idx])
-            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+            self.assertAlmostEqual(
+                f(start_date, end_date), float(data[method_idx]))
 
     def test_get_ACT_36525(self):
         methodname = 'ACT/365.25'
@@ -122,22 +131,24 @@ class DayCountUnitTests(unittest.TestCase):
         for data in self.test_data:
             start_date = BusinessDate(data[self.startdate_idx])
             end_date = BusinessDate(data[self.enddate_idx])
-            self.assertAlmostEqual(f(start_date, end_date), float(data[method_idx]))
+            self.assertAlmostEqual(
+                f(start_date, end_date), float(data[method_idx]))
 
 
 class BusinessHolidaysUnitTests(unittest.TestCase):
     def setUp(self):
         self.holidays = TargetHolidays()
         self.easter = dict()
-        self.easter[2015] = date(2015, 04, 05)
-        self.easter[2016] = date(2016, 03, 27)
-        self.easter[2017] = date(2017, 04, 16)
-        self.easter[2018] = date(2018, 04, 01)
-        self.easter[2019] = date(2019, 04, 21)
-        self.easter[2020] = date(2020, 04, 12)
+        self.easter[2015] = date(2015, 4, 5)
+        self.easter[2016] = date(2016, 3, 27)
+        self.easter[2017] = date(2017, 4, 16)
+        self.easter[2018] = date(2018, 4, 1)
+        self.easter[2019] = date(2019, 4, 21)
+        self.easter[2020] = date(2020, 4, 12)
         self.target = dict()
         for y in self.easter:
-            self.target[y] = [date(y, 01, 01), date(y, 05, 01), date(y, 12, 25), date(y, 12, 26)]
+            self.target[y] = [
+                date(y, 1, 1), date(y, 5, 1), date(y, 12, 25), date(y, 12, 26)]
             self.target[y].append(self.easter[y] - timedelta(2))
             self.target[y].append(self.easter[y] + timedelta(1))
 
@@ -148,8 +159,8 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
     def test_target_days(self):
         for y in self.target:
             t = target_days(y)
-            d = date(y, 01, 01) - timedelta(1)
-            while d < date(y + 1, 01, 01):
+            d = date(y, 1, 1) - timedelta(1)
+            while d < date(y + 1, 1, 1):
                 if d in self.target[y]:
                     self.assertTrue(d in t)
                 else:
@@ -180,8 +191,9 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.jun30 = BusinessDate(20160630)
         self.sep30 = BusinessDate(20160930)
 
-        self.dates = [self.dec31, self.jan01, self.jan02, self.jan04, self.jan29, self.jan31,
-                      self.feb01, self.feb28, self.feb29, self.mar31, self.jun30, self.sep30]
+        self.dates = [self.dec31, self.jan01, self.jan02, self.jan04,
+            self.jan29, self.jan31, self.feb01, self.feb28, self.feb29,
+            self.mar31, self.jun30, self.sep30]
 
     def test_constructors(self):
         self.assertEqual(BusinessDate(date.today()), BusinessDate())
@@ -192,15 +204,16 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan02, BusinessDate(42371.0))
         self.assertEqual(self.jan02, BusinessDate(735965))
         self.assertEqual(self.jan02, BusinessDate(735965.0))
-        self.assertEqual([self.jan01, self.jan02], BusinessDate([20160101, 42371]))
+        self.assertEqual(
+            [self.jan01, self.jan02], BusinessDate([20160101, 42371]))
 
     def test_to_string(self):
         self.assertEqual(self.jan02.to_string(), '20160102')
         self.assertEqual(BusinessDate(42371).to_string(), '20160102')
 
     def test_properties(self):
-        self.assertEqual(self.jan01.day, 01)
-        self.assertEqual(self.jan01.month, 01)
+        self.assertEqual(self.jan01.day, 1)
+        self.assertEqual(self.jan01.month, 1)
         self.assertEqual(self.jan01.year, 2016)
 
     def test_operators(self):
@@ -211,8 +224,10 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01 - BusinessPeriod('1D'), self.jan02 - '2D')
         self.assertRaises(TypeError, lambda: BusinessPeriod('1D') + self.jan02)
         self.assertRaises(TypeError, lambda: BusinessPeriod('1D') - self.jan01)
-        self.assertEqual(self.dec31.add_period(BusinessPeriod('2B', BusinessHolidays())),
-                         self.dec31.add_period(BusinessPeriod('2B'), BusinessHolidays([self.jan02])))
+        self.assertEqual(
+            self.dec31.add_period(BusinessPeriod('2B', BusinessHolidays())),
+            self.dec31.add_period(BusinessPeriod('2B'),
+                BusinessHolidays([self.jan02])))
 
     def test_validations(self):
         self.assertTrue(BusinessDate.is_businessdate(18991229))
@@ -231,35 +246,41 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01.add_days(1), self.jan02)
         self.assertEqual(self.jan01.add_months(1), self.feb01)
         self.assertEqual(self.jan01.add_years(1).to_string(), '20170101')
-        self.assertEqual(self.jan01.add_period('2D'), self.jan02 + BusinessPeriod('1D'))
-        self.assertEqual(self.jan02.add_period('-2D'), self.jan01 - BusinessPeriod('1D'))
-        self.assertEqual(self.jan02.add_period('-1b'), self.jan01 - BusinessPeriod('1b'))
-        self.assertNotEqual(BusinessDate(20160630).add_period(BusinessPeriod('2B')),
-                            BusinessDate(20160630).add_period(BusinessPeriod('2B', BusinessHolidays(['20160704']))))
+        self.assertEqual(self.jan01.add_period('2D'),
+            self.jan02 + BusinessPeriod('1D'))
+        self.assertEqual(self.jan02.add_period('-2D'),
+            self.jan01 - BusinessPeriod('1D'))
+        self.assertEqual(self.jan02.add_period('-1b'),
+            self.jan01 - BusinessPeriod('1b'))
+        self.assertNotEqual(
+            BusinessDate(20160630).add_period(BusinessPeriod('2B')),
+            BusinessDate(20160630).add_period(BusinessPeriod('2B',
+                BusinessHolidays(['20160704']))))
         self.assertEqual(self.jan01 + '1b', self.jan02 + '1b')
 
-        rng = range(1,10)
+        rng = list(range(1, 10))
         periods = list()
         for y in rng:
             for m in rng:
                 for d in rng:
-                    periods.append(BusinessPeriod(str(y)+'y'+str(m)+'m'+str(d)+'d'))
+                    periods.append(BusinessPeriod(
+                        str(y) + 'y' + str(m) + 'm' + str(d) + 'd'))
 
         for d in self.dates:
             for p in periods:
                 c = d + p
-                self.assertEqual((c - d), BusinessPeriod(p), (c, d, c-d, p))
+                self.assertEqual((c - d), BusinessPeriod(p), (c, d, c - d, p))
 
         d = BusinessDate(20160229)
-        self.assertEqual(d + '1y' + '1m',  BusinessDate(20170328))
-        self.assertEqual(d + '1m' + '1y',  BusinessDate(20170329))
-        self.assertEqual(d + '1y1m',  BusinessDate(20170329))
-
+        self.assertEqual(d + '1y' + '1m', BusinessDate(20170328))
+        self.assertEqual(d + '1m' + '1y', BusinessDate(20170329))
+        self.assertEqual(d + '1y1m', BusinessDate(20170329))
 
     def test_cast_to(self):
         self.assertTrue(isinstance(self.jan01.to_date(), date))
         self.assertTrue(isinstance(self.jan01.to_businessdate(), BusinessDate))
-        self.assertTrue(isinstance(self.jan01.to_businessperiod(), BusinessPeriod))
+        self.assertTrue(
+            isinstance(self.jan01.to_businessperiod(), BusinessPeriod))
         self.assertTrue(isinstance(self.jan01.to_excel(), int))
         self.assertTrue(isinstance(self.jan01.to_ordinal(), int))
         self.assertTrue(isinstance(self.jan01.to_string(), str))
@@ -274,22 +295,30 @@ class BusinessDateUnitTests(unittest.TestCase):
             self.assertEqual(BusinessDate.from_string(d.to_string()), d)
             self.assertEqual(BusinessDate.from_ymd(*d.to_ymd()), d)
 
-    def test_day_count(self):  # The daycount methods are also tested separately
+    def test_day_count(self):
+        # The daycount methods are also tested separately
         delta = float((self.mar31.to_date() - self.jan01.to_date()).days)
-        total = float(((self.jan01 + '1y').to_date() - self.jan01.to_date()).days)
+        total = float(
+            ((self.jan01 + '1y').to_date() - self.jan01.to_date()).days)
         self.assertAlmostEqual(self.jan01.get_30_360(self.mar31), 90. / 360.)
         self.assertAlmostEqual(self.jan01.get_act_360(self.mar31), delta / 360.)
         self.assertAlmostEqual(self.jan01.get_act_365(self.mar31), delta / 365.)
-        self.assertAlmostEqual(self.jan01.get_act_36525(self.mar31), delta / 365.25)
-        self.assertAlmostEqual(self.jan01.get_act_act(self.mar31), delta / total)
+        self.assertAlmostEqual(
+            self.jan01.get_act_36525(self.mar31), delta / 365.25)
+        self.assertAlmostEqual(
+            self.jan01.get_act_act(self.mar31), delta / total)
 
     def test_business_day_adjustment(self):
         self.assertEqual(self.jan01.adjust_follow(), BusinessDate(20160104))
-        self.assertEqual(self.jan01.adjust_mod_follow(), BusinessDate(20160104))
+        self.assertEqual(
+            self.jan01.adjust_mod_follow(), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust_previous(), BusinessDate(20151231))
-        self.assertEqual(self.jan01.adjust_mod_previous(), BusinessDate(20160104))
-        self.assertEqual(self.jan01.adjust_start_of_month(), BusinessDate(20160104))
-        self.assertEqual(self.jan01.adjust_end_of_month(), BusinessDate(20160129))
+        self.assertEqual(
+            self.jan01.adjust_mod_previous(), BusinessDate(20160104))
+        self.assertEqual(
+            self.jan01.adjust_start_of_month(), BusinessDate(20160104))
+        self.assertEqual(
+            self.jan01.adjust_end_of_month(), BusinessDate(20160129))
         self.assertEqual(self.jan01.adjust_imm(), BusinessDate(20160115))
         self.assertEqual(self.jan01.adjust_cds_imm(), BusinessDate(20160120))
 
@@ -311,11 +340,12 @@ class BusinessDateUnitTests(unittest.TestCase):
         is_bday_default_calendar = bdate.is_business_day()
         self.assertFalse(is_bday_default_calendar)
 
-        target_a= BusinessDate.from_ymd(2016, 1, 4)
+        target_a = BusinessDate.from_ymd(2016, 1, 4)
         a = d.add_business_days(2, holi)
         self.assertEqual(target_a, a)
         target_b = BusinessDate.from_ymd(2016, 1, 5)
-        b = d.add_business_days(2) # default holidays contains the target days, i.e. the 1.1.2016
+        # default holidays contains the target days, i.e. the 1.1.2016
+        b = d.add_business_days(2)
         self.assertEqual(target_b, b)
 
 
@@ -354,7 +384,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(BusinessPeriod("1Y"), BusinessPeriod("12M"))
         self.assertEqual(BusinessPeriod("1Y"), BusinessPeriod("12M0D"))
         self.assertTrue(self._2y < BusinessPeriod('10Y'))
-        self.assertTrue(self._2y < BusinessPeriod('1m')*12*2+'1d')
+        self.assertTrue(self._2y < BusinessPeriod('1m') * 12 * 2 + '1d')
         self.assertFalse(self._3y < BusinessPeriod('1Y'))
         self.assertEqual(self._2y.__cmp__(BusinessPeriod('10Y')), -2976.0)
         self.assertNotEqual(self._2y, self._5y)
@@ -370,16 +400,22 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(self._1y + '6m', self._1y6m)
         self.assertEqual(self._1y, BusinessPeriod('1y'))
         self.assertRaises(TypeError, lambda: '6m' + self._1y)
-        self.assertEquals(self._1y, self._3y - self._2y)
-        self.assertEquals(self._1y, self._3y - '2y')
+        self.assertEqual(self._1y, self._3y - self._2y)
+        self.assertEqual(self._1y, self._3y - '2y')
 
     def test_cast(self):
-        self.assertEqual(BusinessPeriod.from_string('1y'), BusinessPeriod(years=1))
-        self.assertEqual(self._1y.to_businessdate(BusinessDate(20150101)), BusinessDate(20160101))
-        self.assertEqual(self._1y6m.to_businessdate(BusinessDate(20150101)), BusinessDate(20160701))
-        self.assertEqual(self._1y.to_businessdate(BusinessDate(20160229)), BusinessDate(20170228))
-        self.assertEqual(self._1y.to_date(BusinessDate(20160229)), date(2017, 02, 28))
-        self.assertEqual(self._1y.to_businessperiod(BusinessDate(20160229)), self._1y)
+        self.assertEqual(
+            BusinessPeriod.from_string('1y'), BusinessPeriod(years=1))
+        self.assertEqual(self._1y.to_businessdate(BusinessDate(20150101)),
+            BusinessDate(20160101))
+        self.assertEqual(self._1y6m.to_businessdate(BusinessDate(20150101)),
+            BusinessDate(20160701))
+        self.assertEqual(self._1y.to_businessdate(BusinessDate(20160229)),
+            BusinessDate(20170228))
+        self.assertEqual(self._1y.to_date(
+            BusinessDate(20160229)), date(2017, 2, 28))
+        self.assertEqual(
+            self._1y.to_businessperiod(BusinessDate(20160229)), self._1y)
         self.assertEqual(self._1y.to_string(), '1Y')
         self.assertEqual(self._2q.to_string(), '6M')
         self.assertEqual(self._2w.to_string(), '14D')
@@ -407,7 +443,8 @@ class BusinessRangeUnitTests(unittest.TestCase):
         self.assertEqual(ex, sx)
 
         bs = BusinessRange(20151231, 20160630, '1M', 20151231)
-        ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430, 20160531])
+        ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430,
+            20160531])
         self.assertEqual(bs, ck)
 
         bs = BusinessRange(20151231, 20160531, '1M', 20151231)
@@ -435,19 +472,23 @@ class BusinessScheduleUnitTests(unittest.TestCase):
         self.assertEqual(bs[-1], self.ed)
 
         bs = BusinessSchedule(20150331, 20160930, '3M', 20160415)
-        ck = BusinessDate([20150331, 20150415, 20150715, 20151015, 20160115, 20160415, 20160715, 20160930])
+        ck = BusinessDate([20150331, 20150415, 20150715, 20151015, 20160115,
+            20160415, 20160715, 20160930])
         self.assertEqual(bs, ck)
 
         bs.adjust()
-        ck = BusinessDate([20150331, 20150415, 20150715, 20151015, 20160115, 20160415, 20160715, 20160930])
+        ck = BusinessDate([20150331, 20150415, 20150715, 20151015, 20160115,
+            20160415, 20160715, 20160930])
         self.assertEqual(bs, ck)
 
         bs = BusinessSchedule(20150101, 20170101, '3M', 20170101)
-        ck = BusinessDate([20150101, 20150401, 20150701, 20151001, 20160101, 20160401, 20160701, 20161001, 20170101])
+        ck = BusinessDate([20150101, 20150401, 20150701, 20151001, 20160101,
+            20160401, 20160701, 20161001, 20170101])
         self.assertEqual(bs, ck)
 
         bs = BusinessSchedule(20151231, 20160630, '1M', 20151231)
-        ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430, 20160531, 20160630])
+        ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430,
+            20160531, 20160630])
         self.assertEqual(bs, ck)
 
         bs = BusinessSchedule(20151231, 20160630, '1M', 20151231)
@@ -459,12 +500,15 @@ class BusinessScheduleUnitTests(unittest.TestCase):
         self.assertEqual(bs, ck)
 
     def test_methods(self):
-        bs = BusinessSchedule(20150331, 20160930, '3M', 20160415).first_stub_long()
-        ck = BusinessDate([20150331, 20150715, 20151015, 20160115, 20160415, 20160715, 20160930])
+        bs = BusinessSchedule(
+            20150331, 20160930, '3M', 20160415).first_stub_long()
+        ck = BusinessDate([20150331, 20150715, 20151015, 20160115, 20160415,
+            20160715, 20160930])
         self.assertEqual(bs, ck)
 
         bs.last_stub_long()
-        ck = BusinessDate([20150331, 20150715, 20151015, 20160115, 20160415, 20160930])
+        ck = BusinessDate([20150331, 20150715, 20151015, 20160115, 20160415,
+            20160930])
         self.assertEqual(bs, ck)
 
 
@@ -477,7 +521,8 @@ class BusinessHolidayUnitTests(unittest.TestCase):
         h = BusinessHolidays(self.list)
         for l in self.list:
             self.assertTrue(BusinessDate(l) in h)
-        self.assertNotEqual(self.bd.add_period('3b', h), self.bd.add_period('3b'))
+        self.assertNotEqual(
+            self.bd.add_period('3b', h), self.bd.add_period('3b'))
 
 
 class OldDateUnitTests(unittest.TestCase):
@@ -531,7 +576,7 @@ class OldBusinessDateUnitTests(unittest.TestCase):
         e = BusinessDate('20011112')
         self.assertEqual(BusinessDate.diff_in_years(s, e), 2 / DAYS_IN_YEAR)
         self.assertEqual(BusinessDate.diff_in_years(BusinessDate('20161101'),
-                                                    BusinessDate('20171102')), 366 / DAYS_IN_YEAR)
+            BusinessDate('20171102')), 366 / DAYS_IN_YEAR)
 
     def test_diff_in_days(self):
         s = BusinessDate('20011110')
@@ -541,24 +586,34 @@ class OldBusinessDateUnitTests(unittest.TestCase):
     def test_add(self):
         s = BusinessDate('20011110')
         e = BusinessDate('20011112')
-        self.assertEqual(BusinessDate.add_days(s, e.day), BusinessDate('20011122'))
-        self.assertEqual(BusinessDate.add_months(s, 1), BusinessDate('20011210'))
-        self.assertEqual(BusinessDate.add_years(s, 1), BusinessDate('20021110'))
+        self.assertEqual(
+            BusinessDate.add_days(s, e.day), BusinessDate('20011122'))
+        self.assertEqual(
+            BusinessDate.add_months(s, 1), BusinessDate('20011210'))
+        self.assertEqual(
+            BusinessDate.add_years(s, 1), BusinessDate('20021110'))
 
     def test_diff(self):
         s = BusinessDate('20160101')
-        self.assertEqual(BusinessDate.diff_in_days(s, BusinessDate('20160102')), BusinessPeriod(days=1).days)
+        self.assertEqual(
+            BusinessDate.diff_in_days(s, BusinessDate('20160102')),
+            BusinessPeriod(days=1).days)
 
     def test_bdc(self):
-        self.assertEqual(BusinessDate.adjust_mod_follow(BusinessDate('20160312')), BusinessDate('20160314'))
-        self.assertEqual(BusinessDate.is_business_day(BusinessDate('20160312')), False)
+        self.assertEqual(
+            BusinessDate.adjust_mod_follow(BusinessDate('20160312')),
+            BusinessDate('20160314'))
+        self.assertEqual(
+            BusinessDate.is_business_day(BusinessDate('20160312')), False)
 
     def test_dcc(self):
-        self.assertEqual(BusinessDate.get_act_36525(BusinessDate('20170101'),
-                                                    BusinessDate('20180101')), 365.0 / 365.25)
+        self.assertEqual(
+            BusinessDate.get_act_36525(BusinessDate('20170101'),
+            BusinessDate('20180101')), 365.0 / 365.25)
 
     def test_holidays(self):
-        self.assertEqual(BusinessDate.is_business_day(BusinessDate('20170101')), False)
+        self.assertEqual(
+            BusinessDate.is_business_day(BusinessDate('20170101')), False)
 
 
 class OldBusinessPeriodUnittests(unittest.TestCase):
@@ -566,20 +621,25 @@ class OldBusinessPeriodUnittests(unittest.TestCase):
         p = BusinessPeriod(years=1, months=2, days=3)
         self.assertRaises(TypeError, lambda: p + 2)
         p = BusinessPeriod(years=1, months=2, days=3)
-        self.assertEqual(p.add_months(1), BusinessPeriod(years=1, months=3, days=3))
-        self.assertEqual(p.add_years(10), BusinessPeriod(years=11, months=3, days=3))
+        self.assertEqual(
+            p.add_months(1), BusinessPeriod(years=1, months=3, days=3))
+        self.assertEqual(
+            p.add_years(10), BusinessPeriod(years=11, months=3, days=3))
 
     def test_to_date(self):
         p = BusinessPeriod(years=1, months=2, days=3)
-        self.assertEqual(p.to_businessdate(BusinessDate('20160101')), BusinessDate('20170304'))
+        self.assertEqual(p.to_businessdate(BusinessDate('20160101')),
+            BusinessDate('20170304'))
 
     def test_wrapper_methods(self):
         p = BusinessPeriod(years=1, months=1, days=1)
-        self.assertEqual(p.add_years(p.years).add_months(p.months).add_days(p.days),
-                         BusinessPeriod(years=2, months=2, days=2))
+        self.assertEqual(
+            p.add_years(p.years).add_months(p.months).add_days(p.days),
+            BusinessPeriod(years=2, months=2, days=2))
         self.assertEqual(p * 2, BusinessPeriod(years=4, months=4, days=4))
-        self.assertEqual(BusinessDate.add_period(BusinessDate('20160110'), BusinessPeriod(days=-1)),
-                         BusinessDate('20160109'))
+        self.assertEqual(
+            BusinessDate.add_period(BusinessDate('20160110'),
+                BusinessPeriod(days=-1)), BusinessDate('20160109'))
 
 
 if __name__ == "__main__":
@@ -588,26 +648,27 @@ if __name__ == "__main__":
     start_time = datetime.now()
 
     print('')
-    print('======================================================================')
+    print('==================================================================')
     print('')
-    print('run %s' % __file__)
-    print('in %s' % os.getcwd())
-    print('started  at %s' % str(start_time))
+    print(('run %s' % __file__))
+    print(('in %s' % os.getcwd()))
+    print(('started  at %s' % str(start_time)))
     print('')
-    print('----------------------------------------------------------------------')
+    print('------------------------------------------------------------------')
     print('')
 
     suite = unittest.TestLoader().loadTestsFromModule(__import__("__main__"))
-    testrunner = unittest.TextTestRunner(stream=sys.stdout , descriptions=2, verbosity=2)
+    testrunner = unittest.TextTestRunner(
+        stream=sys.stdout, descriptions=2, verbosity=2)
     testrunner.run(suite)
 
     print('')
-    print('======================================================================')
+    print('==================================================================')
     print('')
-    print('ran %s' % __file__)
-    print('in %s' % os.getcwd())
-    print('started  at %s' % str(start_time))
-    print('finished at %s' % str(datetime.now()))
+    print(('ran %s' % __file__))
+    print(('in %s' % os.getcwd()))
+    print(('started  at %s' % str(start_time)))
+    print(('finished at %s' % str(datetime.now())))
     print('')
-    print('----------------------------------------------------------------------')
+    print('------------------------------------------------------------------')
     print('')

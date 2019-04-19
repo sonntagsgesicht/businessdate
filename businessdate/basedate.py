@@ -78,25 +78,29 @@ def is_valid_ymd(year, month, day):
     :return bool:
     """
 
-    return 1 <= month <= 12 and 1 <= day <= days_in_month(year, month) and year >= 1899
+    return (1 <= month <= 12 and 1 <= day <= days_in_month(year, month) and
+        year >= 1899)
 
 
 def from_excel_to_ymd(excel_int):
     """
-    converts date in Microsoft Excel representation style and returns `(year, month, day)` tuple
+    converts date in Microsoft Excel representation style and returns
+    `(year, month, day)` tuple
 
     :param int excel_int: date as int (days since 1899-12-31)
     :return tuple(int, int, int):
     """
 
     int_date = int(floor(excel_int))
-    int_date -= 1  if excel_int > 60 else 0
+    int_date -= 1 if excel_int > 60 else 0
     # jan dingerkus: There are two errors in excels own date <> int conversion.
-    # The first is that there exists the 00.01.1900 and the second that there never happend to be a 29.2.1900 since it
-    # was no leap year. So there is the int 60 <> 29.2.1900 which has to be jumped over.
+    # The first is that there exists the 00.01.1900 and the second that there
+    # never happend to be a 29.2.1900 since it  was no leap year. So there is
+    # the int 60 <> 29.2.1900 which has to be jumped over.
 
     year = (int_date - 1) // 365
-    rest_days = int_date - 365 * year - (year + 3) // 4 + (year + 99) // 100 - (year + 299) // 400
+    rest_days = (int_date - 365 * year - (year + 3) // 4 +
+        (year + 99) // 100 - (year + 299) // 400)
     year += 1900
 
     while rest_days <= 0:
@@ -120,7 +124,8 @@ def from_excel_to_ymd(excel_int):
 
 def from_ymd_to_excel(year, month, day):
     """
-    converts date as `(year, month, day)` tuple into Microsoft Excel representation style
+    converts date as `(year, month, day)` tuple into
+    Microsoft Excel representation style
 
     :param tuple(int, int, int): int tuple `year, month, day`
     :return int:
@@ -132,10 +137,11 @@ def from_ymd_to_excel(year, month, day):
     days += 1 if (is_leap_year(year) and month > 2) else 0
 
     years_distance = year - 1900
-    days += years_distance * 365 + \
-            (years_distance + 3) // 4 - (years_distance + 99) // 100 + (years_distance + 299) // 400
+    days += (years_distance * 365 + (years_distance + 3) // 4 -
+        (years_distance + 99) // 100 + (years_distance + 299) // 400)
 
-    # count days since 30.12.1899 (excluding 30.12.1899) (workaround for excel bug)
+    # count days since 30.12.1899 (excluding 30.12.1899)
+    # (workaround for excel bug)
     days += 1 if (year, month, day) > (1900, 2, 28) else 0
     return days
 
@@ -227,7 +233,8 @@ class BaseDateFloat(float):
     @staticmethod
     def diff_in_years(start, end):
         """
-        calculate difference between given dates in years. The difference corresponds to Act/365.25 year fraction
+        calculate difference between given dates in years.
+        The difference corresponds to Act/365.25 year fraction
 
         :param BaseDateFloat start: state date
         :param BaseDateFloat end: end date
@@ -250,7 +257,8 @@ class BaseDateDatetimeDate(date):
     @staticmethod
     def from_ymd(year, month, day):
         """
-        converts date as `(year, month, day)` tuple into Microsoft Excel representation style
+        converts date as `(year, month, day)` tuple into
+        Microsoft Excel representation style
 
         :param tuple(int, int, int): int tuple `year, month, day`
         :return BaseDatetimeDate:
@@ -267,7 +275,6 @@ class BaseDateDatetimeDate(date):
         """
 
         return d.year, d.month, d.day
-
 
     # --- calculation methods ------------------------------------------------
     @staticmethod
@@ -306,13 +313,15 @@ class BaseDateDatetimeDate(date):
         :param BaseDateDatetimeDate end: end date
         :return float: difference between end date and start date in days
         """
-        diff = date(end.year, end.month, end.day) - date(start.year, start.month, start.day)
+        diff = date(end.year, end.month, end.day) - date(start.year,
+            start.month, start.day)
         return float(diff.days)
 
     @staticmethod
     def diff_in_years(start, end):
         """
-        calculate difference between given dates in years. The difference corresponds to Act/365.25 year fraction
+        calculate difference between given dates in years.
+        The difference corresponds to Act/365.25 year fraction
 
         :param BaseDateDatetimeDate start: state date
         :param BaseDateDatetimeDate end: end date
@@ -330,11 +339,11 @@ class BaseDateTuple(object):
         if len(args) == 3:
             valid = True
             for arg in args:
-                if not isinstance(arg, int): valid = False
-            if valid:
-                if not is_valid_ymd(args[0],args[1],args[2]):
+                if not isinstance(arg, int):
                     valid = False
-
+            if valid:
+                if not is_valid_ymd(args[0], args[1], args[2]):
+                    valid = False
 
         if isinstance(args[0], BaseDateTuple):
             valid = True
@@ -352,7 +361,8 @@ class BaseDateTuple(object):
             else:
                 new.date = (args[0], args[1], args[2])
         else:
-            msg = str(args) + " has not the correct format or does not stand for a valid year. BaseDateTuple(year, month, day)"
+            msg = str(args) + " has not the correct format or does not stand "
+            "for a valid year. BaseDateTuple(year, month, day)"
             raise ValueError(msg)
         return new
 
@@ -414,13 +424,14 @@ class BaseDateTuple(object):
         :return float: difference between end date and start date in days
         """
 
-        diff = from_ymd_to_excel(*end.date)-from_ymd_to_excel(*start.date)
+        diff = from_ymd_to_excel(*end.date) - from_ymd_to_excel(*start.date)
         return float(diff)
 
     @staticmethod
     def diff_in_years(start, end):
         """
-        calculate difference between given dates in years. The difference corresponds to Act/365.25 year fraction
+        calculate difference between given dates in years.
+        The difference corresponds to Act/365.25 year fraction
 
         :param BaseDateDatetimeDate start: state date
         :param BaseDateDatetimeDate end: end date
@@ -428,24 +439,29 @@ class BaseDateTuple(object):
         """
         return BaseDateTuple.diff_in_days(start, end) / DAYS_IN_YEAR
 
-
     def __lt__(self, other):
-        return (self.year, self.month, self.day) < (other.year, other.month, other.day)
+        return ((self.year, self.month, self.day) <
+            (other.year, other.month, other.day))
 
     def __le__(self, other):
-        return (self.year, self.month, self.day) <= (other.year, other.month, other.day)
+        return ((self.year, self.month, self.day) <=
+            (other.year, other.month, other.day))
 
-    def __ge__(self,other):
-        return (self.year, self.month, self.day) > (other.year, other.month, other.day)
+    def __ge__(self, other):
+        return ((self.year, self.month, self.day) >
+            (other.year, other.month, other.day))
 
     def __gt__(self, other):
-        return (self.year, self.month, self.day) >=(other.year, other.month, other.day)
+        return ((self.year, self.month, self.day) >=
+            (other.year, other.month, other.day))
 
     def __eq__(self, other):
-        return (self.year, self.month, self.day) == (other.year, other.month, other.day)
+        return ((self.year, self.month, self.day) ==
+            (other.year, other.month, other.day))
 
     def __ne__(self, other):
-        return (self.year, self.month, self.day) != (other.year, other.month, other.day)
+        return ((self.year, self.month, self.day) !=
+            (other.year, other.month, other.day))
 
 
 class BaseDate(BaseDateDatetimeDate):
