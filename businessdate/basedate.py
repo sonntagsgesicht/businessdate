@@ -166,6 +166,10 @@ class BaseDateFloat(float):
         """
         return BaseDateFloat.to_ymd(self)[0]
 
+    @property
+    def baseclass(self):
+        return BaseDateFloat.__name__
+
     # --- constructor method -------------------------------------------------
     @staticmethod
     def from_ymd(year, month, day):
@@ -245,6 +249,9 @@ class BaseDateDatetimeDate(date):
     # day
     # month
     # year
+    @property
+    def baseclass(self):
+        return BaseDateDatetimeDate.__name__
 
     # --- constructor method -------------------------------------------------
     @staticmethod
@@ -368,6 +375,10 @@ class BaseDateTuple(object):
     def day(self):
         return self.date[2]
 
+    @property
+    def baseclass(self):
+        return BaseDateTuple.__name__
+
     @staticmethod
     def from_ymd(year, month, day):
         return BaseDateTuple(year, month, day)
@@ -448,8 +459,5 @@ class BaseDateTuple(object):
         return (self.year, self.month, self.day) != (other.year, other.month, other.day)
 
 
-class BaseDate(BaseDateDatetimeDate):
-    """
-    base class for BusinessDate
-    """
-    pass
+BaseDate = BaseDateDatetimeDate
+

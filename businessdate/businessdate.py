@@ -18,15 +18,10 @@ from calendar import monthrange, weekday, WEDNESDAY, FRIDAY
 from copy import copy
 from datetime import date, datetime, timedelta
 
-from basedate import BaseDate, BaseDateFloat, BaseDateTuple, BaseDateDatetimeDate, \
+from .basedate import BaseDate, BaseDateFloat, BaseDateTuple, BaseDateDatetimeDate, \
     is_leap_year, is_valid_ymd, days_in_year, days_in_month, \
     from_ymd_to_excel, from_excel_to_ymd
-from baseperiod import BasePeriod
-
-#: base date
-BASE_DATE = '20151231'  # date.today()  # BusinessDate() initializes with date of today
-#: string: basic date format as string
-DATE_FORMAT = '%Y%m%d'
+from .baseperiod import BasePeriod
 
 
 class BusinessHolidays(list):
@@ -62,6 +57,11 @@ DEFAULT_HOLIDAYS = TargetHolidays()
 
 
 class BusinessDate(BaseDate):
+    #: base date
+    BASE_DATE = date.today()  # BusinessDate() initializes with date of today
+    #: string: basic date format as string
+    DATE_FORMAT = '%Y%m%d'
+
     def __new__(cls, date_value=None):
         r"""
         fundamental date class
@@ -91,7 +91,7 @@ class BusinessDate(BaseDate):
         """
 
         if date_value is None:
-            new_date = BusinessDate(BASE_DATE)
+            new_date = BusinessDate(cls.BASE_DATE)
         elif isinstance(date_value, BaseDateFloat):
             return super(BusinessDate, cls).__new__(cls, float(date_value))
         elif isinstance(date_value, (BaseDateDatetimeDate, BaseDateTuple)):
@@ -103,7 +103,7 @@ class BusinessDate(BaseDate):
                 new_date = BusinessDate.from_excel(date_value)
             else:
                 new_date = BusinessDate.from_ordinal(date_value)
-        elif isinstance(date_value, (str, unicode)):
+        elif isinstance(date_value, str):
             new_date = BusinessDate.from_string(str(date_value))
         elif isinstance(date_value, (date, datetime)):
             new_date = BusinessDate.from_date(date_value)
@@ -269,16 +269,19 @@ class BusinessDate(BaseDate):
     def to_ordinal(self):
         return self.to_date().toordinal()
 
-    def to_string(self, date_format=DATE_FORMAT):
+    def to_string(self, date_format=None):
         """
         return BusinessDate as 'date.strftime(DATE_FORMAT)'
 
         :return string:
         """
+        if date_format is None:
+            date_format = self.__class__.DATE_FORMAT
 
         return self.to_date().strftime(date_format)
 
     # --- inherited validation and validation methods ------------------------
+
     @staticmethod
     def is_leap_year(year):
         """
@@ -365,6 +368,7 @@ class BusinessDate(BaseDate):
         return True
 
     # --- inherited calculation methods --------------------------------------
+
     def add_days(self, days):
         return BusinessDate(BaseDate.add_days(self, days))
 
@@ -492,7 +496,6 @@ class BusinessDate(BaseDate):
         return -int(y), -int(m), -int(d)
 
     # --- day count fraction methods -----------------------------------------
-
 
     # List of day count conventions
     # 30/360 (4.16(f) 2006 ISDA Definitions) [other names: 360/360]
@@ -699,7 +702,7 @@ class BusinessPeriod(BasePeriod):
                 years += y
                 months += m
                 days += d
-        elif isinstance(period_in, (str, unicode)):
+        elif isinstance(period_in, str):
             period_in = str(period_in)
             if period_in.startswith('-'):
                 p = BusinessPeriod(period_in[1:])
@@ -813,6 +816,18 @@ class BusinessPeriod(BasePeriod):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __le__(self, other):
+        return self.__cmp__(other) <= 0
+
+    def __lt__(self, other):
+        return self.__cmp__(other) < 0
+
+    def __ge__(self, other):
+        return self.__cmp__(other) >= 0
+
+    def __gt__(self, other):
+        return self.__cmp__(other) > 0
+
     def __hash__(self):
         h = 365 * self.years + 30 * self.months + self.days + self.businessdays
         return hash(str(h))
@@ -843,7 +858,7 @@ class BusinessPeriod(BasePeriod):
     def __mul__(self, other):
         if isinstance(other, (list, tuple)):
             return [self * o for o in other]
-        if isinstance(other, (int, long)):
+        if isinstance(other, int):
             y = other * self.years
             m = other * self.months
             d = other * self.days
@@ -1131,3 +1146,91 @@ def target_days(year):
     ret[BusinessDate.from_ymd(year, 12, 25)] = "First Christmas Day"
     ret[BusinessDate.from_ymd(year, 12, 26)] = "Second Christmas Day"
     return ret
+
+
+'''
+BusinessDate(20091231) -> date, period('0D')
+BusinessDate('1m') -> None, period('1M')
+BusinessDate('20091231+1m') -> date, period('1M')
+
+dp + dp = fail
+dp + np = dp
+dp - np = dp
+dp - dp = np
+
+
+d+d=fail
+p+d=fail
+d+p=d
+p+p=p
+
+d-d=p
+p-d=fail
+d-p=d
+p-p=p
+
+
+'''
+
+
+class NewBusinessDate(object):
+
+    def __init__(self, *args, **kwargs):
+        self._origin = None
+        self._period = BusinessPeriod()
+
+        try:
+            self._period = BusinessPeriod(*args, **kwargs)
+        except TypeError:
+            pass
+        except ValueError:
+            pass
+
+        try:
+            self._origin = BusinessDate(*args, **kwargs)
+        except TypeError:
+            pass
+        except ValueError:
+            pass
+
+    def __str__(self):
+        return str(self._origin if self._origin else '') + str(self._period)
+
+    def __add__(self, other):
+        if isinstance(other, NewBusinessDate):
+            n = NewBusinessDate(self._period + other._period)
+            if n._origin is None:
+                n._origin = other._origin
+            if n._origin is not other._origin:
+                raise ValueError()
+            return n
+        else:
+            return self + NewBusinessDate(other)
+
+    def __getattr__(self, item):
+        #print self, item
+        o, p = hasattr(self._origin, item), hasattr(self._period, item)
+        print(o+p)
+        if o and p:
+            o, p = getattr(self._origin, item, None), getattr(self._period, item, None)
+            print (type(o), type(p))
+
+            def attr(*args, **kwargs):
+                try:
+                    return o(*args, **kwargs)
+                except:
+                    pass
+                try:
+                    return p(*args, **kwargs)
+                except:
+                    pass
+            return attr
+
+        elif o:
+            return getattr(self._origin, item)
+
+        elif p:
+            return getattr(self._period, item)
+
+        else:
+            return None

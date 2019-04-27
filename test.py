@@ -17,9 +17,8 @@ import unittest
 
 from datetime import datetime, date, timedelta
 
-from businessdate.basedate import BaseDate, DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd
-from businessdate.businessdate import easter, target_days
-from businessdate.businessdate import TargetHolidays
+from businessdate.basedate import DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd, BaseDate
+from businessdate.businessdate import easter, target_days, TargetHolidays
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
 
 
@@ -44,14 +43,13 @@ class BaseDateUnitTest(unittest.TestCase):
             self.assertEqual((y, m, d), from_excel_to_ymd(i))
 
     def test_base_date(self):
-        import businessdate
-        businessdate.businessdate.BASE_DATE = '20160606'
-        self.assertEqual(businessdate.BusinessDate(), businessdate.BusinessDate('20160606'))
-        businessdate.businessdate.BASE_DATE = date.today()
+        BusinessDate.BASE_DATE = '20160606'
+        self.assertEqual(BusinessDate(), BusinessDate('20160606'))
+        BusinessDate.BASE_DATE = date.today()
 
 
 class DayCountUnitTests(unittest.TestCase):
-    # n(ame) cor(respocence)
+    # n(ame) cor(respondence)
     # correspondence between dcc and the functions
     ncor = {'30/360': 'get_30_360',
             'ACT/360': 'get_act_360',
@@ -129,15 +127,15 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
     def setUp(self):
         self.holidays = TargetHolidays()
         self.easter = dict()
-        self.easter[2015] = date(2015, 04, 05)
-        self.easter[2016] = date(2016, 03, 27)
-        self.easter[2017] = date(2017, 04, 16)
-        self.easter[2018] = date(2018, 04, 01)
-        self.easter[2019] = date(2019, 04, 21)
-        self.easter[2020] = date(2020, 04, 12)
+        self.easter[2015] = date(2015, 4, 5)
+        self.easter[2016] = date(2016, 3, 27)
+        self.easter[2017] = date(2017, 4, 16)
+        self.easter[2018] = date(2018, 4, 1)
+        self.easter[2019] = date(2019, 4, 21)
+        self.easter[2020] = date(2020, 4, 12)
         self.target = dict()
         for y in self.easter:
-            self.target[y] = [date(y, 01, 01), date(y, 05, 01), date(y, 12, 25), date(y, 12, 26)]
+            self.target[y] = [date(y, 1, 1), date(y, 5, 1), date(y, 12, 25), date(y, 12, 26)]
             self.target[y].append(self.easter[y] - timedelta(2))
             self.target[y].append(self.easter[y] + timedelta(1))
 
@@ -148,8 +146,8 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
     def test_target_days(self):
         for y in self.target:
             t = target_days(y)
-            d = date(y, 01, 01) - timedelta(1)
-            while d < date(y + 1, 01, 01):
+            d = date(y, 1, 1) - timedelta(1)
+            while d < date(y + 1, 1, 1):
                 if d in self.target[y]:
                     self.assertTrue(d in t)
                 else:
@@ -199,8 +197,8 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(BusinessDate(42371).to_string(), '20160102')
 
     def test_properties(self):
-        self.assertEqual(self.jan01.day, 01)
-        self.assertEqual(self.jan01.month, 01)
+        self.assertEqual(self.jan01.day, 1)
+        self.assertEqual(self.jan01.month, 1)
         self.assertEqual(self.jan01.year, 2016)
 
     def test_operators(self):
@@ -378,7 +376,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(self._1y.to_businessdate(BusinessDate(20150101)), BusinessDate(20160101))
         self.assertEqual(self._1y6m.to_businessdate(BusinessDate(20150101)), BusinessDate(20160701))
         self.assertEqual(self._1y.to_businessdate(BusinessDate(20160229)), BusinessDate(20170228))
-        self.assertEqual(self._1y.to_date(BusinessDate(20160229)), date(2017, 02, 28))
+        self.assertEqual(self._1y.to_date(BusinessDate(20160229)), date(2017, 2, 28))
         self.assertEqual(self._1y.to_businessperiod(BusinessDate(20160229)), self._1y)
         self.assertEqual(self._1y.to_string(), '1Y')
         self.assertEqual(self._2q.to_string(), '6M')
