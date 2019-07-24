@@ -14,16 +14,13 @@
 #  License: APACHE Version 2 License (see LICENSE file)
 
 
-from calendar import monthrange, weekday, WEDNESDAY, FRIDAY
-from copy import copy
 from datetime import date, datetime, timedelta
 
 from methods.adjust import is_business_day, adjust_no, adjust_previous, adjust_follow, adjust_mod_previous, \
     adjust_mod_follow, adjust_start_of_month, adjust_end_of_month, adjust_imm, adjust_cds_imm
 from methods.daycount import get_act_act, get_30_360, get_act_36525, get_act_360, get_act_365, \
     get_30e_360, get_30e_360_isda
-from methods.ymd import is_leap_year, is_valid_ymd, days_in_year, days_in_month, end_of_quarter_month
-from methods.ymd import from_ymd_to_excel, from_excel_to_ymd
+from methods.ymd import is_leap_year, days_in_year, days_in_month, end_of_quarter_month
 from methods.holidays import target_days
 from basedate import BaseDate, BaseDateFloat, BaseDateDatetimeDate
 
@@ -56,8 +53,6 @@ class BusinessDate(BaseDate):
     BASE_DATE = date.today()  # BusinessDate() initializes with date of today
     #: string: basic date format as string
     DATE_FORMAT = '%Y%m%d'
-    #: float: basis for diff_in_years method
-    DAYS_IN_YEAR = 365.25
     #: list: list of dates of default holiday calendar
     DEFAULT_HOLIDAYS = TargetHolidays()
 
@@ -117,7 +112,7 @@ class BusinessDate(BaseDate):
         return new_date
 
     def __copy__(self):
-        return BusinessDate(date(*self.to_ymd()))
+        return self.__deepcopy__()
 
     def __deepcopy__(self, memodict={}):
         return BusinessDate(date(*self.to_ymd()))
@@ -131,7 +126,12 @@ class BusinessDate(BaseDate):
         :param BusinessDate or BusinessPeriod or str other: can be BusinessPeriod or
         any thing that might be casted to it.
         """
-        return self.add_period(other)
+        if isinstance(other, (list, tuple)):
+            return [self + pd for pd in other]
+        if BusinessPeriod.is_businessperiod(other):
+            return self.add_period(other)
+        else:
+            raise TypeError('addition of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __sub__(self, other):
         """
@@ -139,24 +139,21 @@ class BusinessDate(BaseDate):
 
         :param object other: can be other BusinessDate, BusinessPeriod or any thing that might be casted to those.
         """
-        if isinstance(other, BusinessDate):
-            y, m, d = self.diff_in_ymd(other)
-            return BusinessPeriod(years=y, months=m, days=d)
-        elif isinstance(other, BusinessPeriod):
-            return self + (-1 * other)
-        elif BusinessPeriod.is_businessperiod(other):
-            return self - BusinessPeriod(other)
+        if isinstance(other, (list, tuple)):
+            return [self - pd for pd in other]
+        if BusinessPeriod.is_businessperiod(other):
+            return self + (-1 * BusinessPeriod(other))
         elif BusinessDate.is_businessdate(other):
             y, m, d = self.diff_in_ymd(BusinessDate(other))
             return BusinessPeriod(years=y, months=m, days=d)
         else:
-            raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % type(other))
+            raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __str__(self):
         return self.to_string()
 
     def __repr__(self):
-        return self.__class__.__name__ + '(' + self.to_string() + ')'
+        return self.__class__.__name__ + "('" + self.to_string() + "')"
 
     # --- constructor methods ------------------------------------------------
 
@@ -168,11 +165,7 @@ class BusinessDate(BaseDate):
         :param BusinessDate d:
         :return bankdate:
         """
-        return copy(d)
-
-    @classmethod
-    def from_ordinal(cls, ordinal_int):
-        return cls.from_date(date.fromordinal(int(ordinal_int)))
+        return d.__deepcopy__()
 
     @classmethod
     def from_string(cls, date_str):
@@ -194,23 +187,16 @@ class BusinessDate(BaseDate):
             str_format = '%m/%d/%Y'
         elif len(date_str) == 8:
             str_format = '%Y%m%d'
-        elif len(date_str) == 4:
-            year = ord(date_str[0]) * 256 + ord(date_str[1])
-            month = ord(date_str[2])
-            day = ord(date_str[3])
-            return cls.from_ymd(year, month, day)
         else:
-            msg = "the date string " + date_str + " has not the right format"
+            msg = "the date string %s has not the right format for %s" % (date_str, cls.__name__)
             raise ValueError(msg)
         return cls.from_date(datetime.strptime(date_str, str_format))
 
     @classmethod
     def from_int(cls, date_int):
-        if date_int >= 18990101:
-            return BusinessDate.from_string(str(date_int))
         if 1 < date_int < 200 * 365.25:
-            return BusinessDate.from_excel(date_int)
-        return BusinessDate.from_ordinal(date_int)
+            return cls.from_excel(date_int)
+        return cls.from_string(str(date_int))
 
     @classmethod
     def from_float(cls, date_float):
@@ -227,11 +213,8 @@ class BusinessDate(BaseDate):
     def to_businessperiod(self, origin_date=None):
         if origin_date is None:
             origin_date = BusinessDate()
-        y, m, d = BusinessDate.diff(origin_date, self)
+        y, m, d = origin_date.diff_in_ymd(self)
         return BusinessPeriod(years=y, months=m, days=d)
-
-    def to_ordinal(self):
-        return self.to_date().toordinal()
 
     def to_string(self, date_format=None):
         """
@@ -293,13 +276,12 @@ class BusinessDate(BaseDate):
         :param BusinessDate, int or float in_date:
         :return bool:
         """
-        if not isinstance(in_date, BaseDate):
+        if not isinstance(in_date, (date, BaseDate)):
             try:  # to be removed
-                in_date = BusinessDate(in_date)
+                BusinessDate(in_date)
             except ValueError:
                 return False
-        y, m, d, = in_date.to_ymd()
-        return is_valid_ymd(y, m, d)
+        return True
 
     @staticmethod
     def end_of_month(year, month):
@@ -350,7 +332,7 @@ class BusinessDate(BaseDate):
         while month_int < 1:
             res = res.add_years(-1)
             month_int += 12
-        l = monthrange(res.year, month_int)[1]
+        l = days_in_month(res.year, month_int)
         return res.__class__.from_ymd(res.year, month_int, min(l, res.day))
 
     def add_business_days(self, days_int, holidays_obj=None):
@@ -365,7 +347,7 @@ class BusinessDate(BaseDate):
 
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
 
-        res = self
+        res = self.__deepcopy__()
         if days_int >= 0:
             count = 0
             while count < days_int:
@@ -381,34 +363,18 @@ class BusinessDate(BaseDate):
 
         return res
 
-    def add_period(self, p, holidays_obj=None):
-        """
-        addition of a period object
-
-        :param BusinessDate d:
-        :param p:
-        :type p: BusinessPeriod or str
-        :param list holidays_obj:
-        :return bankdate:
-        """
-
-        if isinstance(p, (list, tuple)):
-            return [BusinessDate.add_period(self, pd) for pd in p]
-        elif isinstance(p, str):
-            period = BusinessPeriod(p)
+    def add_ymd(self, years=0, months=0, days=0):
+        if self.month == 2 and self.day == 29:
+            years += months // 12
+            months %= 12
+            return self.add_months(months).add_years(years).add_days(days)
         else:
-            period = p
+            return self.add_years(years).add_months(months).add_days(days)
 
-        res = self
-        res = res.add_months(period.months)
-        res = res.add_years(period.years)
-        res = res.add_days(period.days)
-        res = res.add_business_days(period.businessdays, holidays_obj)
-
-        return res
-
-    def diff_in_years(self, end_bd):
-        return self.diff_in_days(end_bd) / self.__class__.DAYS_IN_YEAR
+    def add_period(self, period_obj, holidays_obj=None):
+        p = BusinessPeriod(period_obj)
+        res = self.add_ymd(p.years, p.months, p.days)
+        return res.add_business_days(p.businessdays, holidays_obj)
 
     def diff_in_ymd(self, end_date):
         """
@@ -421,7 +387,7 @@ class BusinessDate(BaseDate):
         """
 
         if end_date < self:
-            y, m, d = BusinessDate.diff(end_date, self)
+            y, m, d = end_date.diff_in_ymd(self)
             return -y, -m, -d
         y = end_date.year - self.year
         m = end_date.month - self.month
@@ -433,22 +399,19 @@ class BusinessDate(BaseDate):
             y += 1
             m -= 12
 
-        s = BusinessDate.add_years(BusinessDate.add_months(self, m), y)
-        d = BusinessDate.diff_in_days(s, end_date)
+        s = self.add_ymd(y,m,0)
+        d = s.diff_in_days(end_date)
 
         if d < 0:
             m -= 1
             if m < 0:
                 y -= 1
                 m += 12
-            s = BusinessDate.add_years(BusinessDate.add_months(self, m), y)
+            s = self.add_ymd(y, m, 0)
 
-        d = BusinessDate.diff_in_days(s, end_date)
+        d = s.diff_in_days(end_date)
 
         return -int(y), -int(m), -int(d)
-
-    def diff(self, end_date):
-        return self.diff_in_ymd(end_date)
 
     # --- day count fraction methods -----------------------------------------
 
@@ -520,7 +483,9 @@ class BusinessPeriod(object):
         :param days:
         :param businessdays:
 
-        representation of a time BusinessPeriod, similar to dateutils.relativedelta, but with additional business day logic
+        representation of a time BusinessPeriod,
+        similar to dateutils.relativedelta,
+        but with additional business day logic
         """
 
         super(BusinessPeriod, self).__init__()
@@ -542,18 +507,13 @@ class BusinessPeriod(object):
                 businessdays += 2
             elif period_in.upper() == 'DD':
                 businessdays += 3
-            elif period_in.upper().find('B') > 0:
-                businessdays += int(period_in.upper().split('B', 2)[0])  # todo: what about 0B1W2B
-            elif period_in.startswith('-'):
-                y, m, d = BusinessPeriod.parse_ymd(period_in[1:])
-                years -= y
-                months -= m
-                days -= d
             else:
-                y, m, d = BusinessPeriod.parse_ymd(period_in)
-                years += y
-                months += m
-                days += d
+                sgn, p = (-1, period_in[1:]) if period_in.startswith('-') else (1, period_in)
+                y, m, d, b = BusinessPeriod.parse_ymd(p)
+                years += sgn * y
+                months += sgn * m
+                days += sgn * d
+                businessdays += sgn * b
 
         self.years = years
         self.months = months
@@ -571,7 +531,9 @@ class BusinessPeriod(object):
     @classmethod
     def parse_ymd(cls, period_str):
         p = period_str.upper()
-        y, q, m, w, d = '00000'
+        b, y, q, m, w, d = '000000'
+        if p.find('B') > 0:
+            b, p = p.split('B', 2)
         if p.find('Y') > 0:
             y, p = p.split('Y', 2)
         if p.find('Q') > 0:
@@ -582,12 +544,15 @@ class BusinessPeriod(object):
             w, p = p.split('W', 2)
         if p.find('D') > 0:
             d, p = p.split('D', 2)
-        if not all(x.isdigit() for x in (y,q,m,w,d)):
-            raise ValueError("Unable to parse %s as %s" %(period_str, cls.__name__))
+        if not all(x.isdigit() for x in (b, y, q, m, w, d)):
+            raise ValueError("Unable to parse %s as %s" % (period_str, cls.__name__))
+        b = int(b)
         y, m, d = int(y), int(q) * 3 + int(m), int(w) * 7 + int(d)
         y += m // 12
         m %= 12
-        return y, m, d
+        if b and any((y, m, d)):
+            raise ValueError("Unable to parse %s as %s" % (period_str, cls.__name__))
+        return y, m, d, b
 
     @classmethod
     def is_businessperiod(cls, in_period):
@@ -599,7 +564,7 @@ class BusinessPeriod(object):
 
         checks is argument can be casted to BusinessPeriod
         """
-        if in_period in ('', '0D'):
+        if in_period in ('', '0D', BusinessPeriod()):
             return True
         try:  # to be removed
             return BusinessPeriod(in_period).__nonzero__()
@@ -611,10 +576,9 @@ class BusinessPeriod(object):
     # --- operator methods ---------------------------------------------------
 
     def __repr__(self):
-        return self.to_string()
+        return self.__class__.__name__ + "('" + self.to_string() + "')"
 
     def __str__(self):
-        #        return self.__class__.__name__ + '(' + self.to_string() + ')'
         return self.to_string()
 
     def __abs__(self):
@@ -657,31 +621,27 @@ class BusinessPeriod(object):
         return self.__cmp__(other) > 0
 
     def __hash__(self):
-        h = 365 * self.years + 30 * self.months + self.days + self.businessdays
-        return hash(str(h))
+        return hash(repr(self))
 
     def __nonzero__(self):
-        return True if self.years or self.months or self.days or self.businessdays else False
+        return any((self.years, self.months, self.days, self.businessdays))
 
     def __add__(self, other):
         if isinstance(other, (list, tuple)):
             return [self + o for o in other]
-        elif isinstance(other, BusinessPeriod):
-            return self.add_businessperiod(other)
         elif BusinessPeriod.is_businessperiod(other):
-            return self + BusinessPeriod(other)
+            return self.add_businessperiod(BusinessPeriod(other))
         else:
-            raise TypeError()
+            raise TypeError('addition of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __sub__(self, other):
         if isinstance(other, (list, tuple)):
             return [self - o for o in other]
-        elif isinstance(other, BusinessPeriod):
-            return BusinessPeriod(str(self)).add_businessperiod(-1 * other)
         elif BusinessPeriod.is_businessperiod(other):
-            return self - BusinessPeriod(other)
+            return self.add_businessperiod(-1 * BusinessPeriod(other))
         else:
-            raise TypeError
+            raise TypeError(
+                'subtraction of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __mul__(self, other):
         if isinstance(other, (list, tuple)):
@@ -745,23 +705,23 @@ class BusinessPeriod(object):
 
     def to_businessdate(self, start_date=None):
         if start_date:
-            return BusinessDate.add_period(start_date, self)
+            return start_date + self
         else:
-            return BusinessDate.add_period(BusinessDate(), self)
+            return BusinessDate() + self
 
     def to_businessperiod(self, start_date=None):
         return self
 
     def to_string(self):
         period_str = ''
+        if self.businessdays:
+            period_str += str(self.businessdays) + 'B'
         if self.years:
             period_str += str(self.years) + 'Y'
         if self.months:
             period_str += str(self.months) + 'M'
         if self.days:
             period_str += str(self.days) + 'D'
-        if self.businessdays:
-            period_str += str(self.businessdays) + 'B'
         if not period_str:
             period_str += '0D'
         return period_str
@@ -835,20 +795,19 @@ class BusinessRange(list):
     def _build_grid(start, stop, step, rolling):
         # setup grid and turn step into positive direction
         grid = list()
-        step = step if rolling <= rolling.add_period(step) else -1 * step
-        current = rolling
+        step = step if rolling <= rolling + step else -1 * step
 
         # roll backward before start
         i = 0
-        current = BusinessDate.add_period(rolling, step * i)
+        current = rolling + step * i
         while start <= current:
             i -= 1
-            current = BusinessDate.add_period(rolling, step * i)
+            current = rolling + step * i
 
         # fill grid from start until end
-        current = BusinessDate.add_period(rolling, step * i)
+        current = rolling + step * i
         while current < stop:
-            current = BusinessDate.add_period(rolling, step * i)
+            current = rolling + step * i
             if start <= current < stop:
                 grid.append(current)
             i += 1

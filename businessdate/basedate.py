@@ -177,8 +177,8 @@ class BaseDateDatetimeDate(date):
         :param BaseDateDatetimeDate end: end date
         :return float: difference between end date and start date in days
         """
-        diff = super(BaseDateDatetimeDate, end).__sub__(self)
-        return float(diff.days)
+        delta = super(BaseDateDatetimeDate, end).__sub__(self)
+        return float(delta.days)
 
 
 BaseDate = BaseDateDatetimeDate
