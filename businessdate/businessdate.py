@@ -18,10 +18,11 @@ from calendar import monthrange, weekday, WEDNESDAY, FRIDAY
 from copy import copy
 from datetime import date, datetime, timedelta
 
-from .basedate import BaseDate, BaseDateFloat, BaseDateTuple, BaseDateDatetimeDate, \
-    is_leap_year, is_valid_ymd, days_in_year, days_in_month, \
-    from_ymd_to_excel, from_excel_to_ymd
-from .baseperiod import BasePeriod
+from methods.adjust import is_business_day
+from methods.ymd import is_leap_year, is_valid_ymd, days_in_year, days_in_month, end_of_quarter_month
+from methods.ymd import from_ymd_to_excel, from_excel_to_ymd
+from methods.holidays import target_days
+from basedate import BaseDate, BaseDateFloat, BaseDateTuple, BaseDateDatetimeDate
 
 
 class BusinessHolidays(list):
@@ -42,18 +43,15 @@ class BusinessHolidays(list):
 
 class TargetHolidays(BusinessHolidays):
     def __init__(self):
+        super(TargetHolidays, self).__init__()
         self._target_days = dict()
 
     def __contains__(self, item):
         if super(BusinessHolidays, self).__contains__(item):
             return True
         if item.year not in self._target_days:
-            self._target_days[item.year] = target_days(item.year).keys()
+            self._target_days[item.year] = map(BusinessDate, target_days(item.year).keys())
         return item in self._target_days[item.year]
-
-
-#: list: list of dates of default holiday calendar
-DEFAULT_HOLIDAYS = TargetHolidays()
 
 
 class BusinessDate(BaseDate):
@@ -61,6 +59,10 @@ class BusinessDate(BaseDate):
     BASE_DATE = date.today()  # BusinessDate() initializes with date of today
     #: string: basic date format as string
     DATE_FORMAT = '%Y%m%d'
+    #: float: basis for diff_in_years method
+    DAYS_IN_YEAR = 365.25
+    #: list: list of dates of default holiday calendar
+    DEFAULT_HOLIDAYS = TargetHolidays()
 
     def __new__(cls, date_value=None):
         r"""
@@ -123,6 +125,7 @@ class BusinessDate(BaseDate):
         return BusinessDate(date(*self.to_ymd()))
 
     # --- operator methods ---------------------------------------------------
+
     def __add__(self, other):
         """
             addition of BusinessDate.
@@ -163,10 +166,10 @@ class BusinessDate(BaseDate):
         return self.to_string()
 
     # --- constructor methods ------------------------------------------------
+
     @staticmethod
     def from_ymd(y, m, d):
         # return super(BusinessDate, cls).__new__(BaseDate.from_ymd(y, m, d))
-
         return BusinessDate(BaseDate.from_ymd(y, m, d))
 
     @staticmethod
@@ -235,6 +238,7 @@ class BusinessDate(BaseDate):
         return BusinessDate.from_ymd(d.year, d.month, d.day)
 
     # --- cast methods -------------------------------------------------------
+
     def __float__(self):
         return float(self.to_excel())
 
@@ -280,7 +284,7 @@ class BusinessDate(BaseDate):
 
         return self.to_date().strftime(date_format)
 
-    # --- inherited validation and validation methods ------------------------
+    # --- validation and information methods ------------------------
 
     @staticmethod
     def is_leap_year(year):
@@ -316,8 +320,6 @@ class BusinessDate(BaseDate):
 
         return days_in_month(year, month)
 
-    # --- own validation and information methods -----------------------------
-
     @staticmethod
     def is_businessdate(in_date):
         """
@@ -325,30 +327,21 @@ class BusinessDate(BaseDate):
         :param BusinessDate, int or float in_date:
         :return bool:
         """
-        # Note: if the data range has been created from pace_xl, then all the dates are bank dates
-        # and here it remains to check the validity.
-        # !!! However, if the data has been read from json string via json.load() function
-        # it does not recognize that this numbers are bankdates, just considers them as integers
-        # therefore, additional check is useful here, first to convert the date if it is integer to BusinessDate,
-        # then check the validity.
-        # (as the parameter to this method should always be a BusinessDate)
         if not isinstance(in_date, BaseDate):
             try:  # to be removed
                 in_date = BusinessDate(in_date)
-            except:
+            except ValueError:
                 return False
         y, m, d, = in_date.to_ymd()
         return is_valid_ymd(y, m, d)
 
     @staticmethod
     def end_of_month(year, month):
-        return BusinessDate.from_date(date(year, month, BusinessDate.days_in_month(year, month)))
+        return BusinessDate.from_date(date(year, month, days_in_month(year, month)))
 
     @staticmethod
     def end_of_quarter(year, month):
-        while not month % 3:
-            month += 1
-        return BusinessDate.end_of_month(year, month)
+        return BusinessDate.end_of_month(year, end_of_quarter_month(month))
 
     def is_business_day(self, holiday_obj=None):
         """
@@ -357,61 +350,31 @@ class BusinessDate(BaseDate):
 
         method to check if a date falls neither on weekend nor is holiday
         """
-        y, m, d = BusinessDate.to_ymd(self)
-        if weekday(y, m, d) > FRIDAY:
-            return False
-        holiday_list = holiday_obj if holiday_obj is not None else DEFAULT_HOLIDAYS
-        if self in holiday_list:
-            return False
-        elif date(y, m, d) in holiday_list:
-            return False
-        return True
+        holiday_obj = self.__class__.DEFAULT_HOLIDAYS if holiday_obj is None else holiday_obj
+        return is_business_day(self.to_date(), holiday_obj)
 
     # --- inherited calculation methods --------------------------------------
 
     def add_days(self, days):
         return BusinessDate(BaseDate.add_days(self, days))
 
-    def add_years(self, years):
-        return BusinessDate(BaseDate.add_years(self, years))
-
     def diff_in_days(self, end_bd):
         return BaseDate.diff_in_days(self, end_bd)
 
-    def diff_in_years(self, end_bd):
-        return BaseDate.diff_in_years(self, end_bd)
-
     # --- own calculation methods --------------------------------------------
-    def add_period(self, p, holiday_obj=None):
+
+    def add_years(self, years):
         """
-        addition of a period object
+        addition of a number of years
 
-        :param BusinessDate d:
-        :param p:
-        :type p: BusinessPeriod or str
-        :param list holiday_obj:
-        :return bankdate:
+        :param int years:
+        :return BusinessDate:
         """
-
-        if isinstance(p, (list, tuple)):
-            return [BusinessDate.add_period(self, pd) for pd in p]
-        elif isinstance(p, str):
-            period = BusinessPeriod(p)
-        else:
-            period = p
-
-        res = self
-        res = BusinessDate.add_months(res, period.months)
-        res = BusinessDate.add_years(res, period.years)
-        res = BusinessDate.add_days(res, period.days)
-
-        if period.businessdays:
-            if holiday_obj:
-                res = BusinessDate.add_business_days(res, period.businessdays, holiday_obj)
-            else:
-                res = BusinessDate.add_business_days(res, period.businessdays, period.holiday)
-
-        return res
+        y, m, d = self.to_ymd()
+        y += years
+        if not is_leap_year(y) and m == 2:
+            d = min(28, d)
+        return BusinessDate.from_ymd(y, m, d)
 
     def add_months(self, month_int):
         """
@@ -458,7 +421,41 @@ class BusinessDate(BaseDate):
 
         return res
 
-    def diff(self, end_date):
+    def add_period(self, p, holiday_obj=None):
+        """
+        addition of a period object
+
+        :param BusinessDate d:
+        :param p:
+        :type p: BusinessPeriod or str
+        :param list holiday_obj:
+        :return bankdate:
+        """
+
+        if isinstance(p, (list, tuple)):
+            return [BusinessDate.add_period(self, pd) for pd in p]
+        elif isinstance(p, str):
+            period = BusinessPeriod(p)
+        else:
+            period = p
+
+        res = self
+        res = BusinessDate.add_months(res, period.months)
+        res = BusinessDate.add_years(res, period.years)
+        res = BusinessDate.add_days(res, period.days)
+
+        if period.businessdays:
+            if holiday_obj:
+                res = BusinessDate.add_business_days(res, period.businessdays, holiday_obj)
+            else:
+                res = BusinessDate.add_business_days(res, period.businessdays, period.holiday)
+
+        return res
+
+    def diff_in_years(self, end_bd):
+        return self.diff_in_days(end_bd) / self.__class__.DAYS_IN_YEAR
+
+    def diff_in_period(self, end_date):
         """
         difference expressed as a tuple of years, months, days
         (see also the python lib dateutils.relativedelta)
@@ -494,6 +491,9 @@ class BusinessDate(BaseDate):
         d = BusinessDate.diff_in_days(s, end_date)
 
         return -int(y), -int(m), -int(d)
+
+    def diff(self, end_date):
+        return self.diff_in_period(end_date)
 
     # --- day count fraction methods -----------------------------------------
 
@@ -669,10 +669,7 @@ class BusinessDate(BaseDate):
         return self
 
 
-class BusinessPeriod(BasePeriod):
-    def __new__(cls, *args, **kwargs):
-        new = super(BusinessPeriod, cls).__new__(cls)
-        return new
+class BusinessPeriod(object):
 
     def __init__(self, period_in='', holiday=None, years=0, months=0, days=0, businessdays=0):
         """
@@ -724,7 +721,7 @@ class BusinessPeriod(BasePeriod):
                 months += m
                 days += d
         if holiday is None:
-            self.holiday = DEFAULT_HOLIDAYS
+            self.holiday = BusinessDate.DEFAULT_HOLIDAYS
         else:
             self.holiday = holiday
         self.years = years
@@ -733,11 +730,13 @@ class BusinessPeriod(BasePeriod):
         self.businessdays = businessdays
 
     # --- constructor methods ------------------------------------------------
+
     @classmethod
     def from_string(cls, period_in):
         return BusinessPeriod(period_in)
 
     # --- validation and information methods ---------------------------------
+
     @classmethod
     def parse(cls, period_str):
         p = period_str.upper()
@@ -782,6 +781,7 @@ class BusinessPeriod(BasePeriod):
     # --- property methods ---------------------------------------------------
 
     # --- operator methods ---------------------------------------------------
+
     def __repr__(self):
         return self.to_string()
 
@@ -871,6 +871,7 @@ class BusinessPeriod(BasePeriod):
         return self.__mul__(other)
 
     # --- calculation methods ------------------------------------------------
+
     def add_years(self, years_int):
         self.years += years_int
         return self
@@ -895,6 +896,7 @@ class BusinessPeriod(BasePeriod):
         return self
 
     # --- cast methods -------------------------------------------------------
+
     def to_date(self, start_date=None):
         return self.to_businessdate(start_date).to_date()
 
@@ -1090,147 +1092,3 @@ class BusinessSchedule(BusinessRange):
         if len(self) > 2:
             self.pop(-2)
         return self
-
-
-def easter(year):
-    """
-    This method was ported from the work done by GM Arts,
-    on top of the algorithm by Claus Tondering, which was
-    based in part on the algorithm of Ouding (1940), as
-    quoted in "Explanatory Supplement to the Astronomical
-    Almanac", P.  Kenneth Seidelmann, editor.
-
-    More about the algorithm may be found at:
-
-    http://users.chariot.net.au/~gmarts/eastalg.htm
-
-    and
-
-    http://www.tondering.dk/claus/calendar.html
-
-    """
-
-    # g - Golden year - 1
-    # c - Century
-    # h - (23 - Epact) mod 30
-    # i - Number of days from March 21 to Paschal Full Moon
-    # j - Weekday for PFM (0=Sunday, etc)
-    # p - Number of days from March 21 to Sunday on or before PFM
-    #     (-6 to 28 methods 1 & 3, to 56 for method 2)
-    # e - Extra days to add for method 2 (converting Julian
-    #     date to Gregorian date)
-
-    y = year
-    g = y % 19
-    e = 0
-    c = y // 100
-    h = (c - c // 4 - (8 * c + 13) // 25 + 19 * g + 15) % 30
-    i = h - (h // 28) * (1 - (h // 28) * (29 // (h + 1)) * ((21 - g) // 11))
-    j = (y + y // 4 + i + 2 - c + c // 4) % 7
-
-    # p can be from -6 to 56 corresponding to dates 22 March to 23 May
-    # (later dates apply to method 2, although 23 May never actually occurs)
-    p = i - j + e
-    d = 1 + (p + 27 + (p + 6) // 40) % 31
-    m = 3 + (p + 26) // 30
-    return BusinessDate.from_ymd(int(y), int(m), int(d))
-
-
-def target_days(year):
-    ret = dict()
-    ret[BusinessDate.from_ymd(year, 1, 1)] = "New Year's Day"
-    e = easter(year)
-    ret[e.add_days(-2)] = "Black Friday"
-    ret[e.add_days(1)] = "Easter Monday"
-    ret[BusinessDate.from_ymd(year, 5, 1)] = "Labour Day"
-    ret[BusinessDate.from_ymd(year, 12, 25)] = "First Christmas Day"
-    ret[BusinessDate.from_ymd(year, 12, 26)] = "Second Christmas Day"
-    return ret
-
-
-'''
-BusinessDate(20091231) -> date, period('0D')
-BusinessDate('1m') -> None, period('1M')
-BusinessDate('20091231+1m') -> date, period('1M')
-
-dp + dp = fail
-dp + np = dp
-dp - np = dp
-dp - dp = np
-
-
-d+d=fail
-p+d=fail
-d+p=d
-p+p=p
-
-d-d=p
-p-d=fail
-d-p=d
-p-p=p
-
-
-'''
-
-
-class NewBusinessDate(object):
-
-    def __init__(self, *args, **kwargs):
-        self._origin = None
-        self._period = BusinessPeriod()
-
-        try:
-            self._period = BusinessPeriod(*args, **kwargs)
-        except TypeError:
-            pass
-        except ValueError:
-            pass
-
-        try:
-            self._origin = BusinessDate(*args, **kwargs)
-        except TypeError:
-            pass
-        except ValueError:
-            pass
-
-    def __str__(self):
-        return str(self._origin if self._origin else '') + str(self._period)
-
-    def __add__(self, other):
-        if isinstance(other, NewBusinessDate):
-            n = NewBusinessDate(self._period + other._period)
-            if n._origin is None:
-                n._origin = other._origin
-            if n._origin is not other._origin:
-                raise ValueError()
-            return n
-        else:
-            return self + NewBusinessDate(other)
-
-    def __getattr__(self, item):
-        #print self, item
-        o, p = hasattr(self._origin, item), hasattr(self._period, item)
-        print(o+p)
-        if o and p:
-            o, p = getattr(self._origin, item, None), getattr(self._period, item, None)
-            print (type(o), type(p))
-
-            def attr(*args, **kwargs):
-                try:
-                    return o(*args, **kwargs)
-                except:
-                    pass
-                try:
-                    return p(*args, **kwargs)
-                except:
-                    pass
-            return attr
-
-        elif o:
-            return getattr(self._origin, item)
-
-        elif p:
-            return getattr(self._period, item)
-
-        else:
-            return None

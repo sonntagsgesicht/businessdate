@@ -17,8 +17,10 @@ import unittest
 
 from datetime import datetime, date, timedelta
 
-from businessdate.basedate import DAYS_IN_YEAR, from_ymd_to_excel, from_excel_to_ymd, BaseDate
-from businessdate.businessdate import easter, target_days, TargetHolidays
+from businessdate.methods.holidays import easter, target_days
+from businessdate.methods.ymd import from_ymd_to_excel, from_excel_to_ymd
+from businessdate.basedate import BaseDate
+from businessdate.businessdate import TargetHolidays
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
 
 
@@ -527,9 +529,9 @@ class OldBusinessDateUnitTests(unittest.TestCase):
     def test_diff_in_years(self):
         s = BusinessDate('20011110')
         e = BusinessDate('20011112')
-        self.assertEqual(BusinessDate.diff_in_years(s, e), 2 / DAYS_IN_YEAR)
+        self.assertEqual(BusinessDate.diff_in_years(s, e), 2 / BusinessDate.DAYS_IN_YEAR)
         self.assertEqual(BusinessDate.diff_in_years(BusinessDate('20161101'),
-                                                    BusinessDate('20171102')), 366 / DAYS_IN_YEAR)
+                                                    BusinessDate('20171102')), 366 / BusinessDate.DAYS_IN_YEAR)
 
     def test_diff_in_days(self):
         s = BusinessDate('20011110')
