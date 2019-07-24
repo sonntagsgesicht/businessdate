@@ -59,4 +59,3 @@ def target_days(year):
     ret[date(year, 12, 25)] = "First Christmas Day"
     ret[date(year, 12, 26)] = "Second Christmas Day"
     return ret
-

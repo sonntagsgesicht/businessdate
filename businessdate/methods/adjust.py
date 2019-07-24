@@ -23,6 +23,17 @@ def is_business_day(business_date, holidays=list()):
     return business_date not in holidays
 
 
+def adjust_no(business_date, holidays=None):
+    """
+    no adjusts to Business Day Convention.
+
+    :param date business_date : date to adjust
+    :param list holidays : duck typing `in` for list of dates defining business holidays
+    :return: date
+    """
+    return business_date
+
+
 def adjust_previous(business_date, holidays=None):
     """
     adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions).
@@ -90,7 +101,7 @@ def adjust_start_of_month(business_date, holidays=None):
     :return: date
     """
     business_date = date(business_date.year, business_date.month, 1)
-    business_date = business_date.adjust_follow(holidays)
+    business_date = adjust_follow(business_date, holidays)
     return business_date
 
 
@@ -104,7 +115,7 @@ def adjust_end_of_month(business_date, holidays=None):
     """
     y, m, d = business_date.year, business_date.month, business_date.day
     business_date = date(y, m, days_in_month(y, m))
-    business_date = business_date.adjust_previous(holidays)
+    business_date = adjust_previous(business_date, holidays)
     return business_date
 
 

@@ -10,11 +10,8 @@
 # Act/ACT (4.16(b) 2006 ISDA Definitions) [other names: actual/actual [(ISDA)], act/act (ISDA)]
 # 30E/360 (4.16(g) 2006 ISDA Definitions) [other names: Euro bond Basis]
 
-from datetime import date, timedelta
+from datetime import date
 from ymd import is_leap_year
-
-# timedelta: one day timedelta
-ONE_DAY = timedelta(1)
 
 
 def diff_in_days(start, end):
@@ -98,7 +95,7 @@ def get_act_act(start, end):
             # return diff_in_days(start, end) / 366.0
             return diff_in_days(start, end) / 365.0  # non-leap year: 365 days
     else:
-        rest_year1 = diff_in_days(start, date(start.year, 12, 31)) + ONE_DAY  # since the first day counts
+        rest_year1 = diff_in_days(start, date(start.year, 12, 31)) + 1  # since the first day counts
 
         rest_year2 = abs(diff_in_days(end, date(end.year, 1, 1)))  # here the last day is automatically not counted
 
