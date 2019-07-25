@@ -52,10 +52,14 @@ class AdjustedBusinessDate(BusinessDate):
         res = res if end is None else adjust(self+end)
         return res
 
-    def __init__(self, year=0, month=0, day=0):
+    def __init__(self, date_value=None, *args):
+        if args:
+            month, day = args
+            self._origin = BusinessDate(date_value, month, day)
     #def __init__(self, base_date=None, start_offset=None, period=None, end_offset=None, adjust='', holidays=(), origin=None):
         #origin = BusinessDate.BASE_DATE if origin is None else origin
         #super(AdjustedBusinessDate, self).__init__(origin.year, origin.month, origin.day)
+        super(AdjustedBusinessDate, self).__init__(self._origin.year, self._origin.month, self._origin.day)
         #self._periods = start_offset, period, end_offset
         #self._adjust_convention = adjust
         # self._holidays = holidays
@@ -70,6 +74,6 @@ class AdjustedBusinessDate(BusinessDate):
         s += '' if mid is None else str(mid)
         s += '' if end is None else str(end)
         s += '' if self._adjust_convention is None else self._adjust_convention
-        s += super(AdjustedBusinessDate, self).to_string()
+        s += '' if self._origin is None else self._origin.to_string()
         s += '' if not self._holidays else str(self._holidays)
         return s
