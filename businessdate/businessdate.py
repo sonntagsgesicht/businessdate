@@ -92,7 +92,7 @@ class BusinessDate(BaseDate):
                 return super(BusinessDate, cls).__new__(cls, date_value, args[0], args[1])
 
         if date_value is None:
-            new_date = BusinessDate(cls.BASE_DATE)
+            new_date = cls(cls.BASE_DATE)
         elif args:
             y, (m, d) = date_value, args
             new_date = BusinessDate.from_ymd(y, m, d)

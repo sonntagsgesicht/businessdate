@@ -35,106 +35,41 @@ p-p=p
 '''
 
 
-from datetime import date
+from .basedate import BaseDate, BaseDateFloat, BaseDateDatetimeDate
+from businessdate import BusinessDate, BusinessPeriod, BusinessHolidays
 
-_BASE_DATE = date.today()
 
-
-class NewBusinessDate(object):
-
-    _base_date = _BASE_DATE
+class AdjustedBusinessDate(BusinessDate):
 
     @property
-    def dp(self):
-        return self._date, self._period
+    def business_date(self):
+        # init date
+        start, mid, end = self._periods
+        adjust = lambda bd: bd.adjust(self._adjust_convention, self._holidays)
 
-    def __init__(self, *args):
-        self._date = None
-        self._period = ''
-        self._holidays = list()
-        self._base_date = self.__class__._base_date
+        res = self if start is None else adjust(self+start)
+        res += mid
+        res = res if end is None else adjust(self+end)
+        return res
 
-        self._origin = None
-        self._period = BusinessPeriod()
+    def __init__(self, year=0, month=0, day=0):
+    #def __init__(self, base_date=None, start_offset=None, period=None, end_offset=None, adjust='', holidays=(), origin=None):
+        #origin = BusinessDate.BASE_DATE if origin is None else origin
+        #super(AdjustedBusinessDate, self).__init__(origin.year, origin.month, origin.day)
+        #self._periods = start_offset, period, end_offset
+        #self._adjust_convention = adjust
+        # self._holidays = holidays
+        self._periods = '','',''
+        self._adjust_convention = ''
+        self._holidays = ()
 
-        try:
-            self._period = BusinessPeriod(*args, **kwargs)
-        except TypeError:
-            pass
-        except ValueError:
-            pass
-
-        try:
-            self._origin = BusinessDate(*args, **kwargs)
-        except TypeError:
-            pass
-        except ValueError:
-            pass
-
-    def __str__(self):
-        return str(self._origin if self._origin else '') + str(self._period)
-
-    def __getattr__(self, item):
-        #print self, item
-        o, p = hasattr(self._origin, item), hasattr(self._period, item)
-        print(o+p)
-        if o and p:
-            o, p = getattr(self._origin, item, None), getattr(self._period, item, None)
-            print (type(o), type(p))
-
-            def attr(*args, **kwargs):
-                try:
-                    return o(*args, **kwargs)
-                except:
-                    pass
-                try:
-                    return p(*args, **kwargs)
-                except:
-                    pass
-            return attr
-
-        elif o:
-            return getattr(self._origin, item)
-
-        elif p:
-            return getattr(self._period, item)
-
-        else:
-            return None
-
-    def __add__(self, other):
-        d, p = other.dp
-        if d is None:  # or d is self._date:
-            return NewBusinessDate((self._date, self._period + p))
-        else:
-            raise ValueError()
-
-    def __sub__(self, other):
-        d, p = other.dp
-        if d is None:
-            return NewBusinessDate((self._date, self._period-p))
-        else:
-            return NewBusinessDate((None, self.as_date() - other.as_date()))
-
-    def __mul__(self, other):
-        if isinstance(other, int):
-            return NewBusinessDate(self._date, self._period * other)
-        else:
-            raise ValueError()
-
-    def __div__(self, other):
-        if isinstance(other, int):
-            return NewBusinessDate(self._date, self._period / other)
-        else:
-            raise ValueError()
-
-
-dp = NewBusinessDate()
-
-assert dp.date is None
-assert dp.period == ''
-assert dp.holidays == list()
-assert dp.basedate == date.today()
-assert dp.as_date == dp.basedate
-
-assert dp + date()
+    def to_string(self, date_format=None):
+        start, mid, end = self._periods
+        s = ''
+        s += '' if start is None else str(start)
+        s += '' if mid is None else str(mid)
+        s += '' if end is None else str(end)
+        s += '' if self._adjust_convention is None else self._adjust_convention
+        s += super(AdjustedBusinessDate, self).to_string()
+        s += '' if not self._holidays else str(self._holidays)
+        return s
