@@ -20,9 +20,14 @@ Example Usage
 
 .. code-block:: python
 
-    from datetime import date
 
     from businessdate import BusinessDate, BusinessPeriod
+
+    >>> BusinessDate(20140101)
+    20140111
+
+    >>> BusinessDate('20140101')
+    20140111
 
     >>> BusinessDate(20140101).add_days(10)
     20140111
@@ -31,6 +36,12 @@ Example Usage
     1Y3M
 
     >>> BusinessDate(20140101) + BusinessPeriod('1Y3M')
+    20150301
+
+    >>> BusinessDate(20140101) + '1Y3M'
+    20150301
+
+    >>> BusinessDate('1Y3M20140101')
     20150301
 
 Install
