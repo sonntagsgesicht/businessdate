@@ -72,7 +72,7 @@ def end_of_quarter_month(month):
     :param int month:
     :return: int
     """
-    while not month % 3:
+    while month % 3:
         month += 1
     return month
 

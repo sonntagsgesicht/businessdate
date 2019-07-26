@@ -37,7 +37,7 @@ def is_business_day(business_date, holidays=list()):
     return business_date not in holidays
 
 
-def adjust_no(business_date, holidays=None):
+def adjust_no(business_date, holidays=()):
     """
     no adjusts to Business Day Convention.
 
@@ -48,11 +48,11 @@ def adjust_no(business_date, holidays=None):
     return business_date
 
 
-def no(business_date, holidays=None):
+def no(business_date, holidays=()):
     return adjust_no(business_date, holidays)
 
 
-def adjust_previous(business_date, holidays=None):
+def adjust_previous(business_date, holidays=()):
     """
     adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions).
 
@@ -65,19 +65,19 @@ def adjust_previous(business_date, holidays=None):
     return business_date
 
 
-def previous(business_date, holidays=None):
+def previous(business_date, holidays=()):
     return adjust_previous(business_date, holidays)
 
 
-def prev(business_date, holidays=None):
+def prev(business_date, holidays=()):
     return adjust_previous(business_date, holidays)
 
 
-def prv(business_date, holidays=None):
+def prv(business_date, holidays=()):
     return adjust_previous(business_date, holidays)
 
 
-def adjust_follow(business_date, holidays=None):
+def adjust_follow(business_date, holidays=()):
     """
     adjusts to Business Day Convention "Following" (4.12(a) (i) 2006 ISDA Definitions).
 
@@ -90,15 +90,15 @@ def adjust_follow(business_date, holidays=None):
     return business_date
 
 
-def follow(business_date, holidays=None):
+def follow(business_date, holidays=()):
     return adjust_follow(business_date, holidays)
 
 
-def flw(business_date, holidays=None):
+def flw(business_date, holidays=()):
     return adjust_follow(business_date, holidays)
 
 
-def adjust_mod_follow(business_date, holidays=None):
+def adjust_mod_follow(business_date, holidays=()):
     """
     adjusts to Business Day Convention "Modified [Following]" (4.12(a) (ii) 2006 ISDA Definitions).
 
@@ -114,15 +114,15 @@ def adjust_mod_follow(business_date, holidays=None):
     return business_date
 
 
-def modfollow(business_date, holidays=None):
+def modfollow(business_date, holidays=()):
     return adjust_mod_follow(business_date, holidays)
 
 
-def modflw(business_date, holidays=None):
+def modflw(business_date, holidays=()):
     return adjust_mod_follow(business_date, holidays)
 
 
-def adjust_mod_previous(business_date, holidays=None):
+def adjust_mod_previous(business_date, holidays=()):
     """
     adjusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons).
 
@@ -138,19 +138,19 @@ def adjust_mod_previous(business_date, holidays=None):
     return business_date
 
 
-def modprevious(business_date, holidays=None):
+def modprevious(business_date, holidays=()):
     return adjust_mod_previous(business_date, holidays)
 
 
-def modprev(business_date, holidays=None):
+def modprev(business_date, holidays=()):
     return adjust_mod_previous(business_date, holidays)
 
 
-def modprv(business_date, holidays=None):
+def modprv(business_date, holidays=()):
     return adjust_mod_previous(business_date, holidays)
 
 
-def adjust_start_of_month(business_date, holidays=None):
+def adjust_start_of_month(business_date, holidays=()):
     """
     adjusts to Business Day Convention "Start of month".
 
@@ -163,11 +163,11 @@ def adjust_start_of_month(business_date, holidays=None):
     return business_date
 
 
-def som(business_date, holidays=None):
+def som(business_date, holidays=()):
     return adjust_start_of_month(business_date, holidays)
 
 
-def adjust_end_of_month(business_date, holidays=None):
+def adjust_end_of_month(business_date, holidays=()):
     """
     adjusts to Business Day Convention "End of month".
 
@@ -181,11 +181,11 @@ def adjust_end_of_month(business_date, holidays=None):
     return business_date
 
 
-def eom(business_date, holidays=None):
+def eom(business_date, holidays=()):
     return adjust_end_of_month(business_date, holidays)
 
 
-def adjust_imm(business_date, holidays=None):
+def adjust_imm(business_date, holidays=()):
     """
     adjusts to Business Day Convention "International Monetary Market".
 
@@ -199,11 +199,11 @@ def adjust_imm(business_date, holidays=None):
     return business_date
 
 
-def imm(business_date, holidays=None):
+def imm(business_date, holidays=()):
     return adjust_imm(business_date, holidays)
 
 
-def adjust_cds_imm(business_date, holidays=None):
+def adjust_cds_imm(business_date, holidays=()):
     """
     adjusts to Business Day Convention "Single Name CDS" (not in 2006 ISDA Definitions).
 
@@ -215,5 +215,5 @@ def adjust_cds_imm(business_date, holidays=None):
     return business_date
 
 
-def cds(business_date, holidays=None):
+def cds(business_date, holidays=()):
     return adjust_cds_imm(business_date, holidays)

@@ -386,7 +386,7 @@ class BusinessDate(BaseDate):
         # dc_func = globals()['get_' + convention.lower()]
         dc_func = getattr(daycount, 'get_' + convention.lower(), None)
         if dc_func is None:
-            dc_func = getattr(daycount, convention.lower().strip('-_/ '))
+            dc_func = getattr(daycount, convention.lower().translate({ord(i): None for i in '/-_. '}))
         return dc_func(self.to_date(), end.to_date())
 
     def get_30_360(self, end):
@@ -417,7 +417,7 @@ class BusinessDate(BaseDate):
             return self.__copy__()
         adj_func = getattr(conventions, 'adjust_' + convention.lower(), None)
         if adj_func is None:
-            adj_func = getattr(conventions, convention.lower().strip('-_/ '))
+            adj_func = getattr(conventions, convention.lower().translate({ord(i): None for i in '/-_. '}))
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
         return BusinessDate(adj_func(self.to_date(), holidays_obj))
 
