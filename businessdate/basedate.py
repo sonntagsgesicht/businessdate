@@ -16,7 +16,7 @@
 
 from datetime import date, timedelta
 
-from methods.ymd import from_excel_to_ymd, from_ymd_to_excel
+from ymd import from_excel_to_ymd, from_ymd_to_excel
 
 
 class BaseDateFloat(float):
@@ -72,7 +72,7 @@ class BaseDateFloat(float):
         return cls.from_ymd(date_obj.year, date_obj.month, date_obj.day)
 
     @classmethod
-    def from_excel(cls, xl_int):
+    def from_float(cls, xl_int):
         """
         creates date for Microsoft Excel integer date representation
         :param int xl_int:
@@ -88,7 +88,7 @@ class BaseDateFloat(float):
     def to_date(self):
         return date(*self.to_ymd())
 
-    def to_excel(self):
+    def to_float(self):
         return int(self)
 
     # --- calculation methods ------------------------------------------------
@@ -143,7 +143,7 @@ class BaseDateDatetimeDate(date):
         return cls.from_ymd(date_obj.year, date_obj.month, date_obj.day)
 
     @classmethod
-    def from_excel(cls, xl_int):
+    def from_float(cls, xl_int):
         y, m, d = from_excel_to_ymd(xl_int)
         return cls.from_ymd(y, m, d)
 
@@ -155,7 +155,7 @@ class BaseDateDatetimeDate(date):
     def to_date(self):
         return date(*self.to_ymd())
 
-    def to_excel(self):
+    def to_float(self):
         return from_ymd_to_excel(*self.to_ymd())
 
     # --- calculation methods ------------------------------------------------

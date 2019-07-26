@@ -14,13 +14,13 @@
 
 import os
 import unittest
-
 from datetime import datetime, date, timedelta
 
-from businessdate.methods.holidays import easter, target_days
-from businessdate.methods.ymd import from_ymd_to_excel, from_excel_to_ymd
-from businessdate.basedate import BaseDate
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
+
+from businessdate.holidays import easter, target_days
+from businessdate.basedate import BaseDate
+from businessdate.ymd import from_ymd_to_excel, from_excel_to_ymd
 
 
 class BaseDateUnitTest(unittest.TestCase):
@@ -238,8 +238,11 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01.add_period('2D'), self.jan02 + BusinessPeriod('1D'))
         self.assertEqual(self.jan02.add_period('-2D'), self.jan01 - BusinessPeriod('1D'))
         self.assertEqual(self.jan02.add_period('-1b'), self.jan01 - BusinessPeriod('1b'))
+#        self.assertNotEqual(BusinessDate(20160630).add_period(BusinessPeriod('2B')),
+#                            BusinessDate(20160630).add_period(BusinessPeriod('2B'), BusinessHolidays(['20160704'])))
         self.assertNotEqual(BusinessDate(20160630).add_period(BusinessPeriod('2B')),
-                            BusinessDate(20160630).add_period(BusinessPeriod('2B'), BusinessHolidays(['20160704'])))
+                            BusinessDate(20160630).add_period(BusinessPeriod('2B'),
+                                                              BusinessHolidays(BusinessDate(['20160704']))))
         self.assertEqual(self.jan01 + '1b', self.jan02 + '1b')
 
         d, p = BusinessDate('20160229'), BusinessPeriod('1Y1M1D')
@@ -286,7 +289,7 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertTrue(isinstance(self.jan01.to_date(), date))
         self.assertTrue(isinstance(self.jan01, BusinessDate))
         self.assertTrue(isinstance(self.jan01-BusinessDate(), BusinessPeriod))
-        self.assertTrue(isinstance(self.jan01.to_excel(), int))
+        self.assertTrue(isinstance(self.jan01.to_float(), int))
         # removed ordinal support
         # self.assertTrue(isinstance(self.jan01.to_ordinal(), int))
         self.assertTrue(isinstance(str(self.jan01), str))
@@ -296,7 +299,7 @@ class BusinessDateUnitTests(unittest.TestCase):
         for d in self.dates:
             self.assertEqual(BusinessDate(d.to_date()), d)
             self.assertEqual(d.__copy__(), d)
-            self.assertEqual(BusinessDate(d.to_excel()), d)
+            self.assertEqual(BusinessDate(d.to_float()), d)
             self.assertEqual(BusinessDate(str(d)), d)
             self.assertEqual(BusinessDate(*d.to_ymd()), d)
 
@@ -549,7 +552,7 @@ class BusinessScheduleUnitTests(unittest.TestCase):
 class BusinessHolidayUnitTests(unittest.TestCase):
     def setUp(self):
         self.bd = BusinessDate(19730226)
-        self.list = [str(i) + '0301' for i in range(1973, 2016)]
+        self.list = map(BusinessDate,[str(i) + '0301' for i in range(1973, 2016)])
 
     def test_holiday(self):
         h = BusinessHolidays(self.list)

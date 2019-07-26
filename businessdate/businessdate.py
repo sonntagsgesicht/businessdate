@@ -16,34 +16,11 @@
 
 from datetime import date, datetime, timedelta
 
-import methods.adjust
-import methods.daycount
-from methods.ymd import is_leap_year, days_in_year, days_in_month, end_of_quarter_month
-from methods.holidays import target_days
+import conventions
+import daycount
 from basedate import BaseDate, BaseDateFloat, BaseDateDatetimeDate
-
-
-class BusinessHolidays(list):
-    """
-    holiday calendar class
-    """
-
-    def __init__(self, iterable=()):
-        if iterable:
-            iterable = [bd.to_date() for bd in map(BusinessDate, iterable)]
-        super(BusinessHolidays, self).__init__(iterable)
-
-
-class TargetHolidays(BusinessHolidays):
-    """
-    holiday calendar class for ecb target2 holidays
-    """
-
-    def __contains__(self, item):
-        if not super(TargetHolidays, self).__contains__(date(item.year, 1, 1)):
-            # add tar days if not done jet
-            self.extend(target_days(item.year).keys())
-        return super(TargetHolidays, self).__contains__(item)
+from businessholidays import TargetHolidays
+from ymd import is_leap_year, days_in_year, days_in_month, end_of_quarter_month
 
 
 class BusinessDate(BaseDate):
@@ -98,7 +75,7 @@ class BusinessDate(BaseDate):
             if issubclass(BaseDate, BaseDateFloat):
                 return super(BusinessDate, cls).__new__(cls, year)
             elif issubclass(BaseDate, BaseDateDatetimeDate):
-                return cls.from_excel(year)
+                return cls.from_float(year)
 
         if isinstance(year, (int, float)) and 10000101 <= year:  # start 20191231 representation from 1000 a.d.
             ymd = str(year)
@@ -108,8 +85,8 @@ class BusinessDate(BaseDate):
             elif issubclass(BaseDate, BaseDateDatetimeDate):
                 return super(BusinessDate, cls).__new__(cls, year, month, day)
 
-        if isinstance(year, list):
-            return [BusinessDate(d) for d in year]
+        if isinstance(year, (list, tuple)):
+            return map(BusinessDate, year)
 
         if year is None:
             return cls(cls.BASE_DATE)
@@ -155,7 +132,7 @@ class BusinessDate(BaseDate):
                 pass
 
         # second, extract
-        for a in sorted(dir(methods.adjust), lambda a,b: len(b)-len(a)):
+        for a in sorted(dir(conventions), lambda a, b: len(b)-len(a)):
             if date_str.find(a.upper()) > 0:
                 convention = a
                 date_str = date_str[:-len(a)]
@@ -289,7 +266,7 @@ class BusinessDate(BaseDate):
         method to check if a date falls neither on weekend nor is holiday
         """
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
-        return methods.adjust.is_business_day(self.to_date(), holidays_obj)
+        return conventions.is_business_day(self.to_date(), holidays_obj)
 
     # --- calculation methods --------------------------------------------
 
@@ -409,9 +386,9 @@ class BusinessDate(BaseDate):
 
     def get_day_count(self, end, convention='act_36525'):
         # dc_func = globals()['get_' + convention.lower()]
-        dc_func = getattr(methods.daycount,'get_' + convention.lower(), None)
+        dc_func = getattr(daycount, 'get_' + convention.lower(), None)
         if dc_func is None:
-            dc_func = getattr(methods.daycount, convention.lower().strip('-_/ '))
+            dc_func = getattr(daycount, convention.lower().strip('-_/ '))
         return dc_func(self.to_date(), end.to_date())
 
     def get_30_360(self, end):
@@ -440,9 +417,9 @@ class BusinessDate(BaseDate):
     def adjust(self, convention=None, holidays_obj=None):
         if convention is None:
             return self.__copy__()
-        adj_func = getattr(methods.adjust,'adjust_' + convention.lower(), None)
+        adj_func = getattr(conventions, 'adjust_' + convention.lower(), None)
         if adj_func is None:
-            adj_func = getattr(methods.adjust, convention.lower().strip('-_/ '))
+            adj_func = getattr(conventions, convention.lower().strip('-_/ '))
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
         return BusinessDate(adj_func(self.to_date(), holidays_obj))
 
@@ -714,166 +691,3 @@ class BusinessPeriod(object):
 
     def __rmul__(self, other):
         return self.__mul__(other)
-
-
-class BusinessRange(list):
-    def __init__(self, start, stop=None, step=None, rolling=None):
-        """
-        range like class to build date list
-
-        :param start: date to begin schedule, if stop not given, start will be used as stop and
-            default in rolling to BusinessDate()
-        :type start: BusinessDate or int or str
-        :param stop: date to stop before, if not given, start will be used for stop instead
-        :type stop: BusinessDate or int or str
-        :param step: period to step schedule, if not given 1 year is default
-        :type step: BusinessPeriod or str
-        :param rolling: date to roll on (forward and backward) between start and stop,
-            if not given default will be start
-        :type rolling: BusinessDate or int or str
-
-        range like class to build BusinessDate list from rolling date and BusinessPeriod
-
-        First, :code:`rolling` and :code:`step` defines a infinite grid of dates.
-        Second, this grid is sliced by :code:`start` (included , if meeting the grid) and
-        :code:`end` (excluded).
-
-        """
-
-        # set default args and build range grid
-        start, stop, step, rolling = self._default_args(start, stop, step, rolling)
-        schedule = self._build_grid(start, stop, step, rolling)
-
-        # push to super and sort
-        super(BusinessRange, self).__init__(set(schedule))
-        self.sort()
-
-    @staticmethod
-    def _default_args(start, stop, step, rolling):
-        if stop is None:
-            stop = start
-            start = BusinessDate()
-        if step is None:
-            step = BusinessPeriod(years=1)
-        if rolling is None:
-            rolling = start
-        # make proper businessdate objects
-        if not isinstance(start, BusinessDate):
-            if isinstance(start, BusinessPeriod):
-                start = start.to_businessdate()
-            else:
-                start = BusinessDate(start)
-        if not isinstance(rolling, BusinessDate):
-            if isinstance(rolling, BusinessPeriod):
-                rolling = rolling.to_businessdate()
-            else:
-                rolling = BusinessDate(rolling)
-        if not isinstance(stop, BusinessDate):
-            if isinstance(stop, BusinessPeriod):
-                stop = stop.to_businessdate()
-            else:
-                stop = BusinessDate(stop)
-        if not isinstance(step, BusinessPeriod):
-            if isinstance(step, BusinessDate):
-                step = step.to_businessperiod()
-            else:
-                step = BusinessPeriod(step)
-        return BusinessDate(start), BusinessDate(stop), BusinessPeriod(step), BusinessDate(rolling)
-
-    @staticmethod
-    def _build_grid(start, stop, step, rolling):
-        # setup grid and turn step into positive direction
-        grid = list()
-        step = step if rolling <= rolling + step else -1 * step
-
-        # roll backward before start
-        i = 0
-        current = rolling + step * i
-        while start <= current:
-            i -= 1
-            current = rolling + step * i
-
-        # fill grid from start until end
-        current = rolling + step * i
-        while current < stop:
-            current = rolling + step * i
-            if start <= current < stop:
-                grid.append(current)
-            i += 1
-
-        return grid
-
-    def adjust(self, convention='mod_follow', holidays_obj=None):
-        adj_list = [d.adjust(convention, holidays_obj) for d in self]
-        del self[:]
-        super(BusinessRange, self).extend(adj_list)
-        return self
-
-    def adjust_previous(self, holidays_obj=None):
-        return self.adjust('previous', holidays_obj)
-
-    def adjust_follow(self, holidays_obj=None):
-        return self.adjust('follow', holidays_obj)
-
-    def adjust_mod_previous(self, holidays_obj=None):
-        return self.adjust('mod_previous', holidays_obj)
-
-    def adjust_mod_follow(self, holidays_obj=None):
-        return self.adjust('mod_follow', holidays_obj)
-
-    def adjust_start_of_month(self, holidays_obj=None):
-        return self.adjust('start_of_month', holidays_obj)
-
-    def adjust_end_of_month(self, holidays_obj=None):
-        return self.adjust('end_of_month', holidays_obj)
-
-    def adjust_imm(self, holidays_obj=None):
-        return self.adjust('imm', holidays_obj)
-
-    def adjust_cds_imm(self, holidays_obj=None):
-        return self.adjust('cds_imm', holidays_obj)
-
-
-class BusinessSchedule(BusinessRange):
-    def __init__(self, start, end, step, roll=None):
-        """
-        class to build date schedules incl. start and end date
-
-        :param BusinessDate start: start date of schedule
-        :param BusinessDate end: end date of schedule
-        :param BusinessPeriod step: period distance of two dates
-        :param BusinessDate roll: origin of schedule
-
-        convenient class to build date schedules
-        a schedule includes always start and end date
-        and rolls on roll, i.e. builds a sequence by
-        adding and/or substracting step to/from roll.
-        start and end slice the relevant dates.
-        """
-        if not roll:
-            roll = end
-        if not isinstance(start, BusinessDate):
-            if isinstance(start, BusinessPeriod):
-                start = start.to_businessdate()
-            else:
-                start = BusinessDate(start)
-        if not isinstance(end, BusinessDate):
-            if isinstance(end, BusinessPeriod):
-                end = end.to_businessdate()
-            else:
-                end = BusinessDate(end)
-        super(BusinessSchedule, self).__init__(start, end, step, roll)
-        if start not in self:
-            self.insert(0, start)
-        if end not in self:
-            self.append(end)
-
-    def first_stub_long(self):
-        if len(self) > 2:
-            self.pop(1)
-        return self
-
-    def last_stub_long(self):
-        if len(self) > 2:
-            self.pop(-2)
-        return self
