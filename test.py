@@ -552,11 +552,12 @@ class BusinessScheduleUnitTests(unittest.TestCase):
 class BusinessHolidayUnitTests(unittest.TestCase):
     def setUp(self):
         self.bd = BusinessDate(19730226)
-        self.list = list(map(BusinessDate,[str(i) + '0301' for i in range(1973, 2016)]))
+        self.list = list(map(BusinessDate, [str(i) + '0301' for i in range(1973, 2016)]))
 
     def test_holiday(self):
         h = BusinessHolidays(self.list)
         for l in self.list:
+            self.assertTrue(BusinessDate(l) in h)
             self.assertTrue(BusinessDate(l).to_date() in h)
         self.assertNotEqual(self.bd.add_period('3b', h), self.bd.add_period('3b'))
 

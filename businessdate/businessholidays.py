@@ -17,17 +17,18 @@
 from datetime import date
 
 from .holidays import target_days
-# from businessdate import BusinessDate
 
 
 class BusinessHolidays(list):
     """
     holiday calendar class
     """
-    # def __init__(self, iterable=()):
-    #     if iterable:
-    #         iterable = [bd.to_date() for bd in map(BusinessDate, iterable)]
-    #     super(BusinessHolidays, self).__init__(iterable)
+
+    def __init__(self, iterable=()):
+        if iterable:
+            # iterable = map(BusinessDate, iterable)
+            iterable = [bd if isinstance(bd, date) else date(bd.year, bd.month, bd.day) for bd in iterable]
+        super(BusinessHolidays, self).__init__(iterable)
 
     def __contains__(self, item):
         if super(BusinessHolidays, self).__contains__(item):

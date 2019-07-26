@@ -168,7 +168,7 @@ class BaseDateDatetimeDate(date):
         :return BaseDatetimeDate:
         """
         res = super(BaseDateDatetimeDate, self).__add__(timedelta(days_int))
-        return self.__class__(res.year, res.month, res.day)
+        return self.__class__.from_ymd(res.year, res.month, res.day)
 
     def diff_in_days(self, end):
         """

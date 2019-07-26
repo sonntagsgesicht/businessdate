@@ -66,7 +66,7 @@ class BusinessDate(BaseDate):
         if isinstance(year, date):
             year, month, day = year.year, year.month, year.day
 
-        if isinstance(year, (int, float)) and month and day:
+        if isinstance(year, int) and month and day:
             if issubclass(BaseDate, BaseDateFloat):
                 return cls.from_ymd(year, month, day)
             elif issubclass(BaseDate, BaseDateDatetimeDate):
@@ -81,10 +81,7 @@ class BusinessDate(BaseDate):
         if isinstance(year, (int, float)) and 10000101 <= year:  # start 20191231 representation from 1000 a.d.
             ymd = str(year)
             year, month, day = int(ymd[:4]), int(ymd[4:6]), int(ymd[6:])
-            if issubclass(BaseDate, BaseDateFloat):
-                return cls.from_ymd(year, month, day)
-            elif issubclass(BaseDate, BaseDateDatetimeDate):
-                return super(BusinessDate, cls).__new__(cls, year, month, day)
+            return cls.from_ymd(year, month, day)
 
         if isinstance(year, (list, tuple)):
             return list(map(BusinessDate, year))
