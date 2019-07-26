@@ -190,7 +190,9 @@ class BusinessPeriod(object):
         :param BusinessPeriod other:
         :return: int
         """
-        assert type(self) == type(other), "types don't match %s" % str((type(self), type(other)))
+        if not isinstance(other, BusinessPeriod):
+            raise TypeError(
+                "Can't compare since type %s is not an instance of BusinessPeriod." % other.__class__.__name__)
         s = (self.years * 12 + self.months) * 31 + self.days
         o = (other.years * 12 + other.months) * 31 + other.days
         return s - o
@@ -256,7 +258,7 @@ class BusinessPeriod(object):
             b = other * self.businessdays
             return BusinessPeriod(years=y, months=m, days=d, businessdays=b)
         else:
-            raise TypeError("expected int or long but got %s" % str(type(other)))
+            raise TypeError("expected int but got %s" % other.__class__.__name__)
 
     def __rmul__(self, other):
         return self.__mul__(other)
