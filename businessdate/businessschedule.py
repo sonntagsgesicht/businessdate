@@ -13,9 +13,9 @@
 #  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
 
-from businessperiod import BusinessPeriod
-from businessdate import BusinessDate
-from businessrange import BusinessRange
+from .businessperiod import BusinessPeriod
+from .businessdate import BusinessDate
+from .businessrange import BusinessRange
 
 
 class BusinessSchedule(BusinessRange):
@@ -35,7 +35,7 @@ class BusinessSchedule(BusinessRange):
         start and end slice the relevant dates.
         """
         roll = roll if roll else end
-        start, end = map(BusinessDate, (start, end))
+        start, end = list(map(BusinessDate, (start, end)))
         super(BusinessSchedule, self).__init__(start, end, step, roll)
         if start not in self:
             self.insert(0, start)

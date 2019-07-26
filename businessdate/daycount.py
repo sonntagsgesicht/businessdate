@@ -25,7 +25,7 @@
 # 30E/360 (4.16(g) 2006 ISDA Definitions) [other names: Euro bond Basis]
 
 from datetime import date
-from ymd import is_leap_year
+from .ymd import is_leap_year
 
 
 def diff_in_days(start, end):

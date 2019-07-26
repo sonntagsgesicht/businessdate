@@ -273,7 +273,7 @@ class BusinessDateUnitTests(unittest.TestCase):
                 if p.days < 28:
                     self.assertEqual(q, p, (q, d, p, dp))
                 elif p.days < 59 and not 28 <= p.days - q.days <= 32 and not q == p:
-                    print d, p, dp, q
+                    print(d, p, dp, q)
                 # elif 59 <= p.days and not 28 <= p.days - q.days <= 32 and not q == p:
                 #     print d, p, dp, q
                 # only idempotent pairs work always (e.g. above)
@@ -443,8 +443,8 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(self._1y + '6m', self._1y6m)
         self.assertEqual(self._1y, BusinessPeriod('1y'))
         self.assertRaises(TypeError, lambda: '6m' + self._1y)
-        self.assertEquals(self._1y, self._3y - self._2y)
-        self.assertEquals(self._1y, self._3y - '2y')
+        self.assertEqual(self._1y, self._3y - self._2y)
+        self.assertEqual(self._1y, self._3y - '2y')
 
     def test_cast(self):
         self.assertEqual(BusinessPeriod('1y'), BusinessPeriod(years=1))
@@ -552,7 +552,7 @@ class BusinessScheduleUnitTests(unittest.TestCase):
 class BusinessHolidayUnitTests(unittest.TestCase):
     def setUp(self):
         self.bd = BusinessDate(19730226)
-        self.list = map(BusinessDate,[str(i) + '0301' for i in range(1973, 2016)])
+        self.list = list(map(BusinessDate,[str(i) + '0301' for i in range(1973, 2016)]))
 
     def test_holiday(self):
         h = BusinessHolidays(self.list)
@@ -672,9 +672,9 @@ if __name__ == "__main__":
     print('')
     print('======================================================================')
     print('')
-    print('run %s' % __file__)
-    print('in %s' % os.getcwd())
-    print('started  at %s' % str(start_time))
+    print(('run %s' % __file__))
+    print(('in %s' % os.getcwd()))
+    print(('started  at %s' % str(start_time)))
     print('')
     print('----------------------------------------------------------------------')
     print('')
@@ -686,10 +686,10 @@ if __name__ == "__main__":
     print('')
     print('======================================================================')
     print('')
-    print('ran %s' % __file__)
-    print('in %s' % os.getcwd())
-    print('started  at %s' % str(start_time))
-    print('finished at %s' % str(datetime.now()))
+    print(('ran %s' % __file__))
+    print(('in %s' % os.getcwd()))
+    print(('started  at %s' % str(start_time)))
+    print(('finished at %s' % str(datetime.now())))
     print('')
     print('----------------------------------------------------------------------')
     print('')

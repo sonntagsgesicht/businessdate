@@ -61,7 +61,7 @@ class BusinessPeriod(object):
                 if f:
                     raise ValueError("Unable to parse %s as %s" % (period_in, self.__class__.__name__))
                 # except the first non vanishing of y,q,m,w,d must have positive sign
-                sgn = [x / abs(x) for x in (y, q, m, w, d) if x]
+                sgn = [int(x / abs(x)) for x in (y, q, m, w, d) if x]
                 if [x for x in sgn[1:] if x < 0]:
                     raise ValueError(
                         "Except at the begining no signs allowed in %s as %s" % (period_in, self.__class__.__name__))
@@ -74,12 +74,12 @@ class BusinessPeriod(object):
                 businessdays, years, months, days = s, sgn * y, sgn * m, sgn * d
 
         if months >= 12:
-            years += months // 12
-            months %= 12
+            years += int(months // 12)
+            months = int(months % 12)
         if months <= -12:
             months, years = -months, -years
-            years += months // 12
-            months %= 12
+            years += int(months // 12)
+            months = int(months % 12)
             months, years = -months, -years
 
         ymd = years, months, days
@@ -222,7 +222,7 @@ class BusinessPeriod(object):
     def __hash__(self):
         return hash(repr(self))
 
-    def __nonzero__(self):
+    def __bool__(self):
         return any((self.years, self.months, self.days, self.businessdays))
 
     def __add__(self, other):

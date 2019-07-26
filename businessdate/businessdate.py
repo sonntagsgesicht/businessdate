@@ -16,12 +16,12 @@
 
 from datetime import date, datetime, timedelta
 
-import conventions
-import daycount
-from ymd import is_leap_year, days_in_year, days_in_month, end_of_quarter_month
-from basedate import BaseDate, BaseDateFloat, BaseDateDatetimeDate
-from businessholidays import TargetHolidays
-from businessperiod import BusinessPeriod
+from . import conventions
+from . import daycount
+from .ymd import is_leap_year, days_in_year, days_in_month, end_of_quarter_month
+from .basedate import BaseDate, BaseDateFloat, BaseDateDatetimeDate
+from .businessholidays import TargetHolidays
+from .businessperiod import BusinessPeriod
 
 
 class BusinessDate(BaseDate):
@@ -87,7 +87,7 @@ class BusinessDate(BaseDate):
                 return super(BusinessDate, cls).__new__(cls, year, month, day)
 
         if isinstance(year, (list, tuple)):
-            return map(BusinessDate, year)
+            return list(map(BusinessDate, year))
 
         if year is None:
             return cls(cls.BASE_DATE)
@@ -133,7 +133,7 @@ class BusinessDate(BaseDate):
                 pass
 
         # second, extract
-        for a in sorted(dir(conventions), lambda a, b: len(b)-len(a)):
+        for a in sorted(dir(conventions), key=len, reverse=True):
             if date_str.find(a.upper()) > 0:
                 convention = a
                 date_str = date_str[:-len(a)]
@@ -257,7 +257,7 @@ class BusinessDate(BaseDate):
         return BusinessDate(self.year, self.month, self.days_in_month())
 
     def end_of_quarter(self):
-        return BusinessDate(self.year, end_of_quarter_month(self.month), 01).end_of_month()
+        return BusinessDate(self.year, end_of_quarter_month(self.month), 0o1).end_of_month()
 
     def is_business_day(self, holidays_obj=None):
         """
@@ -333,8 +333,8 @@ class BusinessDate(BaseDate):
 
     def add_ymd(self, years=0, months=0, days=0):
         if self.month == 2 and self.day == 29:
-            years += months // 12
-            months %= 12
+            years += int(months // 12)
+            months = int(months % 12)
             return self.add_months(months).add_years(years).add_days(days)
         else:
             return self.add_years(years).add_months(months).add_days(days)

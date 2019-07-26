@@ -16,7 +16,7 @@
 
 from datetime import date, timedelta
 
-from ymd import from_excel_to_ymd, from_ymd_to_excel
+from .ymd import from_excel_to_ymd, from_ymd_to_excel
 
 
 class BaseDateFloat(float):

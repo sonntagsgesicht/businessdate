@@ -16,7 +16,7 @@
 
 from datetime import date
 
-from holidays import target_days
+from .holidays import target_days
 # from businessdate import BusinessDate
 
 
@@ -43,5 +43,5 @@ class TargetHolidays(BusinessHolidays):
     def __contains__(self, item):
         if not super(TargetHolidays, self).__contains__(date(item.year, 1, 1)):
             # add tar days if not done jet
-            self.extend(target_days(item.year).keys())
+            self.extend(list(target_days(item.year).keys()))
         return super(TargetHolidays, self).__contains__(item)

@@ -18,7 +18,7 @@
 
 from calendar import WEDNESDAY, FRIDAY
 from datetime import date, timedelta
-from ymd import days_in_month, end_of_quarter_month
+from .ymd import days_in_month, end_of_quarter_month
 
 # timedelta: one day timedelta
 ONE_DAY = timedelta(1)
