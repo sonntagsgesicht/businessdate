@@ -357,17 +357,24 @@ class BusinessDateUnitTests(unittest.TestCase):
     def test_from_businesperiod_str(self):
         self.assertEqual(BusinessDate()+ '1B', BusinessDate('1B'))
         self.assertEqual(BusinessDate()+ '1w', BusinessDate('1w'))
+        self.assertEqual(BusinessDate().adjust_mod_follow(),
+                         BusinessDate('0BMODFLW'))
         self.assertEqual(BusinessDate('20171231').adjust_mod_follow(),
-                         BusinessDate('0B', 'MOD_FOLLOW', '20171231'))
+                         BusinessDate('0BMODFLW20171231'))
         self.assertEqual(BusinessDate('20171231').adjust_mod_follow() + '3D',
-                         BusinessDate('0B3D', 'MOD_FOLLOW', '20171231'))
+                         BusinessDate('0B3DMODFOLLOW20171231'))
+        self.assertRaises(ValueError, BusinessDate, '0X3D')
         self.assertEqual((BusinessDate('20171231').adjust_mod_follow() + '3D').adjust_mod_follow(),
-                         BusinessDate('0B3D0B', 'MOD_FOLLOW', '20171231'))
+                         BusinessDate('0B3D0BMODFOLLOW20171231'))
         self.assertEqual(BusinessDate('20171231') + '1w', BusinessDate('1w20171231'))
+        self.assertEqual((BusinessDate('20171231').adjust_previous() + '3D').adjust_previous(),
+                         BusinessDate('0B3D0BPREV20171231'))
         self.assertEqual((BusinessDate('20171231').adjust_previous() + '3D').adjust_previous(),
                          BusinessDate('0B3D0BPREVIOUS20171231'))
         self.assertEqual((BusinessDate('20171231').adjust_mod_follow() + '3D').adjust_mod_follow(),
-                         BusinessDate('0B3D0BMOD_FOLLOW20171231'))
+                         BusinessDate('0B3D0BMODFOLLOW20171231'))
+        self.assertEqual((BusinessDate('20171231').adjust_mod_follow() + '3D').adjust_mod_follow(),
+                         BusinessDate('0B3D0BMODFLW20171231'))
 
 
 class BusinessPeriodUnitTests(unittest.TestCase):

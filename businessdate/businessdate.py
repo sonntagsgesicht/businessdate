@@ -16,10 +16,8 @@
 
 from datetime import date, datetime, timedelta
 
-from methods.adjust import is_business_day, adjust_no, adjust_previous, adjust_follow, adjust_mod_previous, \
-    adjust_mod_follow, adjust_start_of_month, adjust_end_of_month, adjust_imm, adjust_cds_imm
-from methods.daycount import get_act_act, get_30_360, get_act_36525, get_act_360, get_act_365, \
-    get_30e_360, get_30e_360_isda
+import methods.adjust
+import methods.daycount
 from methods.ymd import is_leap_year, days_in_year, days_in_month, end_of_quarter_month
 from methods.holidays import target_days
 from basedate import BaseDate, BaseDateFloat, BaseDateDatetimeDate
@@ -56,7 +54,7 @@ class BusinessDate(BaseDate):
     #: list: list of dates of default holiday calendar
     DEFAULT_HOLIDAYS = TargetHolidays()
 
-    def __new__(cls, year=None, month=0, day=0, *args):
+    def __new__(cls, year=None, month=0, day=0):
         r"""
         fundamental date class
 
@@ -84,6 +82,9 @@ class BusinessDate(BaseDate):
 
         """
 
+        if isinstance(year, str):
+            year, month, day = cls._parse_date_string(year, default=(year, month, day))
+
         if isinstance(year, (date, datetime)):
             year, month, day = year.year, year.month, year.day
 
@@ -93,11 +94,19 @@ class BusinessDate(BaseDate):
             elif issubclass(BaseDate, BaseDateDatetimeDate):
                 return super(BusinessDate, cls).__new__(cls, year, month, day)
 
-        if isinstance(year, (int, float)) and 1 < year < 10000101:  # start 20191231 representation from 1000 a.d.
+        if isinstance(year, (int, float)) and 1 < year < 10000101:  # excel representation before 1000 a.d.
             if issubclass(BaseDate, BaseDateFloat):
                 return super(BusinessDate, cls).__new__(cls, year)
             elif issubclass(BaseDate, BaseDateDatetimeDate):
                 return cls.from_excel(year)
+
+        if isinstance(year, (int, float)) and 10000101 <= year:  # start 20191231 representation from 1000 a.d.
+            ymd = str(year)
+            year, month, day = int(ymd[:4]), int(ymd[4:6]), int(ymd[6:])
+            if issubclass(BaseDate, BaseDateFloat):
+                return cls.from_ymd(year, month, day)
+            elif issubclass(BaseDate, BaseDateDatetimeDate):
+                return super(BusinessDate, cls).__new__(cls, year, month, day)
 
         if isinstance(year, list):
             return [BusinessDate(d) for d in year]
@@ -105,63 +114,75 @@ class BusinessDate(BaseDate):
         if year is None:
             return cls(cls.BASE_DATE)
 
-        date_str = str(year)
+        # try to split complex or period input, e.g. '0B1D2BMOD20191231' or '3Y2M1D' or '-2B'
+        return cls._from_complex_input(str(year))
 
-        # try to split '0B1D20191231'
-        if len(date_str)>8:
-            try:
-                datetime.strptime(date_str[-8:], '%Y%m%d')
-                day = date_str[-8:]
-                date_str = date_str[:-8]
-                for a in ('MOD_PREVIOUS','MOD_FOLLOW','PREVIOUS','FOLLOW',):
-                    if date_str.find(a)>0:
-                        month = a
-                        date_str = date_str[:-len(a)]
-                        break
-            except ValueError:
-                pass
-
-        if BusinessPeriod.is_businessperiod(date_str):
-            adj = month if month else 'NO'
-            origin = day if day else None
-            holidays = args[0] if args else cls.DEFAULT_HOLIDAYS
-
-            # split '-0b+3y2m1d-2b' -> '-0b', '3y2m1d', '-2b' or '3y2m1d-2b' -> '', '3y2m1d', '-2b'
-            p = date_str.upper()
-            pfields = p.strip('0123456789+-B')
-            if pfields:
-                x = pfields[-1]
-                period, final = p.split(x, 1)
-                period += x
-                if p.find('B') > 0:
-                    spot, period = period.split('B', 1)
-                    spot += 'B'
-                else:
-                    spot, period = '', p
-            else:
-                spot, period, final = p, '', ''
-
-            res = BusinessDate(origin)
-            if spot:
-                res = res.add_period(spot, holidays).adjust(adj, holidays)
-            if period:
-                res = res.add_period(period, holidays)
-            if final:
-                res = res.add_period(final, holidays).adjust(adj, holidays)
-            return res
-
-        # finally try as a date string
+    @classmethod
+    def _parse_date_string(cls, date_str, default=None):
+        date_str = str(date_str)
         if date_str.count('-'):
             str_format = '%Y-%m-%d'
         elif date_str.count('.'):
             str_format = '%d.%m.%Y'
         elif date_str.count('/'):
             str_format = '%m/%d/%Y'
-        elif len(date_str) == 8:
+        elif len(date_str) == 8 and date_str.isdigit():
             str_format = '%Y%m%d'
         else:
+            str_format = ''
+        if str_format:
+            date_date = datetime.strptime(date_str, str_format)
+            return date_date.year, date_date.month, date_date.day
+
+        if default is None:
             raise ValueError("The input %s has not the right format for %s" % (date_str, cls.__name__))
-        return cls.from_date(datetime.strptime(date_str, str_format))
+        else:
+            return default
+
+    @classmethod
+    def _from_complex_input(cls, date_str):
+        date_str = str(date_str).upper()
+        convention, origin, holidays = None, None, None
+
+        # first, extract origin
+        if len(date_str) > 8:
+            try:
+                datetime.strptime(date_str[-8:], '%Y%m%d')
+                origin = date_str[-8:]
+                date_str = date_str[:-8]
+            except ValueError:
+                # no date found a the end of the string
+                pass
+
+        # second, extract
+        for a in sorted(dir(methods.adjust), lambda a,b: len(b)-len(a)):
+            if date_str.find(a.upper()) > 0:
+                convention = a
+                date_str = date_str[:-len(a)]
+                break
+
+        # third, parse spot, period and final
+        pfields = date_str.strip('0123456789+-B')
+        spot, period, final = date_str, '', ''
+        if pfields:
+            x = pfields[-1]
+            period, final = date_str.split(x, 1)
+            period += x
+            if date_str.find('B') > 0:
+                spot, period = period.split('B', 1)
+                spot += 'B'
+            else:
+                spot, period = '', date_str
+
+        # third, build BusinessDate and adjust by conventions to periods
+        res = cls(origin)
+        if spot:
+            res = res.adjust(convention, holidays).add_period(spot, holidays)
+        if period:
+            res = res.add_period(period, holidays)
+        if final:
+            res = res.adjust(convention, holidays).add_period(final, holidays)
+        return res
 
     @classmethod
     def is_businessdate(cls, in_date):
@@ -268,7 +289,7 @@ class BusinessDate(BaseDate):
         method to check if a date falls neither on weekend nor is holiday
         """
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
-        return is_business_day(self.to_date(), holidays_obj)
+        return methods.adjust.is_business_day(self.to_date(), holidays_obj)
 
     # --- calculation methods --------------------------------------------
 
@@ -387,7 +408,10 @@ class BusinessDate(BaseDate):
     # --- day count fraction methods -----------------------------------------
 
     def get_day_count(self, end, convention='act_36525'):
-        dc_func = globals()['get_' + convention.lower()]
+        # dc_func = globals()['get_' + convention.lower()]
+        dc_func = getattr(methods.daycount,'get_' + convention.lower(), None)
+        if dc_func is None:
+            dc_func = getattr(methods.daycount, convention.lower().strip('-_/ '))
         return dc_func(self.to_date(), end.to_date())
 
     def get_30_360(self, end):
@@ -413,8 +437,12 @@ class BusinessDate(BaseDate):
 
     # --- business day adjustment methods ------------------------------------
 
-    def adjust(self, convention='no', holidays_obj=None):
-        adj_func = globals()['adjust_' + convention.lower()]
+    def adjust(self, convention=None, holidays_obj=None):
+        if convention is None:
+            return self.__copy__()
+        adj_func = getattr(methods.adjust,'adjust_' + convention.lower(), None)
+        if adj_func is None:
+            adj_func = getattr(methods.adjust, convention.lower().strip('-_/ '))
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
         return BusinessDate(adj_func(self.to_date(), holidays_obj))
 
