@@ -14,7 +14,7 @@
 #  License: APACHE Version 2 License (see LICENSE file)
 
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 from . import conventions
 from . import daycount
@@ -63,7 +63,7 @@ class BusinessDate(BaseDate):
         if isinstance(year, str):
             year, month, day = cls._parse_date_string(year, default=(year, month, day))
 
-        if isinstance(year, (date, datetime)):
+        if isinstance(year, date):
             year, month, day = year.year, year.month, year.day
 
         if isinstance(year, (int, float)) and month and day:
