@@ -38,12 +38,14 @@ def is_business_day(business_date, holidays=list()):
 
 
 def adjust_no(business_date, holidays=()):
-    """
+    r"""
     no adjusts to Business Day Convention.
 
-    :param date business_date : date to adjust
-    :param list holidays : duck typing `in` for list of dates defining business holidays
+    :param (datetime.date) business_date : date to adjust
+    :param (list) holidays : duck typing `smth in holidays` for list of dates defining business holidays
     :return: date
+
+
     """
     return business_date
 

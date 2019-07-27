@@ -22,19 +22,36 @@ Class List
 Inheritance Diagram
 ===================
 
-.. inheritance-diagram:: businessdate
+.. inheritance-diagram:: businessdate.businessdate.BusinessDate
+.. inheritance-diagram:: businessdate.businessperiod.BusinessPeriod
+.. inheritance-diagram:: businessdate.businessschedule.BusinessSchedule
+.. inheritance-diagram:: businessdate.businessholidays.TargetHolidays
 
 
 Business Object Classes
 =======================
 
-.. automodule:: businessdate
+.. automodule:: businessdate.businessdate
+.. automodule:: businessdate.businessperiod
+.. automodule:: businessdate.businessrange
+.. automodule:: businessdate.businessschedule
+.. automodule:: businessdate.businessholidays
 
 
 Base Object Classes
 ===================
 
-.. automodule:: basedate
+.. automodule:: businessdate.basedate
 
-.. automodule:: baseperiod
+
+DayCount Functions
+==================
+
+.. automodule:: businessdate.daycount
+
+
+Business Day Adjustment Convention Functions
+============================================
+
+.. automodule:: businessdate.conventions
 

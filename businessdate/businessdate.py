@@ -47,16 +47,22 @@ class BusinessDate(BaseDate):
 
             BusinessDate(datetime.date(2015, 12, 31))
             BusinessDate(20151231)
-            BusinessDate(2015-12-31)
-            BusinessDate(31.12.2015)
-            BusinessDate(12/31/2015)
+            BusinessDate('20151231')
+            BusinessDate('2015-12-31')
+            BusinessDate('31.12.2015')
+            BusinessDate('12/31/2015')
             BusinessDate(42369)
             BusinessDate(42369.0)
-            BusinessDate(735963)
-            BusinessDate(735963.0)
+            BusinessDate.fromordinal(735963)
             BusinessDate()
 
-        **caution:** recommended is the use of class methods BusinessDate.from_string, from_date etc.
+
+        more complex creation styles work too and give the same
+
+        .. code-block:: python
+
+            BusinessDate('1B3M0BMOD20161213')
+            BusinessDate('20161213').adjust_follow().add_busindessday(1).add_month(3).adjust_follow()
 
         """
 
