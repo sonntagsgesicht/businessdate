@@ -212,8 +212,7 @@ class BusinessPeriod(object):
         if isinstance(other, type(self)):
             attr = 'years', 'months', 'days', 'businessdays'
             return all(getattr(self, a) == getattr(other, a) for a in attr)
-        else:
-            return False
+        return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
