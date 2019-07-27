@@ -20,8 +20,7 @@ from .businessrange import BusinessRange
 
 class BusinessSchedule(BusinessRange):
     def __init__(self, start, end, step, roll=None):
-        """
-        class to build date schedules incl. start and end date
+        """ class to build date schedules incl. start and end date
 
         :param BusinessDate start: start date of schedule
         :param BusinessDate end: end date of schedule
@@ -43,11 +42,17 @@ class BusinessSchedule(BusinessRange):
             self.append(end)
 
     def first_stub_long(self):
+        """ adjusts the schedule to have a long stub at the beginning,
+            i.e. first period is longer a regular step.
+        """
         if len(self) > 2:
             self.pop(1)
         return self
 
     def last_stub_long(self):
+        """ adjusts the schedule to have a long stub at the end,
+            i.e. last period is longer a regular step.
+        """
         if len(self) > 2:
             self.pop(-2)
         return self

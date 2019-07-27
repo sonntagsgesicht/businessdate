@@ -20,168 +20,122 @@ from .ymd import from_excel_to_ymd, from_ymd_to_excel
 
 
 class BaseDateFloat(float):
+    """ native `float` backed base class for a performing date calculations counting days since Jan, 1st 1900 """
+
+    def __new__(cls, x=0):
+        new = super(BaseDateFloat, cls).__new__(cls, x)
+        new._ymd = None
+        return new
 
     # --- property methods ---------------------------------------------------
+
     @property
     def day(self):
-        """
-        day of date
-        :return int:
-        """
-        return BaseDateFloat.to_ymd(self)[2]
+        if not self._ymd:
+            self._ymd = self.to_ymd()
+        return self._ymd[2]
 
     @property
     def month(self):
-        """
-        month of date
-        :return int:
-        """
-        return BaseDateFloat.to_ymd(self)[1]
+        if not self._ymd:
+            self._ymd = self.to_ymd()
+        return self._ymd[1]
 
     @property
     def year(self):
-        """
-        year of date
-        :return int:
-        """
-        return BaseDateFloat.to_ymd(self)[0]
-
-    @property
-    def baseclass(self):
-        return BaseDateFloat.__name__
+        if not self._ymd:
+            self._ymd = self.to_ymd()
+        return self._ymd[0]
 
     def weekday(self):
         return self.to_date().weekday()
 
     # --- constructor method -------------------------------------------------
+
     @classmethod
     def from_ymd(cls, year, month, day):
-        """
-        creates date for year, month and day
-        :param int year:
-        :param int month:
-        :param int day:
-        :return BaseDate:
-        """
+        """ creates instance from a int tuple `(year, month, day)` """
         return cls(from_ymd_to_excel(year, month, day))
 
     @classmethod
-    def from_date(cls, date_obj):
-        """
-        creates date from date object
-        :param date date_obj:
-        :return BaseDate:
-        """
-        return cls.from_ymd(date_obj.year, date_obj.month, date_obj.day)
+    def from_date(cls, d):
+        """ creates instance from a `datetime.date` object `d` """
+        return cls.from_ymd(d.year, d.month, d.day)
 
     @classmethod
-    def from_float(cls, xl_int):
-        """
-        creates date for Microsoft Excel integer date representation
-        :param int xl_int:
-        :return BaseDate:
-        """
-        return cls(xl_int)
+    def from_float(cls, x):
+        """ creates from a float `x` counting the days since Jan, 1st 1900 """
+        return cls(x)
 
     # --- cast method --------------------------------------------------------
 
     def to_ymd(self):
-        return from_excel_to_ymd(int(self))
+        """ returns the int tuple `(year, month, day)` """
+        if not self._ymd:
+            self._ymd = from_excel_to_ymd(int(self))
+        return self._ymd
 
     def to_date(self):
-        return date(*self.to_ymd())
+        """ returns `datetime.date(year, month, day)` """
+        if not self._ymd:
+            self._ymd = self.to_ymd()
+        return date(*self._ymd)
 
     def to_float(self):
+        """ returns float counting the days since Jan, 1st 1900 """
         return int(self)
 
     # --- calculation methods ------------------------------------------------
 
-    def add_days(self, days_int):
-        """
-        adds number of days to a date
+    def _add_days(self, n):
+        self._ymd = None
+        return self.__class__(super(BaseDateFloat, self).__add__(n))
 
-        :param int days_int: number of days to add
-        :return BaseDate: resulting date
-        """
-        return self.__class__(super(BaseDateFloat, self).__add__(days_int))
-
-    def diff_in_days(self, end):
-        """
-        returns distance of two dates as number of days
-        :param BaseDateFloat end: end date
-        :return float: difference between end date and start date in days
-        """
-        return super(BaseDateFloat, end).__sub__(float(self))
+    def _diff_in_days(self, d):
+        return super(BaseDateFloat, d).__sub__(float(self))
 
 
 class BaseDateDatetimeDate(date):
-
-    # --- property methods ---------------------------------------------------
-    # day
-    # month
-    # year
-    @property
-    def baseclass(self):
-        return BaseDateDatetimeDate.__name__
+    """ `datetime.date` backed base class for a performing date calculations """
 
     # --- constructor method -------------------------------------------------
+
     @classmethod
     def from_ymd(cls, year, month, day):
-        """
-        creates date for year, month and day
-        :param int year:
-        :param int month:
-        :param int day:
-        :return BaseDate:
-        """
+        """ creates instance from a int tuple `(year, month, day)` """
         return cls(year, month, day)
 
     @classmethod
-    def from_date(cls, date_obj):
-        """
-        creates date from date object
-        :param date date_obj:
-        :return BaseDate:
-        """
-        return cls.from_ymd(date_obj.year, date_obj.month, date_obj.day)
+    def from_date(cls, d):
+        """ creates instance from a `datetime.date` object `d` """
+        return cls.from_ymd(d.year, d.month, d.day)
 
     @classmethod
-    def from_float(cls, xl_int):
-        y, m, d = from_excel_to_ymd(xl_int)
+    def from_float(cls, x):
+        """ creates from a float `x` counting the days since Jan, 1st 1900 """
+        y, m, d = from_excel_to_ymd(x)
         return cls.from_ymd(y, m, d)
 
     # --- cast method --------------------------------------------------------
 
     def to_ymd(self):
+        """ returns the int tuple `(year, month, day)` """
         return self.year, self.month, self.day
 
     def to_date(self):
+        """ returns `datetime.date(year, month, day)` """
         return date(*self.to_ymd())
 
     def to_float(self):
+        """ returns float counting the days since Jan, 1st 1900 """
         return from_ymd_to_excel(*self.to_ymd())
 
     # --- calculation methods ------------------------------------------------
 
-    def add_days(self, days_int):
-        """
-        addition of a number of days
-
-        :param int days_int:
-        :return BaseDatetimeDate:
-        """
+    def _add_days(self, days_int):
         res = super(BaseDateDatetimeDate, self).__add__(timedelta(days_int))
         return self.__class__.from_ymd(res.year, res.month, res.day)
 
-    def diff_in_days(self, end):
-        """
-        calculate difference between given dates in days
-
-        :param BaseDateDatetimeDate end: end date
-        :return float: difference between end date and start date in days
-        """
+    def _diff_in_days(self, end):
         delta = super(BaseDateDatetimeDate, end).__sub__(self)
         return float(delta.days)
-
-
-BaseDate = BaseDateDatetimeDate

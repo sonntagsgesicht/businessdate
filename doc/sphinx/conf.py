@@ -19,6 +19,8 @@
 import os
 import sys
 
+sys.path.insert(0, os.path.abspath('../../businessdate'))  #  needed to import pkg
+sys.path.insert(0, os.path.abspath('../../businessdate/businessdate'))  #  needed to import pkg
 sys.path.insert(0, os.path.abspath('../../'))  #  needed to import pkg
 import businessdate as pkg
 
@@ -34,7 +36,9 @@ import businessdate as pkg
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_rtd_theme',
     'sphinx.ext.autodoc',
+    #'sphinx.ext.autosectionlabel',
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
@@ -45,23 +49,23 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.inheritance_diagram']
 
-numpydoc_show_class_members=False
+numpydoc_show_class_members=True
 
 # [ 'members', 'undoc-members', 'private-members', 'special-members', 'inherited-members', 'show-inheritance']
-autodoc_default_flags = [ 'members', 'undoc-members', 'show-inheritance', 'inherited-members']
+autodoc_default_flags = [ 'members', 'show-inheritance']
 autodoc_member_order = 'bysource' #'groupwise'
 autoclass_content = 'both'
 autosummary_generate = True
 autodoc_inherit_docstrings = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_suffix = ['.rst', '.md']
-# source_suffix = '.rst'
+#source_suffix = ['.rst', '.md']
+source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -96,58 +100,24 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
-todo_include_todos = True
+todo_include_todos = False
 
 
 # -- Options for HTML output ----------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
 html_theme = 'sphinx_rtd_theme'
-# html_theme = 'classic'
-# html_theme = 'bizstyle'
-
 html_logo = 'logo.png'
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-#
 # html_theme_options = {}
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
-
-
-# -- Options for HTMLHelp output ------------------------------------------
-
-# Output file base name for HTML help builder.
-htmlhelp_basename = pkg.__name__+'doc'
+# html_static_path = ['_static']
 
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    'papersize': 'a4paper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-     'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
-}
-
 latex_logo = 'logo.png'
+latex_elements = {
+    'papersize': 'a4paper',
+    'pointsize': '10pt',
+}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
@@ -165,6 +135,7 @@ latex_documents = [(
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
+
 man_pages = [(
     master_doc,
     pkg.__name__,
@@ -172,22 +143,3 @@ man_pages = [(
     [pkg.__author__],
     1)
 ]
-
-
-# -- Options for Texinfo output -------------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [(
-    master_doc,
-    pkg.__name__,
-    pkg.__name__.capitalize() + ' Documentation',
-    pkg.__author__,
-    pkg.__name__.capitalize(),
-    pkg.__doc__,
-    'Scientific/Engineering/Mathematics/Financial'
-),]
-
-
-

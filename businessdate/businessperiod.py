@@ -18,53 +18,72 @@ from datetime import timedelta
 
 
 class BusinessPeriod(object):
-    def __init__(self, period_in='', years=0, months=0, days=0, businessdays=0):
-        """
-        class managing date periods like days, weeks, years etc.
 
-        :param period_in:
-        :param years:
-        :param months:
-        :param days:
-        :param businessdays:
+    def __init__(self, period='', years=0, months=0, days=0, businessdays=0):
+        """ class to store and calculate date periods as combinations of days, weeks, years etc.
 
-        representation of a time BusinessPeriod,
-        similar to dateutils.relativedelta,
-        but with additional business day logic
+        :param str period: encoding a business period.
+         Such is given by a sequence of digits followed by a `char` -
+         indicating the number of
+         years **Y**,
+         quarters **Q** (which is equivalent to 3 month),
+         month **M**,
+         weeks **W** (which is equivalent to 7 days),
+         days **D**,
+         business days **B**.
+         E.g. **1Y2W3D** what gives a period of 1 year plus 2 weeks and 3 days.
+         (details see :ref:`tutorial`)
+
+        :param int years: number of years in the period
+        :param int months: number of month in the period
+        :param int days: number of days in the period
+        :param int businessdays: number of business days,
+         i.e. days which are neither weekend nor holidays, in the period.
+         Only either `businessdays` or the others con be given.
+         Both at the same time is not allowed.
+
         """
-        if period_in and any((years, months, days, businessdays)):
+        if period and any((years, months, days, businessdays)):
             raise ValueError(
                 "Either string or argument input only for %s" % self.__class__.__name__)
 
         super(BusinessPeriod, self).__init__()
-        if isinstance(period_in, BusinessPeriod):
-            years = period_in.years
-            months = period_in.months
-            days = period_in.days
-            businessdays = period_in.businessdays
-        elif isinstance(period_in, timedelta):
-            days = period_in.days
-        elif isinstance(period_in, str):
-            if period_in.upper() == '':
+        if isinstance(period, BusinessPeriod):
+            years = period.years
+            months = period.months
+            days = period.days
+            businessdays = period.businessdays
+        elif isinstance(period, timedelta):
+            days = period.days
+        elif isinstance(period, str):
+            if period.upper() == '':
                 pass
-            elif period_in.upper() == '0D':
+            elif period.upper() == '0D':
                 pass
-            elif period_in.upper() == 'ON':
+            elif period.upper() == 'ON':
                 businessdays = 1
-            elif period_in.upper() == 'TN':
+            elif period.upper() == 'TN':
                 businessdays = 2
-            elif period_in.upper() == 'DD':
+            elif period.upper() == 'DD':
                 businessdays = 3
             else:
-                s, y, q, m, w, d, f = BusinessPeriod._parse_ymd(period_in)
+                period = period.upper().replace(' ', '')
+                period = period.replace('BUSINESSDAYS', 'B')
+                period = period.replace('YEARS','Y')
+                period = period.replace('QUARTERS', 'Q')
+                period = period.replace('MONTHS', 'M')
+                period = period.replace('WEEKS', 'W')
+                period = period.replace('DAYS', 'D')
+
+                s, y, q, m, w, d, f = BusinessPeriod._parse_ymd(period)
                 # no final businesdays allowed
                 if f:
-                    raise ValueError("Unable to parse %s as %s" % (period_in, self.__class__.__name__))
+                    raise ValueError("Unable to parse %s as %s" % (period, self.__class__.__name__))
                 # except the first non vanishing of y,q,m,w,d must have positive sign
                 sgn = [int(x / abs(x)) for x in (y, q, m, w, d) if x]
                 if [x for x in sgn[1:] if x < 0]:
                     raise ValueError(
-                        "Except at the beginning no signs allowed in %s as %s" % (period_in, self.__class__.__name__))
+                        "Except at the beginning no signs allowed in %s as %s" % (period, self.__class__.__name__))
                 y, q, m, w, d = (abs(x) for x in (y, q, m, w, d))
                 # consolidate a quarter as three month and a week as seven days
                 m += q * 3
@@ -97,13 +116,8 @@ class BusinessPeriod(object):
     # --- validation and information methods ---------------------------------
 
     @classmethod
-    def _parse_ymd(cls, period_str):
-        """
-        can even parse strings like '-1B-2Y-4Q+5M' but also '0B', '-1Y2M3D' as well.
-
-        :param period_str:
-        :return:
-        """
+    def _parse_ymd(cls, period):
+        # can even parse strings like '-1B-2Y-4Q+5M' but also '0B', '-1Y2M3D' as well.
         def _parse(p, letter):
             if p.find(letter) > 0:
                 s, p = p.split(letter, 1)
@@ -114,7 +128,7 @@ class BusinessPeriod(object):
                 return sgn * int(s), p
             return 0, p
 
-        p = period_str.upper()
+        p = period.upper()
 
         # p[-1] is not 'B', p.strip('0123456789+-B')==''
         s, p = _parse(p, 'B') if not p[-1]=='B' else (0, p)
@@ -131,30 +145,23 @@ class BusinessPeriod(object):
         return s, y, q, m, w, d, f
 
     @classmethod
-    def is_businessperiod(cls, in_period):
-        """
-        :param in_period: object to be checked
-        :type in_period: object, str, timedelta
-        :return: True if cast works
-        :rtype: Boolean
-
-        checks is argument can be casted to BusinessPeriod
-        """
-        if in_period is None:
+    def is_businessperiod(cls, period):
+        """ returns true if the argument can be understood as `BusinessPeriod` """
+        if period is None:
             return False
-        if isinstance(in_period, (int, float, list, set, dict, tuple)):
+        if isinstance(period, (int, float, list, set, dict, tuple)):
             return False
-        if isinstance(in_period, (timedelta, BusinessPeriod)):
+        if isinstance(period, (timedelta, BusinessPeriod)):
             return True
-        if in_period in ('', '0D', 'ON', 'TN', 'DD'):
+        if period in ('', '0D', 'ON', 'TN', 'DD'):
             return True
-        if isinstance(in_period, str):
-            if in_period.isdigit():
+        if isinstance(period, str):
+            if period.isdigit():
                 return False
-            if in_period.upper().strip('+-0123456789BYQMWD'):
+            if period.upper().strip('+-0123456789BYQMWD'):
                 return False
             try:  # to be removed
-                BusinessPeriod._parse_ymd(in_period)
+                BusinessPeriod._parse_ymd(period)
             except ValueError:
                 return False
             return True
@@ -226,7 +233,12 @@ class BusinessPeriod(object):
     def __hash__(self):
         return hash(repr(self))
 
+    def __nonzero__(self):
+        # return any((self.years, self.months, self.days, self.businessdays))
+        return self.__bool__()
+
     def __bool__(self):
+        # return self.__nonzero__()
         return any((self.years, self.months, self.days, self.businessdays))
 
     def __add__(self, other):

@@ -14,86 +14,66 @@
 #  License: APACHE Version 2 License (see LICENSE file)
 
 
-# --- day count fraction methods -----------------------------------------
-
-# List of day count conventions
-# 30/360 (4.16(f) 2006 ISDA Definitions) [other names: 360/360]
-# Act/365.25 (not in ISDA Definitions)
-# Act/365 (4.16(d) 2006 ISDA Definitions) [other names: actual/365 (Fixed), act/365 (Fixed), A/365 (Fixed), A/365F
-# Act/360 (4.16(e) 2006 ISDA Definitions) [other names: actual/360, A/360
-# Act/ACT (4.16(b) 2006 ISDA Definitions) [other names: actual/actual [(ISDA)], act/act (ISDA)]
-# 30E/360 (4.16(g) 2006 ISDA Definitions) [other names: Euro bond Basis]
-
 from datetime import date
 from .ymd import is_leap_year
 
 
 def diff_in_days(start, end):
-    """
-        calculates days between start and end date
-
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: int
-    """
+    """ calculates days between start and end date """
     return (end-start).days
 
 
 def get_30_360(start, end):
-    """
-        implements 30/360 Day Count Convention (4.16(f) 2006 ISDA Definitions)
-
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
+    """ implements 30/360 Day Count Convention (4.16(f) 2006 ISDA Definitions) """
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
     return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
 
 
-def get_act_36525(start, end):
-    """
-        implements Act/365.25 Day Count Convention
+def get_30e_360(start, end):
+    """ implements the 30E/360 Day Count Convention (4.16(g) 2006 ISDA Definitions) """
 
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
-    return diff_in_days(start, end) / 365.25
+    y1, m1, d1 = start.timetuple()[:3]
+    # adjust to date immediately following the the last day
+    y2, m2, d2 = end.timetuple()[:3]
+
+    d1 = min(d1, 30)
+    d2 = min(d2, 30)
+
+    return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0
 
 
-def get_act_365(start, end):
-    """
-        implements Act/365 day count convention (4.16(d) 2006 ISDA Definitions)
+def get_30e_360_isda(start, end):
+    """ implements the 30E/360 (ISDA) Day Count Convention (4.16(h) 2006 ISDA Definitions) """
+    y1, m1, d1 = start.timetuple()[:3]
+    # adjust to date immediately following the last day
+    y2, m2, d2 = end.timetuple()[:3]
 
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
-    return diff_in_days(start, end) / 365.0
+    if (m1 == 2 and d1 >= 28) or d1 == 31:
+        d1 = 30
+    if (m2 == 2 and d2 >= 28) or d2 == 31:
+        d2 = 30
+
+    return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0
 
 
 def get_act_360(start, end):
-    """
-        implements Act/360 day count convention (4.16(e) 2006 ISDA Definitions)
-
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
+    """ implements Act/360 day count convention (4.16(e) 2006 ISDA Definitions) """
     return diff_in_days(start, end) / 360.0
 
 
-def get_act_act(start, end):
-    """
-        implements Act/Act day count convention (4.16(b) 2006 ISDA Definitions)
+def get_act_365(start, end):
+    """ implements Act/365 day count convention (4.16(d) 2006 ISDA Definitions) """
+    return diff_in_days(start, end) / 365.0
 
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
-    # split end-start in year portions
+
+def get_act_36525(start, end):
+    """ implements Act/365.25 Day Count Convention """
+    return diff_in_days(start, end) / 365.25
+
+
+def get_act_act(start, end):
+    """ implements Act/Act day count convention (4.16(b) 2006 ISDA Definitions) """
 
     # if the period does not lie within a year split the days in the period as following:
     #           remaining days of start year / years in between / days in the end year
@@ -129,46 +109,3 @@ def get_act_act(start, end):
         #       return diff_in_days(start, end) / 365.0
         # else:
         #  raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
-
-
-def actact(start, end):
-    return get_act_act(start, end)
-
-
-def get_30e_360(start, end):
-    """
-        implements the 30E/360 Day Count Convention (4.16(g) 2006 ISDA Definitions)
-
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
-
-    y1, m1, d1 = start.timetuple()[:3]
-    # adjust to date immediately following the the last day
-    y2, m2, d2 = end.timetuple()[:3]
-
-    d1 = min(d1, 30)
-    d2 = min(d2, 30)
-
-    return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0
-
-
-def get_30e_360_isda(start, end):
-    """
-        implements the 30E/360 (ISDA) Day Count Convention (4.16(h) 2006 ISDA Definitions)
-
-    :param date start : date at start of period
-    :param date end : date at end of period
-    :return: float
-    """
-    y1, m1, d1 = start.timetuple()[:3]
-    # adjust to date immediately following the last day
-    y2, m2, d2 = end.timetuple()[:3]
-
-    if (m1 == 2 and d1 >= 28) or d1 == 31:
-        d1 = 30
-    if (m2 == 2 and d2 >= 28) or d2 == 31:
-        d2 = 30
-
-    return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0

@@ -20,25 +20,23 @@ from .businessdate import BusinessDate
 
 class BusinessRange(list):
     def __init__(self, start, stop=None, step=None, rolling=None):
-        """
-        range like class to build date list
+        """ range like class to build list of `BusinessDate`
 
-        :param start: date to begin schedule, if stop not given, start will be used as stop and
-            default in rolling to BusinessDate()
-        :type start: BusinessDate or int or str
-        :param stop: date to stop before, if not given, start will be used for stop instead
-        :type stop: BusinessDate or int or str
-        :param step: period to step schedule, if not given 1 year is default
-        :type step: BusinessPeriod or str
-        :param rolling: date to roll on (forward and backward) between start and stop,
-            if not given default will be start
-        :type rolling: BusinessDate or int or str
+        :param BusinessDate start: date to begin schedule,
+         if stop not given, start will be used as stop and
+         default in rolling to BusinessDate()
+        :param BusinessDate stop: date to stop before,
+         if not given, start will be used for stop instead
+        :param BusinessPeriod step: period to step schedule,
+         if not given 1 year is default
+        :param BusinessDate rolling: date to roll on
+         (forward and backward) between start and stop,
+         if not given default will be start
 
-        range like class to build BusinessDate list from rolling date and BusinessPeriod
-
-        First, :code:`rolling` and :code:`step` defines a infinite grid of dates.
-        Second, this grid is sliced by :code:`start` (included , if meeting the grid) and
-        :code:`end` (excluded).
+        **Ansatz** First, `rolling` and `step`
+        defines a infinite grid of dates.
+        Second, this grid is sliced by `start` (included ,
+        if meeting the grid) and `end` (excluded).
 
         """
 
@@ -89,32 +87,17 @@ class BusinessRange(list):
 
         return grid
 
-    def adjust(self, convention='mod_follow', holidays_obj=None):
-        adj_list = [d.adjust(convention, holidays_obj) for d in self]
+    def adjust(self, convention='', holidays=None):
+        """ returns adjusted `BusinessRange` following given convention
+
+        For details of adjusting `BusinessDate` see 'BusinessDate.adjust()`.
+
+        For possible conventions invoke `BusinessDate().adjust()`
+
+        For more details on the conventions see module `businessdate.conventions`)
+        """
+
+        adj_list = [d.adjust(convention, holidays) for d in self]
         del self[:]
         super(BusinessRange, self).extend(adj_list)
         return self
-
-    def adjust_previous(self, holidays_obj=None):
-        return self.adjust('previous', holidays_obj)
-
-    def adjust_follow(self, holidays_obj=None):
-        return self.adjust('follow', holidays_obj)
-
-    def adjust_mod_previous(self, holidays_obj=None):
-        return self.adjust('mod_previous', holidays_obj)
-
-    def adjust_mod_follow(self, holidays_obj=None):
-        return self.adjust('mod_follow', holidays_obj)
-
-    def adjust_start_of_month(self, holidays_obj=None):
-        return self.adjust('start_of_month', holidays_obj)
-
-    def adjust_end_of_month(self, holidays_obj=None):
-        return self.adjust('end_of_month', holidays_obj)
-
-    def adjust_imm(self, holidays_obj=None):
-        return self.adjust('imm', holidays_obj)
-
-    def adjust_cds_imm(self, holidays_obj=None):
-        return self.adjust('cds_imm', holidays_obj)

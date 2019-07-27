@@ -20,8 +20,15 @@ from .holidays import target_days
 
 
 class BusinessHolidays(list):
-    """
-    holiday calendar class
+    """ holiday calendar class
+
+    A `BusinessHolidays` imitated a list of `datetime.date`
+    which can be used to check if a `BusinessDate` is
+    included as holiday.
+
+    For convenience input need not to be of type `datetime.date`.
+    Duck typing is enough, i.e. having properties
+    `year`, `month` and `day`.
     """
 
     def __init__(self, iterable=()):
@@ -37,8 +44,17 @@ class BusinessHolidays(list):
 
 
 class TargetHolidays(BusinessHolidays):
-    """
-    holiday calendar class for ecb target2 holidays
+    """ holiday calendar class of ecb target2 holidays
+
+    Target holidays are
+
+    * Jan, 1st
+    * Good Friday
+    * Easter Monday
+    * May, 1st
+    * Christmas Day
+    * Boxing Day
+
     """
 
     def __contains__(self, item):

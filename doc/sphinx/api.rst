@@ -1,4 +1,6 @@
 
+.. module:: businessdate
+
 -----------------
 API Documentation
 -----------------
@@ -6,52 +8,71 @@ API Documentation
 .. toctree::
 
 
-Class List
-==========
-
 .. autosummary::
     :nosignatures:
 
-    businessdate.BusinessDate
-    businessdate.BusinessPeriod
-    businessdate.BusinessRange
-    businessdate.BusinessSchedule
-    businessdate.BusinessHolidays
-
-
-Inheritance Diagram
-===================
-
-.. inheritance-diagram:: businessdate.businessdate.BusinessDate
-.. inheritance-diagram:: businessdate.businessperiod.BusinessPeriod
-.. inheritance-diagram:: businessdate.businessschedule.BusinessSchedule
-.. inheritance-diagram:: businessdate.businessholidays.TargetHolidays
+    BusinessDate
+    BusinessPeriod
+    BusinessRange
+    BusinessSchedule
+    BusinessHolidays
 
 
 Business Object Classes
 =======================
 
-.. automodule:: businessdate.businessdate
-.. automodule:: businessdate.businessperiod
-.. automodule:: businessdate.businessrange
-.. automodule:: businessdate.businessschedule
-.. automodule:: businessdate.businessholidays
+BusinessDate
+------------
+.. autoclass:: BusinessDate
+
+BusinessDate Base Classes
+*************************
+
+`BusinessDate` inherits from one of two possible base classes.
+One itself inherited by a native `float` class.
+The other inherited from `datetime.date` class.
+
+Both classes are implemented to offer future releases the flexibility to switch
+from one super class to another if such offers better performance.
+
+Currently `BusinessDate` inherits from `BaseDateDatetimeDate` which offers more
+elaborated functionality.
+
+.. Warning:: Future releases of `businessdate` may be backed by different base classes.
 
 
-Base Object Classes
-===================
+.. autoclass:: businessdate.basedate.BaseDateFloat
+.. autoclass:: businessdate.basedate.BaseDateDatetimeDate
 
-.. automodule:: businessdate.basedate
+BusinessPeriod
+--------------
+.. autoclass:: BusinessPeriod
+
+BusinessSchedule
+----------------
+.. autoclass:: BusinessSchedule
+.. autoclass:: BusinessRange
+
+BusinessHolidays
+----------------
+.. autoclass:: businessdate.businessholidays.TargetHolidays
+.. autoclass:: BusinessHolidays
 
 
-DayCount Functions
-==================
+Convention Functions
+====================
+
+
+Day Count
+---------
 
 .. automodule:: businessdate.daycount
+    :members:
 
 
-Business Day Adjustment Convention Functions
-============================================
+Business Day Adjustment
+-----------------------
 
 .. automodule:: businessdate.conventions
+    :members:
 
