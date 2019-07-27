@@ -13,7 +13,7 @@
 #  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
 
-__name__ = 'businessdate'
+# __name__ = 'businessdate'
 __doc__ = 'Python library for generating business dates for fast date operations and rich functionality.'
 __version__ = '0.5'
 __author__ = 'Deutsche Postbank AG [pbrisk]'

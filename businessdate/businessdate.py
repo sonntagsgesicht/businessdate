@@ -218,8 +218,7 @@ class BusinessDate(BaseDateDatetimeDate):
             return [self + pd for pd in other]
         if BusinessPeriod.is_businessperiod(other):
             return self.add_period(other)
-        else:
-            raise TypeError('addition of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
+        raise TypeError('addition of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __sub__(self, other):
         """
@@ -235,8 +234,7 @@ class BusinessDate(BaseDateDatetimeDate):
         elif BusinessDate.is_businessdate(other):
             y, m, d = self.diff_in_ymd(BusinessDate(other))
             return BusinessPeriod(years=y, months=m, days=d)
-        else:
-            raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
+        raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __str__(self):
         date_format = self.__class__.DATE_FORMAT
@@ -317,8 +315,7 @@ class BusinessDate(BaseDateDatetimeDate):
             years += int(months // 12)
             months = int(months % 12)
             return self._add_months(months)._add_years(years)._add_days(days)
-        else:
-            return self._add_years(years)._add_months(months)._add_days(days)
+        return self._add_years(years)._add_months(months)._add_days(days)
 
     def add_period(self, period_obj, holidays=None):
         """ adds a `BusinessPeriod` object or anythings that create one and returns `BusinessDate` object.

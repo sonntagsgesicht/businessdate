@@ -85,27 +85,11 @@ def get_act_act(start, end):
     if end.year - start.year == 0:
         if is_leap_year(start.year):
             return diff_in_days(start, end) / 366.0  # leap year: 366 days
-        else:
-            # return diff_in_days(start, end) / 366.0
-            return diff_in_days(start, end) / 365.0  # non-leap year: 365 days
-    else:
-        rest_year1 = diff_in_days(start, date(start.year, 12, 31)) + 1  # since the first day counts
+        return diff_in_days(start, end) / 365.0  # non-leap year: 365 days
 
-        rest_year2 = abs(diff_in_days(end, date(end.year, 1, 1)))  # here the last day is automatically not counted
+    rest_year1 = diff_in_days(start, date(start.year, 12, 31)) + 1  # since the first day counts
+    rest_year2 = abs(diff_in_days(end, date(end.year, 1, 1)))  # here the last day is automatically not counted
+    years_in_between = end.year - start.year - 1
 
-        years_in_between = end.year - start.year - 1
-
-        return years_in_between + rest_year1 / (366.0 if is_leap_year(start.year) else 365.0) + rest_year2 / (
-            366.0 if is_leap_year(end.year) else 365.0)
-
-        # elif end.year - start.year == 1:
-        #   if is_leap_year(start.year):
-        #       return diff_in_days(start, from_date(date(start.year, 12, 31))) / 366.0 + \
-        #              diff_in_days(from_date(date(start.year, 12, 31)), end) / 365.0
-        #   elif is_leap_year(end.year):
-        #       return diff_in_days(start, from_date(date(start.year, 12, 31))) / 365.0 + \
-        #              diff_in_days(from_date(date(start.year, 12, 31)), end) / 366.0
-        #   else:
-        #       return diff_in_days(start, end) / 365.0
-        # else:
-        #  raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
+    return years_in_between + rest_year1 / (366.0 if is_leap_year(start.year) else 365.0) + rest_year2 / (
+        366.0 if is_leap_year(end.year) else 365.0)

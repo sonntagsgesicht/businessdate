@@ -34,8 +34,8 @@ def is_leap_year(year):
     :param int year: calendar year
     :return bool:
     """
-
-    return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+    # return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+    return year % 100 != 0 or year % 400 == 0 if year % 4 == 0 else False
 
 
 def days_in_year(year):
