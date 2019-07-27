@@ -6,8 +6,8 @@ businessdate
    :target: https://www.codefactor.io/repository/github/sonntagsgesicht/businessdate
    :alt: CodeFactor
 
-.. image:: https://img.shields.io/codeship/8b027c40-45fa-0135-6835-62afb45a34d4/master.svg
-   :target: https://codeship.com//projects/231308
+.. image:: https://img.shields.io/codeship/43157680-92f7-0137-34fd-0e3da511fc50/master.svg
+   :target: https://codeship.com//projects/356697
    :alt: Codechip
 
 .. image:: https://readthedocs.org/projects/businessdate/badge
