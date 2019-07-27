@@ -25,13 +25,14 @@ ONE_DAY = timedelta(1)
 
 
 def is_business_day(business_date, holidays=list()):
-    """
-    method to check if a date falls neither on weekend nor is holiday
+    r"""
+        method to check if a date falls neither on weekend nor is holiday
 
-    :param date business_date : date to adjust
-    :param list holidays : duck typing `in` for list of dates defining business holidays
-    :return: bool
+        :param date business_date : date to adjust
+        :param list holidays : duck typing `in` for list of dates defining business holidays
+        :return: bool
     """
+
     if business_date.weekday() > FRIDAY:
         return False
     return business_date not in holidays
@@ -47,10 +48,21 @@ def adjust_no(business_date, holidays=()):
 
 
     """
+
     return business_date
 
 
 def no(business_date, holidays=()):
+    r"""
+    no adjusts to Business Day Convention.
+
+    :param (datetime.date) business_date : date to adjust
+    :param (list) holidays : duck typing `smth in holidays` for list of dates defining business holidays
+    :return: date
+
+
+    """
+
     return adjust_no(business_date, holidays)
 
 
