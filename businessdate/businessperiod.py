@@ -43,7 +43,7 @@ class BusinessPeriod(object):
             days = period_in.days
             businessdays = period_in.businessdays
         elif isinstance(period_in, timedelta):
-            days = timedelta.days
+            days = period_in.days
         elif isinstance(period_in, str):
             if period_in.upper() == '':
                 pass
@@ -64,7 +64,7 @@ class BusinessPeriod(object):
                 sgn = [int(x / abs(x)) for x in (y, q, m, w, d) if x]
                 if [x for x in sgn[1:] if x < 0]:
                     raise ValueError(
-                        "Except at the begining no signs allowed in %s as %s" % (period_in, self.__class__.__name__))
+                        "Except at the beginning no signs allowed in %s as %s" % (period_in, self.__class__.__name__))
                 y, q, m, w, d = (abs(x) for x in (y, q, m, w, d))
                 # consolidate a quarter as three month and a week as seven days
                 m += q * 3
@@ -115,7 +115,11 @@ class BusinessPeriod(object):
             return 0, p
 
         p = period_str.upper()
-        s, p = _parse(p, 'B')
+
+        # p[-1] is not 'B', p.strip('0123456789+-B')==''
+        s, p = _parse(p, 'B') if not p[-1]=='B' else (0, p)
+        s, p = _parse(p, 'B') if not p.strip('0123456789+-B') else (s, p)
+        s, p = _parse(p, 'B') if p.count('B') > 1 else (s, p)
         y, p = _parse(p, 'Y')
         q, p = _parse(p, 'Q')
         m, p = _parse(p, 'M')
@@ -179,10 +183,9 @@ class BusinessPeriod(object):
         return period_str
 
     def __abs__(self):
-        self.years = abs(self.years)
-        self.months = abs(self.months)
-        self.days = abs(self.days)
-        self.businessdays = abs(self.businessdays)
+        ymdb = self.years, self.months, self.days, self.businessdays
+        y,m,d,b = tuple(map(abs, ymdb))
+        return self.__class__(years=y, months=m, days=d, businessdays=b)
 
     def __cmp__(self, other):
         """ compare BusinessPeriods, comparison by (years*12+months)*31+days
@@ -190,9 +193,10 @@ class BusinessPeriod(object):
         :param BusinessPeriod other:
         :return: int
         """
-        if not isinstance(other, BusinessPeriod):
+        if not BusinessPeriod.is_businessperiod(other):
             raise TypeError(
                 "Can't compare since type %s is not an instance of BusinessPeriod." % other.__class__.__name__)
+        other = BusinessPeriod(other)
         s = (self.years * 12 + self.months) * 31 + self.days
         o = (other.years * 12 + other.months) * 31 + other.days
         return s - o

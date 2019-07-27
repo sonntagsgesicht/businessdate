@@ -185,8 +185,8 @@ class BusinessDate(BaseDate):
         """
             addition of BusinessDate.
 
-        :param BusinessDate or BusinessPeriod or str other: can be BusinessPeriod or
-        any thing that might be casted to it.
+        :param object other: can be BusinessPeriod or
+        any thing that might be casted to it. Or a list of them.
         """
         if isinstance(other, (list, tuple)):
             return [self + pd for pd in other]
@@ -199,7 +199,8 @@ class BusinessDate(BaseDate):
         """
             subtraction of BusinessDate.
 
-        :param object other: can be other BusinessDate, BusinessPeriod or any thing that might be casted to those.
+        :param object other: can be other BusinessDate, BusinessPeriod or
+        any thing that might be casted to those. Or a list of them.
         """
         if isinstance(other, (list, tuple)):
             return [self - pd for pd in other]
@@ -362,9 +363,10 @@ class BusinessDate(BaseDate):
         while m < 0:
             y -= 1
             m += 12
-        while m > 12:
-            y += 1
-            m -= 12
+        # never used, even by 100% test coverage
+        # while m > 12:
+        #     y += 1
+        #     m -= 12
 
         s = self.add_ymd(y, m, 0)
         d = s.diff_in_days(end_date)
@@ -383,10 +385,12 @@ class BusinessDate(BaseDate):
     # --- day count fraction methods -----------------------------------------
 
     def get_day_count(self, end, convention='act_36525'):
-        # dc_func = globals()['get_' + convention.lower()]
-        dc_func = getattr(daycount, 'get_' + convention.lower(), None)
+        convention = convention.lower()
+        dc_func = getattr(daycount, 'get_' + convention, None)
         if dc_func is None:
-            dc_func = getattr(daycount, convention.lower().translate({ord(i): None for i in '/-_. '}))
+            for c in '/-_. ':
+                convention = convention.replace(c, '')
+            dc_func = getattr(daycount, convention)
         return dc_func(self.to_date(), end.to_date())
 
     def get_30_360(self, end):
@@ -415,9 +419,12 @@ class BusinessDate(BaseDate):
     def adjust(self, convention=None, holidays_obj=None):
         if convention is None:
             return self.__copy__()
-        adj_func = getattr(conventions, 'adjust_' + convention.lower(), None)
+        convention = convention.lower()
+        adj_func = getattr(conventions, 'adjust_' + convention, None)
         if adj_func is None:
-            adj_func = getattr(conventions, convention.lower().translate({ord(i): None for i in '/-_. '}))
+            for c in '/-_. ':
+                convention = convention.replace(c,'')
+            adj_func = getattr(conventions, convention)
         holidays_obj = self.__class__.DEFAULT_HOLIDAYS if holidays_obj is None else holidays_obj
         return BusinessDate(adj_func(self.to_date(), holidays_obj))
 

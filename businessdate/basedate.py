@@ -50,6 +50,9 @@ class BaseDateFloat(float):
     def baseclass(self):
         return BaseDateFloat.__name__
 
+    def weekday(self):
+        return self.to_date().weekday()
+
     # --- constructor method -------------------------------------------------
     @classmethod
     def from_ymd(cls, year, month, day):

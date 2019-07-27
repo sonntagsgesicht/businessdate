@@ -131,6 +131,10 @@ def get_act_act(start, end):
         #  raise NotImplementedError('Act/Act day count not implemented for periods spanning three years or more.')
 
 
+def actact(start, end):
+    return get_act_act(start, end)
+
+
 def get_30e_360(start, end):
     """
         implements the 30E/360 Day Count Convention (4.16(g) 2006 ISDA Definitions)
