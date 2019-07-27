@@ -13,6 +13,7 @@
 #  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
 
+import businessdate as pkg
 
 import codecs
 try:
@@ -22,16 +23,15 @@ except ImportError:
 
 
 setup(
-    name='businessdate',
-    description='Python library for generating business dates for fast date operations and rich functionality.',
-    version='0.4',
-    author='Deutsche Postbank AG [pbrisk]',
-    author_email='pbrisk_at_github@icloud.com',
-    url='https://github.com/pbrisk/businessdate',
-    bugtrack_url='https://github.com/pbrisk/businessdate/issues',
+    name=pkg.__name__,
+    description=pkg.__doc__,
+    version=pkg.__version__,
+    author=pkg.__author__,
+    author_email=pkg.__email__,
+    url=pkg.__url__,
     license='Apache License 2.0',
-    packages=['businessdate'],
-    long_description=codecs.open('README.rst', encoding='utf-8').read(),
+    packages=pkg.__dependencies__,
+    long_description='\n'+codecs.open('README.rst', encoding='utf-8').read(),
     platforms='any',
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -43,6 +43,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Education',
         'Topic :: Office/Business',
         'Topic :: Office/Business :: Financial',

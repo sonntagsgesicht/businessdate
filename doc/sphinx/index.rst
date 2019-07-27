@@ -3,16 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-========
-Welcome!
-========
+=======================
+Welcome to businessdate
+=======================
+
+Let's have more than one.
+
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
-    about
-    starting
-    tutorials
+    intro
+    tutorial
     api
     releases
 

@@ -13,7 +13,16 @@
 #  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
 
-# from basedate import *
-# from baseperiod import *
-from businessdate import BusinessDate, BusinessPeriod, BusinessSchedule, BusinessRange, \
-    BusinessHolidays, DEFAULT_HOLIDAYS
+# __name__ = 'businessdate'
+__doc__ = 'Python library for generating business dates for fast date operations and rich functionality.'
+__version__ = '0.5'
+__author__ = 'Deutsche Postbank AG [pbrisk]'
+__email__ = 'pbrisk_at_github@icloud.com'
+__url__ = 'https://github.com/pbrisk/businessdate'
+__dependencies__ = ()
+
+from .businessholidays import BusinessHolidays
+from .businessperiod import BusinessPeriod
+from .businessdate import BusinessDate
+from .businessrange import BusinessRange
+from .businessschedule import BusinessSchedule

@@ -1,18 +1,26 @@
-============
+
 businessdate
-============
+------------
+
+.. image:: https://www.codefactor.io/repository/github/sonntagsgesicht/businessdate/badge
+   :target: https://www.codefactor.io/repository/github/sonntagsgesicht/businessdate
+   :alt: CodeFactor
 
 .. image:: https://img.shields.io/codeship/8b027c40-45fa-0135-6835-62afb45a34d4/master.svg
-    :target: https://codeship.com//projects/231308
+   :target: https://codeship.com//projects/231308
+   :alt: Codechip
 
 .. image:: https://readthedocs.org/projects/businessdate/badge
-    :target: http://businessdate.readthedocs.io
+   :target: http://businessdate.readthedocs.io
+   :alt: ReadTheDocs
 
-A fast, efficient Python library for generating business dates inherited
-from float for fast date operations. Typical banking business methods
-are provided like business holidays adjustment, day count fractions.
+A fast, efficient Python library for generating business dates for fast date operations.
+Typical banking business methods are provided like business holidays adjustment, day count fractions.
 Beside dates generic business periods offer to create time periods like
-'10Y', '3 Months' or '2b'. Periods can easily added to business dates.
+'10Y', '3 Months' or '2b'. Periods can easily added to or subtracted from business dates.
+
+Moreover `range` style schedule generator are provided to systematic build a list of dates.
+Such are used to set up the payment schedule of loan and financial derivatives.
 
 
 Example Usage
@@ -20,17 +28,33 @@ Example Usage
 
 .. code-block:: python
 
-    from datetime import date
 
+    from datetime import date
     from businessdate import BusinessDate, BusinessPeriod
 
-    >>> BusinessDate(20140101).add_days(10)
+    >>> BusinessDate(years=2014, months=01, days=11)
     20140111
-
-    >>> BusinessPeriod('1Y').add_months(3)
-    1Y3M
-
+    >>> BusinessDate(date(2014,01,11))
+    20140111
+    >>> BusinessDate(20140111)
+    20140111
+    >>> BusinessDate('20140111')
+    20140111
+    >>> BusinessDate('2015-12-31')
+    20151231
+    >>> BusinessDate('31.12.2015')
+    20151231
+    >>> BusinessDate('12/31/2015')
+    20151231
+    >>>BusinessDate(42369)
+    20151231
     >>> BusinessDate(20140101) + BusinessPeriod('1Y3M')
+    20150401
+    >>> BusinessDate(20140101) + '1Y3M'
+    20150401
+    >>> BusinessDate(20170101) - '1Y1D'
+    20160229
+    >>> BusinessDate('1Y3M20140101')
     20150301
 
 Install
@@ -42,15 +66,9 @@ The latest stable version can always be installed or updated via pip:
 
     $ pip install businessdate
 
-If the above fails, please try easy_install instead:
 
-.. code-block:: bash
-
-    $ easy_install businessdate
-
-
-Examples
---------
+Further Examples
+----------------
 
 .. code-block:: python
 
@@ -100,14 +118,15 @@ The latest development version can be installed directly from GitHub:
 
     $ pip install --upgrade git+https://github.com/pbrisk/businessdate.git
 
+or downloaded from `<https://github.com/pbrisk/businessdate>`_.
+
 
 Contributions
 -------------
 
 .. _issues: https://github.com/pbrisk/businessdate/issues
-.. __: https://github.com/pbrisk/businessdate/pulls
 
-Issues_ and `Pull Requests`__ are always welcome.
+Issues_ and `Pull Requests <https://github.com/pbrisk/businessdate/pulls>`_ are always welcome.
 
 
 License
@@ -116,5 +135,3 @@ License
 .. __: https://github.com/pbrisk/businessdate/raw/master/LICENSE
 
 Code and documentation are available according to the Apache Software License (see LICENSE__).
-
-
