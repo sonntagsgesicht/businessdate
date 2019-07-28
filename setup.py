@@ -29,7 +29,7 @@ setup(
     author=pkg.__author__,
     author_email=pkg.__email__,
     url=pkg.__url__,
-    license='Apache License 2.0',
+    license=pkg.__licence__,
     packages=pkg.__dependencies__,
     long_description='\n'+codecs.open('README.rst', encoding='utf-8').read(),
     platforms='any',

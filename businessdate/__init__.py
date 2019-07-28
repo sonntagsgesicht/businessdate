@@ -13,12 +13,16 @@
 #  Website: https://github.com/pbrisk/businessdate
 #  License: APACHE Version 2 License (see LICENSE file)
 
+from datetime import datetime
+
 # __name__ = 'businessdate'
 __doc__ = 'Python library for generating business dates for fast date operations and rich functionality.'
 __version__ = '0.5'
-__author__ = 'Deutsche Postbank AG [pbrisk]'
-__email__ = 'pbrisk_at_github@icloud.com'
-__url__ = 'https://github.com/pbrisk/businessdate'
+__date__ = datetime.today().strftime('%A %d %B %Y')
+__author__ = 'sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]'
+__email__ = 'sonntagsgesicht@icloud.com'
+__url__ = 'https://github.com/sonntagsgesicht/businessdate'
+__license__ = 'Apache License 2.0'
 __dependencies__ = ()
 
 from .businessholidays import BusinessHolidays
