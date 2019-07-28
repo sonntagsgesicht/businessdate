@@ -104,14 +104,12 @@ class BusinessDate(BaseDateDatetimeDate):
         if isinstance(year, int) and month and day:
             if issubclass(cls, BaseDateFloat):
                 return cls.from_ymd(year, month, day)
-            elif issubclass(cls, BaseDateDatetimeDate):
-                return super(BusinessDate, cls).__new__(cls, year, month, day)
+            return super(BusinessDate, cls).__new__(cls, year, month, day)
 
         if isinstance(year, (int, float)) and 1 < year < 10000101:  # excel representation before 1000 a.d.
-            if issubclass(cls, BaseDateFloat):
-                return super(BusinessDate, cls).__new__(cls, year)
-            elif issubclass(cls, BaseDateDatetimeDate):
+            if issubclass(cls, BaseDateDatetimeDate):
                 return cls.from_float(year)
+            return super(BusinessDate, cls).__new__(cls, year)
 
         if isinstance(year, (list, tuple)):
             return list(map(BusinessDate, year))
@@ -141,8 +139,7 @@ class BusinessDate(BaseDateDatetimeDate):
 
         if default is None:
             raise ValueError("The input %s has not the right format for %s" % (date_str, cls.__name__))
-        else:
-            return default
+        return default
 
     @classmethod
     def _from_complex_input(cls, date_str):
@@ -231,7 +228,7 @@ class BusinessDate(BaseDateDatetimeDate):
             return [self - pd for pd in other]
         if BusinessPeriod.is_businessperiod(other):
             return self + (-1 * BusinessPeriod(other))
-        elif BusinessDate.is_businessdate(other):
+        if BusinessDate.is_businessdate(other):
             y, m, d = self.diff_in_ymd(BusinessDate(other))
             return BusinessPeriod(years=y, months=m, days=d)
         raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)

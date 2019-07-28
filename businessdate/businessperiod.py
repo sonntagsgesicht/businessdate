@@ -243,25 +243,21 @@ class BusinessPeriod(object):
     def __add__(self, other):
         if isinstance(other, (list, tuple)):
             return [self + o for o in other]
-        elif BusinessPeriod.is_businessperiod(other):
+        if BusinessPeriod.is_businessperiod(other):
             p = BusinessPeriod(other)
             y = self.years + p.years
             m = self.months + p.months
             d = self.days + p.days
             b = self.businessdays + p.businessdays
             return self.__class__(years=y, months=m, days=d, businessdays=b)
-        else:
-            raise TypeError(
-                'addition of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
+        raise TypeError('addition of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __sub__(self, other):
         if isinstance(other, (list, tuple)):
             return [self - o for o in other]
-        elif BusinessPeriod.is_businessperiod(other):
+        if BusinessPeriod.is_businessperiod(other):
             return self + (-1 * BusinessPeriod(other))
-        else:
-            raise TypeError(
-                'subtraction of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
+        raise TypeError('subtraction of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
 
     def __mul__(self, other):
         if isinstance(other, (list, tuple)):
@@ -272,8 +268,7 @@ class BusinessPeriod(object):
             d = other * self.days
             b = other * self.businessdays
             return BusinessPeriod(years=y, months=m, days=d, businessdays=b)
-        else:
-            raise TypeError("expected int but got %s" % other.__class__.__name__)
+        raise TypeError("expected int but got %s" % other.__class__.__name__)
 
     def __rmul__(self, other):
         return self.__mul__(other)
