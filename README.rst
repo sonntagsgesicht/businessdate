@@ -6,6 +6,14 @@ businessdate
    :target: https://www.codefactor.io/repository/github/sonntagsgesicht/businessdate
    :alt: CodeFactor
 
+.. image:: https://api.codeclimate.com/v1/badges/c96a263b34e6367a0b8c/maintainability
+   :target: https://codeclimate.com/github/sonntagsgesicht/businessdate/maintainability
+   :alt: Maintainability
+
+.. image:: https://api.codeclimate.com/v1/badges/c96a263b34e6367a0b8c/test_coverage
+   :target: https://codeclimate.com/github/sonntagsgesicht/businessdate/test_coverage
+   :alt: Test Coverage
+
 .. image:: https://img.shields.io/codeship/43157680-92f7-0137-34fd-0e3da511fc50/master.svg
    :target: https://codeship.com//projects/356697
    :alt: Codechip
