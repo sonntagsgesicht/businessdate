@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -17,7 +17,7 @@ from .ymd import from_excel_to_ymd, from_ymd_to_excel
 
 
 class BaseDateFloat(float):
-    """ native `float` backed base class for a performing date calculations counting days since Jan, 1st 1900 """
+    """ native :class:`float` backed base class for a performing date calculations counting days since Jan, 1st 1900 """
 
     def __new__(cls, x=0):
         new = super(BaseDateFloat, cls).__new__(cls, x)
@@ -51,23 +51,23 @@ class BaseDateFloat(float):
 
     @classmethod
     def from_ymd(cls, year, month, day):
-        """ creates instance from a int tuple `(year, month, day)` """
+        """ creates instance from a :class:`tuple` of :class:`int` items `(year, month, day)` """
         return cls(from_ymd_to_excel(year, month, day))
 
     @classmethod
     def from_date(cls, d):
-        """ creates instance from a `datetime.date` object `d` """
+        """ creates instance from a :class:`datetime.date` object `d` """
         return cls.from_ymd(d.year, d.month, d.day)
 
     @classmethod
     def from_float(cls, x):
-        """ creates from a float `x` counting the days since Jan, 1st 1900 """
+        """ creates from a :class:`float` `x` counting the days since Jan, 1st 1900 """
         return cls(x)
 
     # --- cast method --------------------------------------------------------
 
     def to_ymd(self):
-        """ returns the int tuple `(year, month, day)` """
+        """ returns the :class:`tuple` of :class:`int` items `(year, month, day)` """
         if not self._ymd:
             self._ymd = from_excel_to_ymd(int(self))
         return self._ymd
@@ -79,7 +79,7 @@ class BaseDateFloat(float):
         return date(*self._ymd)
 
     def to_float(self):
-        """ returns float counting the days since Jan, 1st 1900 """
+        """ returns :class:`float` counting the days since Jan, 1st 1900 """
         return int(self)
 
     # --- calculation methods ------------------------------------------------
@@ -93,30 +93,30 @@ class BaseDateFloat(float):
 
 
 class BaseDateDatetimeDate(date):
-    """ `datetime.date` backed base class for a performing date calculations """
+    """ :class:`datetime.date` backed base class for a performing date calculations """
 
     # --- constructor method -------------------------------------------------
 
     @classmethod
     def from_ymd(cls, year, month, day):
-        """ creates instance from a int tuple `(year, month, day)` """
+        """ creates instance from a :class:`tuple` of :class:`int` items `(year, month, day)` """
         return cls(year, month, day)
 
     @classmethod
     def from_date(cls, d):
-        """ creates instance from a `datetime.date` object `d` """
+        """ creates instance from a :class:`datetime.date` object `d` """
         return cls.from_ymd(d.year, d.month, d.day)
 
     @classmethod
     def from_float(cls, x):
-        """ creates from a float `x` counting the days since Jan, 1st 1900 """
+        """ creates from a :class:`float` `x` counting the days since Jan, 1st 1900 """
         y, m, d = from_excel_to_ymd(x)
         return cls.from_ymd(y, m, d)
 
     # --- cast method --------------------------------------------------------
 
     def to_ymd(self):
-        """ returns the int tuple `(year, month, day)` """
+        """ returns the :class:`tuple` of :class:`int` items `(year, month, day)` """
         return self.year, self.month, self.day
 
     def to_date(self):
@@ -124,7 +124,7 @@ class BaseDateDatetimeDate(date):
         return date(*self.to_ymd())
 
     def to_float(self):
-        """ returns float counting the days since Jan, 1st 1900 """
+        """ returns :class:`float` counting the days since Jan, 1st 1900 """
         return from_ymd_to_excel(*self.to_ymd())
 
     # --- calculation methods ------------------------------------------------

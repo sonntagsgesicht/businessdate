@@ -44,13 +44,21 @@ Python library *businessdate*
    :target: https://pypi.org/project/businessdate/
    :alt: PyPI Downloads
 
-A fast, efficient Python library for generating business dates for fast date operations.
-Typical banking business methods are provided like business holidays adjustment, day count fractions.
-Beside dates generic business periods offer to create time periods like
+A fast, efficient Python library for generating
+:class:`business dates <businessdate.BusinessDate>` for fast date operations.
+
+Typical banking business features are provided like
+:meth:`holiday adjustments <businessdate.BusinessDate.adjust>` to move dates away from weekend days or
+:class:`holidays <businessdate.BusinessHolidays>`. As well as functionality to get
+:meth:`year fractions <businessdate.BusinessDate.get_day_count>` depending on
+:mod:`day count conventions <businessdate.daycount>` as the lengths of interest payment periods.
+
+Beside dates generic :class:`business periods <businessdate.BusinessPeriod>` offer to create time periods like
 **10Y**, **3 Months** or **2b**. Periods can easily added to or subtracted from business dates.
 
-Moreover `range` style schedule generator are provided to systematic build a list of dates.
-Such are used to set up the payment schedule of loan and financial derivatives.
+Moreover `range` style :class:`schedule generator <businessdate.BusinessSchedule>`
+are provided to systematic build a list of dates.
+Such are used to set up a payment schedule of loan and financial derivatives.
 
 
 Example Usage
@@ -110,7 +118,7 @@ Example Usage
     BusinessDate(20150401)
 
 
-For more examples see :ref:`tutorial`.
+For more examples see :doc:`tutorial <tutorial>`.
 
 Install
 -------

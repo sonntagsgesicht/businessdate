@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -77,10 +77,13 @@ class BusinessDate(BaseDateDatetimeDate):
     def __new__(cls, year=None, month=0, day=0):
         """ date class to perform calculations coming from financial businesses
 
-        :param year: number of year or some other input value to create BusinessDate instance.
-         When applying other input, this can be either `int`, `float`, `datetime.date` or `string`
-         which will be parsed and transformed into equivalent int tuple `(year,month,day)`
-         (See :ref:`tutorial` for details).
+        :param year: number of year or some other input value t
+         o create :class:`BusinessDate` instance.
+         When applying other input, this can be either
+         :class:`int`, :class:`float`, :class:`datetime.date` or :class:`string`
+         which will be parsed and transformed into equivalent
+         :class:`tuple`of :class:`int` items `(year,month,day)`
+         (See :doc:`tutorial <tutorial>` for details).
         :param int month: number of month in year 1 ... 12
          (default: 0, required to be 0 when other input of year is used)
         :param int days: number of day in month 1 ... 31
@@ -188,11 +191,11 @@ class BusinessDate(BaseDateDatetimeDate):
         return res
 
     @classmethod
-    def is_businessdate(cls, in_date):
-        """ checks whether the provided date is a date """
-        if not isinstance(in_date, (date, BaseDateFloat, BaseDateDatetimeDate)):
+    def is_businessdate(cls, d):
+        """ checks whether the provided input can be a date """
+        if not isinstance(d, (date, BaseDateFloat, BaseDateDatetimeDate)):
             try:  # to be removed
-                cls(in_date)
+                cls(d)
             except ValueError:
                 return False
         return True
@@ -244,7 +247,7 @@ class BusinessDate(BaseDateDatetimeDate):
     # --- validation and information methods ------------------------
 
     def is_leap_year(self):
-        """ returns True for leap year and False otherwise """
+        """ returns `True` for leap year and False otherwise """
         return is_leap_year(self.year)
 
     def days_in_year(self):
@@ -256,15 +259,15 @@ class BusinessDate(BaseDateDatetimeDate):
         return days_in_month(self.year, self.month)
 
     def end_of_month(self):
-        """ returns the day of the end of the month as `BusinessDate` object"""
+        """ returns the day of the end of the month as :class:`BusinessDate` object"""
         return BusinessDate(self.year, self.month, self.days_in_month())
 
     def end_of_quarter(self):
-        """ returns the day of the end of the quarter as `BusinessDate` object"""
+        """ returns the day of the end of the quarter as :class:`BusinessDate` object"""
         return BusinessDate(self.year, end_of_quarter_month(self.month), 0o1).end_of_month()
 
     def is_business_day(self, holidays=None):
-        """ returns true if date falls neither on weekend nor is in holidays (if given as container object) """
+        """ returns `True` if date falls neither on weekend nor is in holidays (if given as container object) """
         holidays = self.__class__.DEFAULT_HOLIDAYS if holidays is None else holidays
         return conventions.is_business_day(self.to_date(), holidays)
 
@@ -316,11 +319,12 @@ class BusinessDate(BaseDateDatetimeDate):
         return self._add_years(years)._add_months(months)._add_days(days)
 
     def add_period(self, period_obj, holidays=None):
-        """ adds a `BusinessPeriod` object or anythings that create one and returns `BusinessDate` object.
+        """ adds a :class:`BusinessPeriod` object
+        or anythings that create one and returns :class:`BusinessDate` object.
 
-        It is simply adding the number of `years`, `months` and `days` or.
-        if `businessdays` given, number of business days,
-        i.e. days neither weekend nor in holidays (see also `BusinessDate.is_businessdate()`)
+        It is simply adding the number of `years`, `months` and `days` or
+        if `businessdays` given the number of business days,
+        i.e. days neither weekend nor in holidays (see also :meth:`BusinessDate.is_business_day`)
         """
 
         p = BusinessPeriod(period_obj)
@@ -330,7 +334,8 @@ class BusinessDate(BaseDateDatetimeDate):
         return res
 
     def diff_in_ymd(self, end_date):
-        """ calculates the distance to a `BusinessDate`, expressed as a tuple of years, months, days.
+        """ calculates the distance to a :class:`BusinessDate`,
+        expressed as a :class:`tuple` of :class:`int` items `(years, months, days)`.
 
         (see also the python lib dateutils.relativedelta)
         """
@@ -368,9 +373,10 @@ class BusinessDate(BaseDateDatetimeDate):
     def get_day_count(self, end, convention=''):
         """ counts the days as a year fraction to given date following the specified convention.
 
-        For possible conventions invoke `BusinessDate().get_day_count(BusinessDate(), 'list')`.
+        For possible conventions invoke
+        :meth:`BusinessDate().get_day_count(BusinessDate()) <BusinessDate.get_day_count>`.
 
-        For more details on the conventions see module `businessdate.daycount`.
+        For more details on the conventions see module :mod:`businessdate.daycount`.
         """
         dc_func = self.__class__._dc_func
         default_cf_func = dc_func[self.__class__.DAY_COUNT]
@@ -387,13 +393,13 @@ class BusinessDate(BaseDateDatetimeDate):
         return dc_func[convention.lower()](self.to_date(), BusinessDate(end).to_date())
 
     def adjust(self, convention='', holidays=None):
-        """ returns an adjusted `BusinessDate` if it was not a business day following the specified convention.
+        """ returns an adjusted :class:`BusinessDate` if it was not a business day following the specified convention.
 
-        For details on business days see 'BusinessDate.is_businessday()`.
+        For details on business days see :meth:`BusinessDate.is_business_day`.
 
-        For possible conventions invoke `BusinessDate().adjust()`
+        For possible conventions invoke :meth:`BusinessDate().adjust() <BusinessDate.adjust>`
 
-        For more details on the conventions see module `businessdate.conventions`)
+        For more details on the conventions see module :mod:`businessdate.conventions`)
         """
         adj_func = self.__class__._adj_func
         if not convention:

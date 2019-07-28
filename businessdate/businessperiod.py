@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -20,7 +20,7 @@ class BusinessPeriod(object):
         """ class to store and calculate date periods as combinations of days, weeks, years etc.
 
         :param str period: encoding a business period.
-         Such is given by a sequence of digits followed by a `char` -
+         Such is given by a sequence of digits as :class:`int` followed by a :class:`char` -
          indicating the number of
          years **Y**,
          quarters **Q** (which is equivalent to 3 month),
@@ -28,15 +28,15 @@ class BusinessPeriod(object):
          weeks **W** (which is equivalent to 7 days),
          days **D**,
          business days **B**.
-         E.g. **1Y2W3D** what gives a period of 1 year plus 2 weeks and 3 days.
-         (details see :ref:`tutorial`)
+         E.g. **1Y2W3D** what gives a period of 1 year plus 2 weeks and 3 days
+         (see :doc:`tutorial <tutorial>` for details).
 
         :param int years: number of years in the period
         :param int months: number of month in the period
         :param int days: number of days in the period
         :param int businessdays: number of business days,
-         i.e. days which are neither weekend nor holidays, in the period.
-         Only either `businessdays` or the others con be given.
+         i.e. days which are neither weekend nor :class:`holidays <BusinessHolidays>`,  in the period.
+         Only either `businessdays` or the others can be given.
          Both at the same time is not allowed.
 
         """
@@ -143,7 +143,7 @@ class BusinessPeriod(object):
 
     @classmethod
     def is_businessperiod(cls, period):
-        """ returns true if the argument can be understood as `BusinessPeriod` """
+        """ returns true if the argument can be understood as :class:`BusinessPeriod` """
         if period is None:
             return False
         if isinstance(period, (int, float, list, set, dict, tuple)):

@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -19,11 +19,11 @@ from .holidays import target_days
 class BusinessHolidays(list):
     """ holiday calendar class
 
-    A `BusinessHolidays` imitated a list of `datetime.date`
-    which can be used to check if a `BusinessDate` is
+    A :class:`BusinessHolidays` instance imitated a list of :class:`datetime.date`
+    which can be used to check if a :class:`BusinessDate` is
     included as holiday.
 
-    For convenience input need not to be of type `datetime.date`.
+    For convenience input need not to be of type :class:`datetime.date`.
     Duck typing is enough, i.e. having properties
     `year`, `month` and `day`.
     """

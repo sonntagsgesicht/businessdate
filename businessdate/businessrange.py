@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -17,11 +17,11 @@ from .businessdate import BusinessDate
 
 class BusinessRange(list):
     def __init__(self, start, stop=None, step=None, rolling=None):
-        """ range like class to build list of `BusinessDate`
+        """ class to build list of business days
 
         :param BusinessDate start: date to begin schedule,
          if stop not given, start will be used as stop and
-         default in rolling to BusinessDate()
+         default in rolling to :class:`BusinessDate() <BusinessDate>`
         :param BusinessDate stop: date to stop before,
          if not given, start will be used for stop instead
         :param BusinessPeriod step: period to step schedule,
@@ -85,13 +85,13 @@ class BusinessRange(list):
         return grid
 
     def adjust(self, convention='', holidays=None):
-        """ returns adjusted `BusinessRange` following given convention
+        """ returns adjusted :class:`BusinessRange` following given convention
 
-        For details of adjusting `BusinessDate` see 'BusinessDate.adjust()`.
+        For details of adjusting :class:`BusinessDate` see :meth:`BusinessDate.adjust`.
 
-        For possible conventions invoke `BusinessDate().adjust()`
+        For possible conventions invoke :meth:`BusinessDate().adjust() <BusinessDate.adjust>`
 
-        For more details on the conventions see module `businessdate.conventions`)
+        For more details on the conventions see module :mod:`conventions <businessdate.conventions>`)
         """
 
         adj_list = [d.adjust(convention, holidays) for d in self]

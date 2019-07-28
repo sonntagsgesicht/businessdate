@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -18,7 +18,7 @@ from .businessrange import BusinessRange
 
 class BusinessSchedule(BusinessRange):
     def __init__(self, start, end, step, roll=None):
-        """ class to build date schedules incl. start and end date
+        """ class to build date schedules incl start and end date
 
         :param BusinessDate start: start date of schedule
         :param BusinessDate end: end date of schedule

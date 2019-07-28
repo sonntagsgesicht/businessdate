@@ -28,17 +28,18 @@ BusinessDate
 BusinessDate Base Classes
 *************************
 
-`BusinessDate` inherits from one of two possible base classes.
-One itself inherited by a native `float` class.
-The other inherited from `datetime.date` class.
+:class:`BusinessDate` inherits from one of two possible base classes.
+One itself inherited by a native :class:`float` class.
+The other inherited from :class:`datetime.date` class.
 
 Both classes are implemented to offer future releases the flexibility to switch
 from one super class to another if such offers better performance.
 
-Currently `BusinessDate` inherits from `BaseDateDatetimeDate` which offers more
+Currently :class:`BusinessDate` inherits from
+:class:`BaseDateDatetimeDate <basedate.BaseDateDatetimeDate>` which offers more
 elaborated functionality.
 
-.. Warning:: Future releases of `businessdate` may be backed by different base classes.
+.. Warning:: Future releases of :mod:`businessdate` may be backed by different base classes.
 
 
 .. autoclass:: businessdate.basedate.BaseDateFloat

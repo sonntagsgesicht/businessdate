@@ -1,21 +1,18 @@
 
 
-First setup basic objects
-=========================
-
-Setup model imports
+To start with :mod:`businessdate` import it. Note that,
+since we work with dates, `datetime.date` might be useful, too.
+But not required. Nevertheless `datetime.date` is used inside
+`BusinessDate` from time to time.
 
 .. doctest::
-    :skipif: True
 
     >>> from datetime import date
     >>> from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule
 
-
-Simplest example possible
+Once loaded, create business dates as simple as that.
 
 .. doctest::
-    :skipif: True
 
     >>> BusinessDate.from_date(date(2014, 1, 1)) == BusinessDate(20140101)
     True
@@ -39,6 +36,8 @@ Simplest example possible
     [20151231, 20161231, 20171231, 20181231, 20191231, 20201231]
     >>> BusinessSchedule(sd, ed, '1y', ed).first_stub_long()
     [20151231, 20171231, 20181231, 20191231, 20201231]
+
+
 
 an new :py:class:`businessdate.BusinessDate` object or raises according exeption on any error
 
