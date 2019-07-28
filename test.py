@@ -250,7 +250,7 @@ class BusinessDateUnitTests(unittest.TestCase):
     def test_to_string(self):
         self.assertEqual(self.jan02, BusinessDate(str(self.jan02)))
         self.assertEqual(str(self.jan02), '20160102')
-        self.assertEqual(repr(self.jan02), "BusinessDate('20160102')")
+        self.assertEqual(repr(self.jan02), "BusinessDate(20160102)")
         self.assertEqual(str(BusinessDate(42371)), '20160102')
         self.assertEqual(self.jan02, eval(repr(self.jan02)))
 
