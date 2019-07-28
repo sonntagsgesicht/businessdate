@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+#
 #  businessdate
 #  ------------
 #  A fast, efficient Python library for generating business dates inherited
@@ -242,7 +242,7 @@ class BusinessDate(BaseDateDatetimeDate):
         return self.to_date().strftime(date_format)
 
     def __repr__(self):
-        return self.__class__.__name__ + "('%s')" % str(self)
+        return self.__class__.__name__ + "(%s)" % str(self)
 
     # --- validation and information methods ------------------------
 

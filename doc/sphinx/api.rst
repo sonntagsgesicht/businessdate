@@ -75,4 +75,3 @@ Business Day Adjustment
 
 .. automodule:: businessdate.conventions
     :members:
-
