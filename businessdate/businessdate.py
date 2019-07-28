@@ -179,11 +179,15 @@ class BusinessDate(BaseDateDatetimeDate):
         # third, build BusinessDate and adjust by conventions to periods
         res = cls(origin)
         if spot:
-            res = res.adjust(convention, holidays).add_period(spot, holidays)
+            if convention:
+                res = res.adjust(convention, holidays)
+            res = res.add_period(spot, holidays)
         if period:
             res = res.add_period(period, holidays)
         if final:
-            res = res.adjust(convention, holidays).add_period(final, holidays)
+            if convention:
+                res = res.adjust(convention, holidays)
+            res = res.add_period(final, holidays)
         return res
 
     @classmethod

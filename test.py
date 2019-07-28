@@ -13,7 +13,9 @@
 #  License: APACHE Version 2 License (see LICENSE file)
 
 import os
+import sys
 import unittest
+
 from datetime import datetime, date, timedelta
 
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
@@ -23,6 +25,14 @@ from businessdate.basedate import BaseDateFloat, BaseDateDatetimeDate
 from businessdate.ymd import from_ymd_to_excel, from_excel_to_ymd, \
     is_valid_ymd, end_of_quarter_month, days_in_month, \
     days_in_year, is_leap_year
+
+
+def _silent(func, *args):
+    _stout = sys.stdout
+    sys.stdout = open(os.devnull, 'w')
+    _res = func(*args)
+    sys.stdout = _stout
+    return _res
 
 
 class BaseDateUnitTest(unittest.TestCase):
@@ -405,7 +415,7 @@ class BusinessDateUnitTests(unittest.TestCase):
         delta = float((self.mar31.to_date() - self.jan01.to_date()).days)
         total = float(((self.jan01 + '1y').to_date() - self.jan01.to_date()).days)
 
-        self.assertAlmostEqual(self.jan01.get_day_count(self.mar31), delta / 365.25)
+        self.assertAlmostEqual(_silent(self.jan01.get_day_count, self.mar31), delta / 365.25)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'ACT_36525'), delta / 365.25)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, '30_360'), 90. / 360.)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'ACT_ACT'), delta / total)
@@ -420,8 +430,8 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'act_act'), delta / total)
 
     def test_business_day_adjustment(self):
-        self.assertEqual(self.jan01.adjust(), BusinessDate(20160101))
-        self.assertEqual(self.jan01.adjust(''), BusinessDate(20160101))
+        self.assertEqual(_silent(self.jan01.adjust), BusinessDate(20160101))
+        self.assertEqual(_silent(self.jan01.adjust,''), BusinessDate(20160101))
         self.assertEqual(self.jan01.adjust('NO'), BusinessDate(20160101))
         # self.assertEqual(no(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS), BusinessDate(20160101).to_date())
 
@@ -735,7 +745,7 @@ class BusinessScheduleUnitTests(unittest.TestCase):
         ck = BusinessDate([20150331, 20150415, 20150715, 20151015, 20160115, 20160415, 20160715, 20160930])
         self.assertEqual(bs, ck)
 
-        bs.adjust()
+        _silent(bs.adjust)
         ck = BusinessDate([20150331, 20150415, 20150715, 20151015, 20160115, 20160415, 20160715, 20160930])
         self.assertEqual(bs, ck)
 
