@@ -10,8 +10,6 @@ Python library *businessdate*
    :target: http://businessdate.readthedocs.io
    :alt: Read the Docs
 
-.. raw-html::`<br />`
-
 .. image:: https://img.shields.io/codefactor/grade/github/sonntagsgesicht/businessdate/master
    :target: https://www.codefactor.io/repository/github/sonntagsgesicht/businessdate
    :alt: CodeFactor Grade
@@ -44,19 +42,16 @@ Python library *businessdate*
    :target: https://pypi.org/project/businessdate/
    :alt: PyPI Downloads
 
-A fast, efficient Python library for generating
-:class:`business dates <businessdate.BusinessDate>` for fast date operations.
+A fast, efficient Python library for generating `business dates` for fast date operations.
 
-Typical banking business features are provided like
-:meth:`holiday adjustments <businessdate.BusinessDate.adjust>` to move dates away from weekend days or
-:class:`holidays <businessdate.BusinessHolidays>`. As well as functionality to get
-:meth:`year fractions <businessdate.BusinessDate.get_day_count>` depending on
-:mod:`day count conventions <businessdate.daycount>` as the lengths of interest payment periods.
+Typical banking business features are provided like `holiday adjustments`
+to move dates away from weekend days or `holidays`. As well as functionality to get
+`year fractions` depending on `day count conventions` as the lengths of interest payment periods.
 
-Beside dates generic :class:`business periods <businessdate.BusinessPeriod>` offer to create time periods like
-**10Y**, **3 Months** or **2b**. Periods can easily added to or subtracted from business dates.
+Beside dates `business periods` can be created for time intervals like **10Y**, **3 Months** or **2b**.
+Those periods can easily be added to or subtracted from business dates.
 
-Moreover `range` style :class:`schedule generator <businessdate.BusinessSchedule>`
+Moreover `range` style `schedule generator`
 are provided to systematic build a list of dates.
 Such are used to set up a payment schedule of loan and financial derivatives.
 
@@ -92,33 +87,44 @@ Example Usage
 
     >>> BusinessDate(year=2014, month=1, day=11)
     BusinessDate(20140111)
+
     >>> BusinessDate(date(2014,1,11))
     BusinessDate(20140111)
+
     >>> BusinessDate(20140111)
     BusinessDate(20140111)
+
     >>> BusinessDate('20140111')
     BusinessDate(20140111)
+
     >>> BusinessDate('2015-12-31')
     BusinessDate(20151231)
+
     >>> BusinessDate('31.12.2015')
     BusinessDate(20151231)
+
     >>> BusinessDate('12/31/2015')
     BusinessDate(20151231)
+
     >>> BusinessDate(42369)
     BusinessDate(20151231)
+
     >>> BusinessDate(20140101) + BusinessPeriod('1Y3M')
     BusinessDate(20150401)
+
     >>> BusinessDate(20140101) + '1Y3M'
     BusinessDate(20150401)
+
     >>> BusinessDate(20170101) - '1Y1D'
     BusinessDate(20151231)
+
     >>> BusinessDate() == BusinessDate(date.today())
     True
+
     >>> BusinessDate('1Y3M20140101')
     BusinessDate(20150401)
 
-
-For more examples see :doc:`tutorial <tutorial>`.
+For more examples see the `documentation <http://businessdate.readthedocs.io>`_.
 
 Install
 -------
