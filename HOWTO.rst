@@ -784,15 +784,15 @@ Putting all together we get.
    BusinessDate(20170213)
 
    >>> bd = BusinessDate(20161213)
-   >>> bd = bd + '15b'
    >>> bd = bd.adjust('ModFlw')
+   >>> bd = bd + '15b'
    >>> bd = bd + '1m'
    >>> bd = bd.adjust('ModFlw')
    >>> bd = bd + '5b'
    >>> bd
    BusinessDate(20170213)
 
-   >>> BusinessDate('15b1m5bModFlw20161213') == ((BusinessDate(20161213) + '15b').adjust('ModFlw') + '1m').adjust('ModFlw') + '5b'
+   >>> BusinessDate('15b1m5bModFlw20161213') == (BusinessDate(20161213).adjust('ModFlw') + '15b' + '1m').adjust('ModFlw') + '5b'
    True
 
 
