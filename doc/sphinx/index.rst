@@ -8,7 +8,6 @@
 Welcome to businessdate
 =======================
 
-Let's have more than one.
 
 
 .. toctree::

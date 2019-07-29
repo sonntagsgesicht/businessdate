@@ -1,9 +1,9 @@
 
 .. currentmodule:: businessdate
 
-To start with :mod:`businessdate` import it.
-Note that, since we work with dates, `datetime.date` might be useful, too.
-But not required. Nevertheless `datetime.date` is used inside :class:`BusinessDate` from time to time.
+To start with |businessdate| import it.
+Note that, since we work with dates, |datetime.date| might be useful, too.
+But not required. Nevertheless |datetime.date| is used inside |BusinessDate| from time to time.
 
 .. paste this into python console to generate code block contents
    from datetime import date
@@ -79,13 +79,13 @@ Even iterators like :class:`list` or :class:`tuple` work well.
     >>> BusinessDate((20140216, 23011230, 19991111, 20200202))
     [BusinessDate(20140216), BusinessDate(23011230), BusinessDate(19991111), BusinessDate(20200202)]
 
-Much easier to generate container with periodical items is using :ref:`BussinessRange <create_business_range>`.
+Much easier to generate container with periodical items is using |BusinessRange|.
 
-By default an empty :meth:`Businessdate`
-is initiated with the system date as given by :func:`datetime.date.today`.
+By default an empty |BusinessDate()|
+is initiated with the system date as given by |datetime.date.today()|.
 To change this behavior: just set the *classattribute*
-:attr:`Businessdate.BASE_DATE` to anything that can be understood as a
-business date, i.e. anything that meets :meth:`Businessdate.is_businessdate`.
+|BusinessDate.BASE_DATE| to anything that can be understood as a
+business date, i.e. anything that meets |Businessdate.is_businessdate()|.
 
 .. paste this into python console to generate code block contents
    from datetime import date
@@ -107,9 +107,9 @@ business date, i.e. anything that meets :meth:`Businessdate.is_businessdate`.
 
 .. attention::
 
-   Setting :attr:`Businessdate.BASE_DATE` to
-   :meth:`date.today` is different to setting to :command:`None`
-   since :meth:`date.today` changes at midnight!
+   Setting |BusinessDate.BASE_DATE| to
+   |datetime.date.today()| is different to setting to **None**
+   since |datetime.date.today()| changes at midnight!
 
 
 BusinessPeriod
@@ -194,8 +194,8 @@ But this cannot be performed for days.
           raise ValueError("Either (years,months,days) or businessdays must be zero for %s" % self.__class__.__name__)
       ValueError: Either (years,months,days) or businessdays must be zero for BusinessPeriod
 
-Moreover, the difference of two instances of :class:`datetime.date` or resp.
-a :class:`datetime.timedalta` instance can be used to init, too.
+Moreover, the difference of two instances of |datetime.date| or resp.
+a |datetime.timedelta| instance can be used to init, too.
 
 .. paste this into python console to generate code block contents
    from datetime import date, timedelta
@@ -222,7 +222,7 @@ a :class:`datetime.timedalta` instance can be used to init, too.
    BusinessPeriod('213D')
 
 
-Similar to :class:`BusinessDate` convenient string input work as well.
+Similar to |BusinessDate| convenient string input work as well.
 Such a string represents again either periods of business days
 or classical periods.
 
@@ -286,7 +286,7 @@ shortcuts **ON** for *over night*, **TN** *tomorrow next* and **DD** *double day
    BusinessPeriod('3B')
 
 
-The :class:`BusinessPeriod` constructor understands even negative inputs.
+The |BusinessPeriod| constructor understands even negative inputs.
 Please note the behavior of the preceding sign!
 
 .. paste this into python console to generate code block contents
@@ -471,12 +471,12 @@ both can be trimmed to give a first and/or last period as long stubs.
 BusinessHolidays
 ----------------
 
-Since we deal with :class:`BusinessDate` the container class :class:`BusinessHolidays`
-is useful as it converts nearly anything input into :class:`datetime.date`.
+Since we deal with |BusinessDate| the container class |BusinessHolidays|
+is useful as it converts nearly anything input into |datetime.date|.
 
 
-Provide list of `datetime.date` or anything having attributes `year`, `month` and `days`,
-e.g. iterable that yields of `BusinessDates`.
+Provide list of |datetime.date| or anything having attributes `year`, `month` and `days`,
+e.g. iterable that yields of |BusinessDate|.
 
 For example you can use projects like `python-holidays <https://pypi.org/project/holidays/>`_
 or `workcalendar <https://peopledoc.github.io/workalendar/>`_
@@ -484,7 +484,7 @@ which offer holidays in many different countries, regions and calendars.
 
 .. _target_holidays:
 
-Build in are :class:`target holidays <businessdate.businessholidays.TargetHolidays>` which are bank holidays in
+Build in are |TargetHolidays| which are bank holidays in
 euro banking system `TARGET <https://en.wikipedia.org/wiki/TARGET2#Holidays>`_.
 
 
@@ -517,7 +517,7 @@ periods do not act that way on dates.
 Even more pitfalls exist when izt comes to calculate dates and calendars.
 Fortunately periods acting on them self behave much more like numbers.
 
-All this is build into `BusinessPeriod` and `BusinessDate`.
+All this is build into |BusinessPeriod| and |BusinessDate|.
 
 
 Adding
@@ -566,7 +566,7 @@ Moving
 
 Moving dates away from weekend or holidays requires holidays
 
-If no holidays are give the :attr:`BusinessDate.DEFAULT_HOLIDAYS` are used.
+If no holidays are give the |BusinessDate.DEFAULT_HOLIDAYS| are used.
 They can be set on demand.
 
 By default those are the :ref:`TARGET holidays <target_holidays>`.
@@ -805,8 +805,7 @@ BusinessDate Inheritance
 ------------------------
 
 Finally some lines on :ref:`base classes <base_class_warning>`
-:class:`BaseDateFloat <businessdate.basedate.BaseDateFloat>`
-backed by :class:`float` ...
+|BaseDateFloat| backed by |float| ...
 
 .. paste this into python console to generate code block contents
    from datetime import date
@@ -853,8 +852,8 @@ backed by :class:`float` ...
 
 
 
-... and :class:`BaseDateDatetimeDate <businessdate.basedate.BaseDateDatetimeDate>`
-backed by :class:`datetine.date`.
+... and |BaseDateDatetimeDate|
+backed by |datetime.date|.
 
 .. paste this into python console to generate code block contents
    from datetime import date

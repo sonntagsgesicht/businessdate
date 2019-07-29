@@ -19,12 +19,26 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../../businessdate'))  #  needed to import pkg
+
 sys.path.insert(0, os.path.abspath('../../businessdate/businessdate'))  #  needed to import pkg
+sys.path.insert(0, os.path.abspath('../../businessdate'))  #  needed to import pkg
 sys.path.insert(0, os.path.abspath('../../'))  #  needed to import pkg
+sys.path.insert(0, os.path.abspath('.'))  #  needed to import pkg
+
+import rsttools
+import datetime
 import businessdate as pkg
 
-#source_parsers = {'.md': 'recommonmark.parser.CommonMarkParser',}
+#print(os.getcwd())
+_replacements = rsttools._replacements_from_pkg(rsttools._replacements, pkg)
+rst_prolog = rsttools._replacements_str(_replacements)
+print(rst_prolog)
+#
+#rst_epilog = ("""
+#.. |%s| replace:: :mod:`s%`
+#""")  % (pkg.__name__, pkg.__name__)
+
+#.. |BusinessDate| replace:: :class:`businessdate.BusinessDate`
 
 # -- General configuration ------------------------------------------------
 
@@ -102,6 +116,8 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+# A boolean that decides whether module names are prepended to all object names.
+add_module_names = True
 
 # -- Options for HTML output ----------------------------------------------
 
