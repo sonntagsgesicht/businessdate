@@ -62,28 +62,25 @@ Example Usage
 .. paste this into python console to generate code block contents
    from datetime import date
    from businessdate import BusinessDate, BusinessPeriod
-
-.. testsetup::
-
-    from datetime import date
-    from businessdate import BusinessDate, BusinessPeriod
-
-.. paste this into python console to generate code block contents
-    BusinessDate(year=2014, month=1, day=11)
-    BusinessDate(date(2014,1,11))
-    BusinessDate(20140111)
-    BusinessDate('20140111')
-    BusinessDate('2015-12-31')
-    BusinessDate('31.12.2015')
-    BusinessDate('12/31/2015')
-    BusinessDate(42369)
-    BusinessDate(20140101) + BusinessPeriod('1Y3M')
-    BusinessDate(20140101) + '1Y3M'
-    BusinessDate(20170101) - '1Y1D'
-    BusinessDate() == BusinessDate(date.today())
-    BusinessDate('1Y3M20140101')
+   BusinessDate(year=2014, month=1, day=11)
+   BusinessDate(date(2014,1,11))
+   BusinessDate(20140111)
+   BusinessDate('20140111')
+   BusinessDate('2015-12-31')
+   BusinessDate('31.12.2015')
+   BusinessDate('12/31/2015')
+   BusinessDate(42369)
+   BusinessDate(20140101) + BusinessPeriod('1Y3M')
+   BusinessDate(20140101) + '1Y3M'
+   BusinessDate(20170101) - '1Y1D'
+   BusinessDate() == BusinessDate(date.today())
+   BusinessDate('1Y3M20140101')
 
 .. doctest::
+
+    >>> from datetime import date
+    >>> from businessdate import BusinessDate, BusinessPeriod
+
 
     >>> BusinessDate(year=2014, month=1, day=11)
     BusinessDate(20140111)

@@ -82,7 +82,7 @@ class BusinessDate(BaseDateDatetimeDate):
          When applying other input, this can be either
          :class:`int`, :class:`float`, :class:`datetime.date` or :class:`string`
          which will be parsed and transformed into equivalent
-         :class:`tuple`of :class:`int` items `(year,month,day)`
+         :class:`tuple` of :class:`int` items `(year,month,day)`
          (See :doc:`tutorial <tutorial>` for details).
         :param int month: number of month in year 1 ... 12
          (default: 0, required to be 0 when other input of year is used)
