@@ -49,8 +49,8 @@ class TargetHolidays(BusinessHolidays):
     * Good Friday
     * Easter Monday
     * May, 1st
-    * Christmas Day
-    * Boxing Day
+    * December, 25th (Christmas Day)
+    * December, 25th (Boxing Day)
 
     """
 

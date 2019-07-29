@@ -116,7 +116,7 @@ class BusinessPeriod(object):
     def _parse_ymd(cls, period):
         # can even parse strings like '-1B-2Y-4Q+5M' but also '0B', '-1Y2M3D' as well.
         def _parse(p, letter):
-            if p.find(letter) > 0:
+            if p.find(letter) >= 0:
                 s, p = p.split(letter, 1)
                 s = s[1:] if s.startswith('+') else s
                 sgn, s = (-1, s[1:]) if s.startswith('-') else (1, s)

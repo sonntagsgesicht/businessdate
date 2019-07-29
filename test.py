@@ -397,7 +397,7 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertTrue(isinstance(self.jan01.to_date(), date))
         self.assertTrue(isinstance(self.jan01, BusinessDate))
         self.assertTrue(isinstance(self.jan01 - BusinessDate(), BusinessPeriod))
-        self.assertTrue(isinstance(self.jan01.to_float(), int))
+        self.assertTrue(isinstance(self.jan01.to_float(), float))
         # removed ordinal support
         # self.assertTrue(isinstance(self.jan01.to_ordinal(), int))
         self.assertTrue(isinstance(str(self.jan01), str))
@@ -683,20 +683,21 @@ class BusinessRangeUnitTests(unittest.TestCase):
         self.ed = BusinessDate(20201231)
 
     def test_constructors(self):
-        br = BusinessRange(self.sd, self.ed)
-        self.assertEqual(len(br), 5)
+        self.assertEqual(len(BusinessRange(BusinessDate() + '1W')), 7)
+        br = BusinessRange(self.sd, self.sd + '1M')
+        self.assertEqual(len(br), 31)
         self.assertEqual(br[0], self.sd)
-        self.assertEqual(br[-1], BusinessDate._add_years(self.ed, -1))
+        self.assertEqual(br[-1], self.sd + '30d')
 
         br = BusinessRange(self.sd, self.ed)
-        b2 = BusinessRange(self.sd, self.ed, '1y', self.ed)
+        b2 = BusinessRange(self.sd, self.ed, '1d', self.ed)
+        self.assertEquals(br, b2)
+
         ck = BusinessRange(self.sd, self.ed, '1y', self.sd)
         ex = BusinessRange(self.sd, self.ed, '1y', self.ed + '1y')
         sx = BusinessRange(self.sd, self.ed, '1y', self.sd - '1y')
-        self.assertEqual(br, b2)
-        self.assertEqual(b2, ck)
-        self.assertEqual(ck, ex)
-        self.assertEqual(ex, sx)
+        self.assertEquals(ck, ex)
+        self.assertEquals(ex, sx)
 
         bs = BusinessRange(20151231, 20160630, '1M', 20151231)
         ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430, 20160531])
@@ -711,7 +712,7 @@ class BusinessRangeUnitTests(unittest.TestCase):
         self.assertEqual(bs, ck)
 
         BusinessDate.BASE_DATE = 20151231
-        bs = BusinessRange(20201231)
+        bs = BusinessRange(20201231, step='1y')
         ck = [BusinessDate('20151231'),
               BusinessDate('20161231'),
               BusinessDate('20171231'),
@@ -720,9 +721,13 @@ class BusinessRangeUnitTests(unittest.TestCase):
         self.assertEqual(bs, ck)
 
     def test_adjust(self):
-        bs = BusinessRange(20201231)
+        BusinessDate.BASE_DATE = 20151231
+        bs = BusinessRange(20201231, step='1m')
         for k, v in BusinessDate._adj_func.items():
-            self.assertEquals(bs.adjust(k), BusinessDate(list(map(v, bs))))
+            val = [d.adjust(k) for d in bs]
+            self.assertEquals(bs.adjust(k), BusinessDate(val))
+            h = [BusinessDate.DEFAULT_HOLIDAYS] * len(bs)
+            self.assertEquals(bs.adjust(k), BusinessDate(list(map(v, bs, h))))
         BusinessDate.BASE_DATE = date.today()
 
 
@@ -837,18 +842,10 @@ class OldBusinessDateUnitTests(unittest.TestCase):
         e = BusinessDate('20011112')
         self.assertEqual(type(e), type(s))
 
-    def test_diff_in_years(self):
-        s = BusinessDate('20011110')
-        e = BusinessDate('20011112')
-        # removed diff_in_years
-        # self.assertEqual(BusinessDate.diff_in_years(s, e), 2 / BusinessDate.DAYS_IN_YEAR)
-        # self.assertEqual(BusinessDate.diff_in_years(BusinessDate('20161101'),
-        #                                             BusinessDate('20171102')), 366 / BusinessDate.DAYS_IN_YEAR)
-
     def test_diff_in_days(self):
         s = BusinessDate('20011110')
         e = BusinessDate('20011112')
-        self.assertEqual(BusinessDate._diff_in_days(s, e), 2)
+        self.assertEqual(BusinessDate.diff_in_days(s, e), 2)
 
     def test_add(self):
         s = BusinessDate('20011110')

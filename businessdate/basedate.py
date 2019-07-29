@@ -80,7 +80,7 @@ class BaseDateFloat(float):
 
     def to_float(self):
         """ returns :class:`float` counting the days since Jan, 1st 1900 """
-        return int(self)
+        return float(self)
 
     # --- calculation methods ------------------------------------------------
 
@@ -125,7 +125,7 @@ class BaseDateDatetimeDate(date):
 
     def to_float(self):
         """ returns :class:`float` counting the days since Jan, 1st 1900 """
-        return from_ymd_to_excel(*self.to_ymd())
+        return float(from_ymd_to_excel(*self.to_ymd()))
 
     # --- calculation methods ------------------------------------------------
 

@@ -11,7 +11,7 @@
 # License:  Apache License 2.0 (see LICENSE file)
 
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from . import conventions
 from . import daycount
@@ -23,7 +23,7 @@ from .businessperiod import BusinessPeriod
 
 class BusinessDate(BaseDateDatetimeDate):
 
-    BASE_DATE = date.today()
+    BASE_DATE = None
     DATE_FORMAT = '%Y%m%d'
     DAY_COUNT = 'act_36525'
     DEFAULT_HOLIDAYS = TargetHolidays()
@@ -115,7 +115,12 @@ class BusinessDate(BaseDateDatetimeDate):
             return list(map(BusinessDate, year))
 
         if year is None:
+            if cls.BASE_DATE is None:
+                return cls(date.today())
             return cls(cls.BASE_DATE)
+
+        if isinstance(year, timedelta):
+            year = '%sD' % year.days
 
         # try to split complex or period input, e.g. '0B1D2BMOD20191231' or '3Y2M1D' or '-2B'
         return cls._from_complex_input(str(year))
@@ -156,25 +161,26 @@ class BusinessDate(BaseDateDatetimeDate):
                 # no date found a the end of the string
                 pass
 
-        # second, extract
+        # second, extract convention
         for a in sorted(cls._adj_func.keys(), key=len, reverse=True):
-            if date_str.find(a.upper()) > 0:
+            if date_str.find(a.upper()) >= 0:
                 convention = a
                 date_str = date_str[:-len(a)]
                 break
+        if not date_str:
+            date_str = '0B'
 
         # third, parse spot, period and final
         pfields = date_str.strip('0123456789+-B')
         spot, period, final = date_str, '', ''
         if pfields:
+            spot, period, final = '', '', ''
             x = pfields[-1]
             period, final = date_str.split(x, 1)
             period += x
-            if date_str.find('B') > 0:
+            if period.find('B') >= 0:
                 spot, period = period.split('B', 1)
                 spot += 'B'
-            else:
-                spot, period = '', date_str
 
         # third, build BusinessDate and adjust by conventions to periods
         res = cls(origin)
@@ -332,6 +338,10 @@ class BusinessDate(BaseDateDatetimeDate):
         res = res._add_business_days(p.businessdays, holidays)
         res = res._add_ymd(p.years, p.months, p.days)
         return res
+
+    def diff_in_days(self, end_date):
+        """ calculates the distance to a :class:`BusinessDate` in days """
+        return self._diff_in_days(end_date)
 
     def diff_in_ymd(self, end_date):
         """ calculates the distance to a :class:`BusinessDate`,

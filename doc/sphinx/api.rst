@@ -1,6 +1,7 @@
 
 .. module:: businessdate
 
+
 -----------------
 API Documentation
 -----------------
@@ -24,6 +25,8 @@ Business Object Classes
 BusinessDate
 ------------
 .. autoclass:: BusinessDate
+
+.. _base_class_warning:
 
 BusinessDate Base Classes
 *************************

@@ -25,7 +25,7 @@ class BusinessRange(list):
         :param BusinessDate stop: date to stop before,
          if not given, start will be used for stop instead
         :param BusinessPeriod step: period to step schedule,
-         if not given 1 year is default
+         if not given 1 day is default
         :param BusinessDate rolling: date to roll on
          (forward and backward) between start and stop,
          if not given default will be start
@@ -51,7 +51,7 @@ class BusinessRange(list):
             stop = start
             start = BusinessDate()
         if step is None:
-            step = BusinessPeriod(years=1)
+            step = BusinessPeriod(days=1)
         if rolling is None:
             rolling = start
         # make proper businessdate objects
