@@ -146,6 +146,21 @@ The latest development version can be installed directly from GitHub:
 or downloaded from `<https://github.com/sonntagsgesicht/businessdate>`_.
 
 
+
+ToDo
+----
+
+1. decide which base class or inheritance for `BusisnessDate` is better:
+
+   a) `BaseDateFloat` (`float` inheritance)
+
+   b) `BaseDateDatetimeDate` (`datetime.date` inheritance)
+
+2. store businessdays adjustment convention and holidays as private property of `BusinessDate`.
+The information should not get lost under `BusinessPeriod` operation.
+Decide which date determines convention and holidays of a `BusinessRange`.
+
+
 Contributions
 -------------
 

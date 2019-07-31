@@ -69,18 +69,16 @@ class BusinessRange(list):
 
         # roll backward before start
         i = 0
-        current = rolling + step * i
-        while start <= current:
+        while start <= rolling + step * i:
             i -= 1
-            current = rolling + step * i
 
         # fill grid from start until end
         current = rolling + step * i
         while current < stop:
-            current = rolling + step * i
             if start <= current < stop:
                 grid.append(current)
             i += 1
+            current = rolling + step * i
 
         return grid
 

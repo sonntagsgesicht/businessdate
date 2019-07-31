@@ -130,6 +130,7 @@ class BaseDateDatetimeDate(date):
     # --- calculation methods ------------------------------------------------
 
     def _add_days(self, days_int):
+        # return super(self.__class__, self).__add__(timedelta(days_int))
         res = super(BaseDateDatetimeDate, self).__add__(timedelta(days_int))
         return self.__class__.from_ymd(res.year, res.month, res.day)
 

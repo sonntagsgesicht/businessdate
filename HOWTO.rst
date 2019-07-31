@@ -208,11 +208,11 @@ a |datetime.timedelta| instance can be used to init, too.
 
 .. doctest::
 
-   >>> a, b = date(2010,6,1), date(2010,12,31)
-   >>> b-a
+   >>> june_the_first, december_the_thirty_first = date(2010,6,1), date(2010,12,31)
+   >>> december_the_thirty_first-june_the_first
    datetime.timedelta(days=213)
 
-   >>> BusinessPeriod(b-a)
+   >>> BusinessPeriod(december_the_thirty_first-june_the_first)
    BusinessPeriod('213D')
 
    >>> timedelta(213)
@@ -379,6 +379,7 @@ it meets a similar signature and defaults.
    >>> start = BusinessDate(20151231)
    >>> end = BusinessDate(20181231)
    >>> rolling = BusinessDate(20151121)
+
    >>> BusinessRange(start)
    [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20151227), BusinessDate(20151228), BusinessDate(20151229), BusinessDate(20151230)]
 
@@ -429,13 +430,77 @@ If the start date does not meet any date in the range, it is not included.
    >>> BusinessRange(start, end, '1y', rolling)
    [BusinessDate(20161121), BusinessDate(20171121), BusinessDate(20181121)]
 
+Rolling on the same `start` and `end` but different `rolling` may lead to
+different ranges.
+
+.. doctest:: rolling
+
+   >>> start = BusinessDate(20150129)
+   >>> end = BusinessDate(20150602)
+   >>> rolling_on_start = BusinessRange(start, end, '1m1d', start)
+   >>> rolling_on_end = BusinessRange(start, end, '1m1d', end)
+
+   >>> rolling_on_start == rolling_on_end
+   False
+
+   >>> rolling_on_start
+   [BusinessDate(20150129), BusinessDate(20150301), BusinessDate(20150331), BusinessDate(20150502)]
+
+   >>> rolling_on_end
+   [BusinessDate(20150129), BusinessDate(20150227), BusinessDate(20150331), BusinessDate(20150501)]
+
+Luckily, straight periods, e.g.
+
+   * annually,
+
+   * semi-annually,
+
+   * quarterly,
+
+   * monthly,
+
+   * weekly or
+
+   * daily,
+
+don't mix-up in such a way.
+
+   .. doctest:: rolling
+
+      >>> start = BusinessDate(20200202)
+      >>> end = start + BusinessPeriod('1y') * 10
+      >>> BusinessRange(start, end, '1y', start) == BusinessRange(start, end, '1y', end)
+      True
+
+      >>> end = start + BusinessPeriod('6m') * 10
+      >>> BusinessRange(start, end, '6m', start) == BusinessRange(start, end, '6m', end)
+      True
+
+      >>> end = start + BusinessPeriod('1q') * 10
+      >>> BusinessRange(start, end, '1q', start) == BusinessRange(start, end, '1q', end)
+      True
+
+      >>> end = start + BusinessPeriod('1m') * 10
+      >>> BusinessRange(start, end, '1m', start) == BusinessRange(start, end, '1m', end)
+      True
+
+      >>> end = start + BusinessPeriod('1w') * 10
+      >>> BusinessRange(start, end, '1w', start) == BusinessRange(start, end, '1w', end)
+      True
+
+      >>> end = start + BusinessPeriod('1d') * 10
+      >>> BusinessRange(start, end, '1d', start) == BusinessRange(start, end, '1d', end)
+      True
 
 BusinessSchedule
 ----------------
 
-`BusinesSchedule` provides more lists containing always start date as well as end date.
+A |BusinessSchedule|, as inhereted from |BusinessRange|,
+provides nearly the same features as |BusinessRange|.
+But |BusinessSchedule| lists contain always start date and end date!
+
 Since the first as well as the last period can be very short (short stubs),
-both can be trimmed to give a first and/or last period as long stubs.
+they can be trimmed to give a first and/or last period as long stubs.
 
 .. paste this into python console to generate code block contentsrd = BusinessDate(20151121)
    start = BusinessDate(20151231)
@@ -452,6 +517,7 @@ both can be trimmed to give a first and/or last period as long stubs.
    >>> start = BusinessDate(20151231)
    >>> end = BusinessDate(20181231)
    >>> rolling = BusinessDate(20151121)
+
    >>> BusinessRange(start, end, '1y', rolling)
    [BusinessDate(20161121), BusinessDate(20171121), BusinessDate(20181121)]
 
@@ -523,46 +589,286 @@ All this is build into |BusinessPeriod| and |BusinessDate|.
 Adding
 ------
 
-..  admonition:: ToDo
+Date + Period
+~~~~~~~~~~~~~
 
-   Date + Period
+Adding two dates does not any sense. So we can only add a period to a date
+to give a new date
 
-   Period + Period
+   .. doctest::
+
+       >>> BusinessDate(20150612) + BusinessPeriod('6M19D')
+       BusinessDate(20151231)
+
+
+Period + Period
+~~~~~~~~~~~~~~~
+
+And two periods to give a new period -
+as long as the do not mix business days and classical periods.
+
+   .. doctest::
+
+      >>> BusinessPeriod('6M10D') + BusinessPeriod('9D')
+      BusinessPeriod('6M19D')
+
+      >>> BusinessPeriod('9D') + BusinessPeriod('6M10D')
+      BusinessPeriod('6M19D')
+
+      >>> BusinessPeriod('5B') + BusinessPeriod('10B')
+      BusinessPeriod('15B')
 
 
 Subtracting
 -----------
 
-..  admonition:: ToDo
+Date - Date
+~~~~~~~~~~~
 
-   Date - Date
+Surprisingly, the difference of two dates makes sense,
+as the distance in numeber of years than months and finaly days
+from the early to the later date.
 
-   Date - Period
+   .. doctest::
 
-   Period - Period
+      >>> BusinessDate(20151231) - BusinessDate(20150612)
+      BusinessPeriod('6M19D')
+
+Those are just the inverse operations
+
+   .. doctest::
+
+      >>> period = BusinessDate(20151231) - BusinessDate(20150612)
+      >>> BusinessDate(20151231) == BusinessDate(20150612) + period
+      True
+
+But note that these operations are not commutative,
+i.e. swapping the order can give something completely different
+as the the direction of the point of view is changed.
+
+   .. doctest::
+
+      >>> dec31 = BusinessDate(20151231)
+      >>> jun12 = BusinessDate(20150612)
+
+      >>> dec31 - jun12  # it takes 6 months and 19 days from jun12 to dec31
+      BusinessPeriod('6M19D')
+
+      >>> jun12 - dec31  # jun12 is 6 months and 18 days before dec31
+      BusinessPeriod('-6M18D')
+
+      >>> jan29 = BusinessDate(20150129)
+      >>> mar01 = BusinessDate(20150301)
+
+      >>> mar01 - jan29  # from jan29 yoe waits 1 month and 1 day until mar01
+      BusinessPeriod('1M1D')
+
+      >>> jan29 - mar01  # but mar01 was 1 month and 3 days before
+      BusinessPeriod('-1M3D')
+
+This becomes clear if you check this with your calendar.
+
+   .. image:: ./period_algebra.png
+      :alt: diagram of jan29 + 1m1d = mar01 vs mar01 - 1m3d = jan29 (period algebra)
+
+But still we get
+
+   .. doctest::
+
+      >>> BusinessDate(20150612) - BusinessDate(20151231)
+      BusinessPeriod('-6M18D')
+
+      >>> BusinessDate(20150612) == BusinessDate(20151231) - BusinessPeriod('6M18D')
+      True
+
+
+Date - Period
+~~~~~~~~~~~~~
+
+And again, we can subtract a period from a date to give a new date.
+
+   .. doctest::
+
+      >>> BusinessDate(20151231) - BusinessPeriod('6M18D') == BusinessDate(20150612)
+      True
+
+      >>> BusinessDate(20151231) - BusinessPeriod('10b')
+      BusinessDate(20151216)
+
+
+Period + Period
+~~~~~~~~~~~~~~~
+
+And straight forward, two periods substracted from each other to give a new period.
+Again, as long as the do not mix business days and classical periods.
+
+   .. doctest::
+
+      >>> BusinessPeriod('6M19D') - BusinessPeriod('6M10D')
+      BusinessPeriod('9D')
+
+      >>> BusinessPeriod('-6M10D') - BusinessPeriod('-6M19D')
+      BusinessPeriod('9D')
+
+      >>> BusinessPeriod('10b') - BusinessPeriod('15b')
+      BusinessPeriod('-5B')
 
 
 Multiplying
 -----------
 
-..  admonition:: ToDo
+Period * int
+~~~~~~~~~~~~
 
-   Period * Int
+Since an instance of a :class:`BusinessPeriod` stored the number
+of `years`, `month`, `days` or `businessdays` as :class:`int`
+one multiply this by integer, too.
+
+Note that the number of `month` can be reduced if it's exceeds the number of 12.
+But we can not do anything like this with days.
+
+   .. doctest::
+
+      >>> BusinessPeriod('1y2m3d') * 2
+      BusinessPeriod('2Y4M6D')
+
+      >>> BusinessPeriod('1y8m200d') * 2
+      BusinessPeriod('3Y4M400D')
+
+      >>> y, m, d = 1, 2, 3
+      >>> BusinessPeriod(years=y, months=m, days=d) * 2 == BusinessPeriod(years=y*2, months=m*2, days=d*2)
+      True
+
+      >>> BusinessPeriod('1y2m3d') * 2 == 2 * BusinessPeriod('1y2m3d')
+      True
 
 
 Comparing
 ---------
 
-..  admonition:: ToDo
+Dates
+~~~~~
 
-   Date <=> Date
+Calendars assume time to be evolving in strictly one direction, from past to future.
+Hence days can be well ordered and so be compared. Same for :class:`BusinessDate`.
 
-   Period <=> Period (some Periods are difficult to compare, e.g. is **1M** greater or equal ***30D*** )
-   nevertheless most of the time (years * 12 month) * 31 + days does give an useful order
+   .. doctest::
+
+      >>> BusinessDate(20151231) < BusinessDate(20160101)
+      True
+
+      >>> BusinessDate(20151231) == BusinessDate(20160101)
+      False
+
+      >>> BusinessDate(20151231) > BusinessDate(20160101)
+      False
+
+Periods
+~~~~~~~
+
+Two Tuples of three numbers `(a,b,c)` and `(d,e,f)`
+have only a natural order if all three numbers meet the same relation, e.g.
 
 
-Moving
-------
+   `(a,b,c) < (d,e,f)` if `a < d` and `b < e` and `c < f`
+
+   `(a,b,c) == (d,e,f)` if `a == d` and `b == e` and `c == f`
+
+In case of a two classical period as a `(years, months, days)` the problem can be reduced
+by comparing only two numbers `(years*12 + months, days)`.
+
+But leveraging the order of dates, a period `p` can be seen as greater than a period `q`
+if for any possible date `d` adding both periods give always the same resulting order in dates.
+
+I.e. we get
+
+   `p < q` if `d + p < d + q` for all dates `d`
+
+Hence, we are left with only *few* situations, which might give for different dates `d` and `d'`
+
+   `d + p < d + q` but `d' + p >= d' + q`
+
+Since `days` vary in different month, periods close to each other are difficult to compare,
+e.g. is **1M1D** greater or equal **31D**?
+
+   .. doctest::
+
+      >>> p = BusinessPeriod('1M1D')
+      >>> q = BusinessPeriod('31D')
+
+      >>> BusinessDate(20150131) + p < BusinessDate(20150131) + q
+      True
+
+      >>> BusinessDate(20150731) + p < BusinessDate(20150731) + q
+      False
+
+So, let `(a,b,c)` and `(d,e,f)` be two periods with
+
+   `m = (a - b) * 12 + b - e` and `d = c - f`
+
+as the distance of both measured in `months` and `days`.
+
+The sequence of the number of days in a period of given months with
+minimal days as well as max can be derived. The first 13 months listed.
+
+       ======  ===========
+       months   num days
+       ======  ===========
+         1      28 ... 31
+         2      59 ... 62
+         3      89 ... 92
+         4     120 ... 123
+         5     150 ... 153
+         6     181 ... 184
+         7     212 ... 215
+         8     242 ... 245
+         9     273 ... 276
+        10     303 ... 306
+        11     334 ... 337
+        12     365 ... 366
+        13     393 ... 397
+       ======  ===========
+
+.. starting at February with 28 days and then adding non leap year days
+   of the following months + leap day after 36 month
+
+For those pairs of month and days any comparison of **<** or **>** is not well defined. Hence,
+
+   .. doctest::
+
+      >>> BusinessPeriod('13m') < BusinessPeriod('395d')  # not well defined -> None
+      None
+
+      >>> BusinessPeriod('13m') < BusinessPeriod('397d')
+      False
+
+      >>> BusinessPeriod('13m') <= BusinessPeriod('397d')
+      True
+
+So comparison of arbitrary instances or :class:`BusinessPeriod` only works for **==**.
+
+   .. doctest::
+
+      >>> BusinessPeriod('ON') == BusinessPeriod('1B')
+      True
+
+      >>> BusinessPeriod('7D') == BusinessPeriod('1W')
+      True
+
+      >>> BusinessPeriod('30D') == BusinessPeriod('1M')
+      False
+
+      >>> BusinessPeriod('1D') == BusinessPeriod('1B')  # not well defined -> None
+      None
+
+Nevertheless, most of the time `(years * 12 month) * 31 + days` induce an useful ordering.
+
+
+Adjusting
+---------
+
+Dates
+~~~~~
 
 Moving dates away from weekend or holidays requires holidays
 
@@ -594,14 +900,23 @@ By default those are the :ref:`TARGET holidays <target_holidays>`.
 
    adjust BusinessDate / BusinessRange / BusinessSchedule to by conventions
 
+   .. https://www.academia.edu/25629409/Isda_definitions_
 
 Measuring
 ---------
 
+Periods
+~~~~~~~
+
+neither classical nor businessdays but following fm day count conventions
+to give distance between two BusinessDates as a year fraction.
+
 ..  admonition:: ToDo
 
-   day count resp. year fraction as distance between dates
+   get day count for BusinessDate
 
+Here more background information on
+`day count conventions <https://en.wikipedia.org/wiki/Day_count_convention>`_.
 
 BusinessDate Details
 ====================

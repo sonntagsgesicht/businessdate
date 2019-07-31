@@ -197,13 +197,16 @@ class BusinessPeriod(object):
         :param BusinessPeriod other:
         :return: int
         """
-        if not BusinessPeriod.is_businessperiod(other):
-            raise TypeError(
-                "Can't compare since type %s is not an instance of BusinessPeriod." % other.__class__.__name__)
-        other = BusinessPeriod(other)
-        s = (self.years * 12 + self.months) * 31 + self.days
-        o = (other.years * 12 + other.months) * 31 + other.days
-        return s - o
+        # if not BusinessPeriod.is_businessperiod(other):
+        #     raise TypeError(
+        #         "Can't compare objects of type %s with an instance of BusinessPeriod." % other.__class__.__name__)
+        diff = self - other
+        if other and diff.businessdays and not other.businessdays:
+            raise ValueError(
+                "Can't compare businessdays with (years, months, days) as %s." % other.__class__.__name__)
+        if self.businessdays:
+            return diff.businessdays
+        return (diff.years * 12 + diff.months) * 31 + diff.days
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -265,7 +268,7 @@ class BusinessPeriod(object):
             d = other * self.days
             b = other * self.businessdays
             return BusinessPeriod(years=y, months=m, days=d, businessdays=b)
-        raise TypeError("expected int but got %s" % other.__class__.__name__)
+        raise TypeError("expected int type but got %s" % other.__class__.__name__)
 
     def __rmul__(self, other):
         return self.__mul__(other)

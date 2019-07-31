@@ -22,7 +22,6 @@ from .businessperiod import BusinessPeriod
 
 
 class BusinessDate(BaseDateDatetimeDate):
-
     BASE_DATE = None
     DATE_FORMAT = '%Y%m%d'
     DAY_COUNT = 'act_36525'
@@ -74,7 +73,7 @@ class BusinessDate(BaseDateDatetimeDate):
         'actact': daycount.get_act_act,
     }
 
-    def __new__(cls, year=None, month=0, day=0):
+    def __new__(cls, year=None, month=0, day=0, convention=None, holidays=None):
         """ date class to perform calculations coming from financial businesses
 
         :param year: number of year or some other input value t
@@ -89,7 +88,17 @@ class BusinessDate(BaseDateDatetimeDate):
         :param int days: number of day in month 1 ... 31
          (default: 0, required to be 0 when other input of year is used)
 
+        For all input arguments exits read only properties.
+
         """
+
+        '''
+        :param str convention: keyword to select a business day adjustment convention
+         which is used as default for :meth:`BusinessDate.adjust`.
+         For more details on the conventions see module :mod:`businessdate.conventions`.
+        :param list holidays: container containing items of type :class:`datetime.date`
+         which is used as default for :meth:`BusinessDate.adjust`.
+        '''
 
         if isinstance(year, str):
             year, month, day = cls._parse_date_string(year, default=(year, month, day))
@@ -102,6 +111,9 @@ class BusinessDate(BaseDateDatetimeDate):
             year, month, day = int(ymd[:4]), int(ymd[4:6]), int(ymd[6:])
 
         if isinstance(year, int) and month and day:
+            if 12 < month:
+                year += int(month // 12)
+                month = int(month % 12)
             if issubclass(cls, BaseDateFloat):
                 return cls.from_ymd(year, month, day)
             return super(BusinessDate, cls).__new__(cls, year, month, day)
@@ -218,7 +230,7 @@ class BusinessDate(BaseDateDatetimeDate):
         """
             addition of BusinessDate.
 
-        :param object other: can be BusinessPeriod or
+        :param other: can be BusinessPeriod or
         any thing that might be casted to it. Or a list of them.
         """
         if isinstance(other, (list, tuple)):
@@ -231,7 +243,7 @@ class BusinessDate(BaseDateDatetimeDate):
         """
             subtraction of BusinessDate.
 
-        :param object other: can be other BusinessDate, BusinessPeriod or
+        :param other: can be other BusinessDate, BusinessPeriod or
         any thing that might be casted to those. Or a list of them.
         """
         if isinstance(other, (list, tuple)):
@@ -239,7 +251,7 @@ class BusinessDate(BaseDateDatetimeDate):
         if BusinessPeriod.is_businessperiod(other):
             return self + (-1 * BusinessPeriod(other))
         if BusinessDate.is_businessdate(other):
-            y, m, d = self.diff_in_ymd(BusinessDate(other))
+            y, m, d = BusinessDate(other).diff_in_ymd(self)
             return BusinessPeriod(years=y, months=m, days=d)
         raise TypeError('subtraction of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
 
@@ -279,25 +291,6 @@ class BusinessDate(BaseDateDatetimeDate):
 
     # --- calculation methods --------------------------------------------
 
-    def _add_years(self, years_int):
-        y, m, d = self.to_ymd()
-        y += years_int
-        if not is_leap_year(y) and m == 2:
-            d = min(28, d)
-        return self.__class__.from_ymd(y, m, d)
-
-    def _add_months(self, month_int):
-        res = self
-        month_int += res.month
-        while month_int > 12:
-            res = res._add_years(1)
-            month_int -= 12
-        while month_int < 1:
-            res = res._add_years(-1)
-            month_int += 12
-        l = days_in_month(res.year, month_int)
-        return res.__class__.from_ymd(res.year, month_int, min(l, res.day))
-
     def _add_business_days(self, days_int, holidays=None):
         holidays = self.__class__.DEFAULT_HOLIDAYS if holidays is None else holidays
 
@@ -318,11 +311,15 @@ class BusinessDate(BaseDateDatetimeDate):
         return res
 
     def _add_ymd(self, years=0, months=0, days=0):
-        if self.month == 2 and self.day == 29:
-            years += int(months // 12)
-            months = int(months % 12)
-            return self._add_months(months)._add_years(years)._add_days(days)
-        return self._add_years(years)._add_months(months)._add_days(days)
+        s = self
+        y = s.year + years
+        m = s.month + months
+        while m < 1:
+            m += 12
+            y -= 1
+        som = self.__class__(y, m, 1)
+        d = min(self.day, som.days_in_month()) - 1 + days
+        return som._add_days(d)
 
     def add_period(self, period_obj, holidays=None):
         """ adds a :class:`BusinessPeriod` object
@@ -344,39 +341,43 @@ class BusinessDate(BaseDateDatetimeDate):
         return self._diff_in_days(end_date)
 
     def diff_in_ymd(self, end_date):
-        """ calculates the distance to a :class:`BusinessDate`,
-        expressed as a :class:`tuple` of :class:`int` items `(years, months, days)`.
-
-        (see also the python lib dateutils.relativedelta)
-        """
 
         if end_date < self:
-            y, m, d = end_date.diff_in_ymd(self)
-            return -y, -m, -d
+            y,m,d = 0,0,0
+            while end_date < self._add_ymd(y,0,0):
+                y -= 1
+            while end_date < self._add_ymd(y+1,m,0):
+                m -= 1
+            while end_date < self._add_ymd(y+1,m+1,d):
+                d -= 1
+            return y+1, m+1, d
+
         y = end_date.year - self.year
         m = end_date.month - self.month
+        d = end_date.day - self.day
 
         while m < 0:
             y -= 1
             m += 12
-        # never used, even by 100% test coverage
-        # while m > 12:
-        #     y += 1
-        #     m -= 12
 
-        s = self._add_ymd(y, m, 0)
-        d = s._diff_in_days(end_date)
-
-        if d < 0:
+        while d < 0:
             m -= 1
             if m < 0:
                 y -= 1
                 m += 12
-            s = self._add_ymd(y, m, 0)
+            d = self._add_ymd(y, m, 0)._diff_in_days(end_date)
 
-        d = s._diff_in_days(end_date)
+        if False:
+            if not any((0 <= y, 0 <= m < 12, 0 <= d < 31)):
+                raise AssertionError((y,m,d))
+            if not end_date == self._add_ymd(y, m, d):
+                raise AssertionError('%s!=%s==%s._add_ymd(%d,%d,%d)' %
+                               (end_date, self._add_ymd(y, m, d), self, y, m, d))
+            if not self == end_date._add_ymd(-y, -m, -d) and min(end_date, self).day < 29:
+                raise AssertionError('%s!=%s==%s._add_ymd(%d,%d,%d)' %
+                               (self, end_date._add_ymd(-y, -m, -d), end_date, -y,-m,-d))
 
-        return -int(y), -int(m), -int(d)
+        return int(y), int(m), int(d)
 
     # --- business day adjustment and day count fraction methods -----------------------------------------
 
@@ -396,9 +397,9 @@ class BusinessDate(BaseDateDatetimeDate):
                 'use `BusinessDate().get_day_count(BusinessDate(), convention)` \n' \
                 'and provide one of the following convention key words: \n'
             print(s)
-            for k,v in dc_func.items():
-                print('  ' + ("'%s'"%k).ljust(16) + '' + v.__doc__)
-            print('\n Default value is %s.' %self.__class__.DAY_COUNT)
+            for k, v in dc_func.items():
+                print('  ' + ("'%s'" % k).ljust(16) + '' + v.__doc__)
+            print('\n Default value is %s.' % self.__class__.DAY_COUNT)
             return default_cf_func(self.to_date(), BusinessDate(end).to_date())
         return dc_func[convention.lower()](self.to_date(), BusinessDate(end).to_date())
 
@@ -418,8 +419,8 @@ class BusinessDate(BaseDateDatetimeDate):
                 'use `BusinessDate().adjust(convention, holidays=None)` \n' \
                 'and provide one of the following convention key words: \n'
             print(s)
-            for k,v in adj_func.items():
-                print('  ' + ("'%s'"%k).ljust(16) + '' + v.__doc__)
+            for k, v in adj_func.items():
+                print('  ' + ("'%s'" % k).ljust(16) + '' + v.__doc__)
             print('')
             return self
         holidays = self.__class__.DEFAULT_HOLIDAYS if holidays is None else holidays
