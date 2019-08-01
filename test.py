@@ -19,11 +19,12 @@ import unittest
 from datetime import datetime, date, timedelta
 
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
+from businessdate.businessholidays import TargetHolidays
 
 from businessdate.basedate import BaseDateFloat, BaseDateDatetimeDate
 from businessdate.ymd import from_ymd_to_excel, from_excel_to_ymd, \
     is_valid_ymd, end_of_quarter_month, days_in_month, \
-    days_in_year, is_leap_year, _easter_dates, target_days
+    days_in_year, is_leap_year, easter
 
 
 def _silent(func, *args):
@@ -169,7 +170,9 @@ class DayCountUnitTests(unittest.TestCase):
 
 class BusinessHolidaysUnitTests(unittest.TestCase):
     def setUp(self):
-        self.holidays = BusinessHolidays(target_days(2016))
+        t = TargetHolidays()
+        date(2016,1,1) in t
+        self.holidays = list(t)
         self.easter = dict()
         self.easter[2015] = date(2015, 4, 5)
         self.easter[2016] = date(2016, 3, 27)
@@ -185,12 +188,11 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
 
     def test_easter(self):
         for y in self.easter:
-            m, d = _easter_dates[y]
-            self.assertEqual(date(y, m, d), self.easter[y])
+            self.assertEqual(date(*easter(y)), self.easter[y])
 
     def test_target_days(self):
         for y in self.target:
-            t = target_days(y)
+            t = TargetHolidays()
             d = date(y, 1, 1) - timedelta(1)
             while d < date(y + 1, 1, 1):
                 if d in self.target[y]:
