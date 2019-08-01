@@ -34,7 +34,7 @@ setup(
     long_description='\n'+codecs.open('README.rst', encoding='utf-8').read(),
     platforms='any',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 2 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Financial and Insurance Industry',
