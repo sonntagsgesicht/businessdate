@@ -689,7 +689,7 @@ as the the direction of the point of view is changed.
 
 This becomes clear if you check this with your calendar.
 
-   .. image:: ./period_algebra.png
+   .. image:: ../pix/period_algebra.png
       :alt: diagram of jan29 + 1m1d = mar01 vs mar01 - 1m3d = jan29 (period algebra)
 
 But still we get
