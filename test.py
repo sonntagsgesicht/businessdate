@@ -20,11 +20,10 @@ from datetime import datetime, date, timedelta
 
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
 
-from businessdate.holidays import easter, target_days
 from businessdate.basedate import BaseDateFloat, BaseDateDatetimeDate
 from businessdate.ymd import from_ymd_to_excel, from_excel_to_ymd, \
     is_valid_ymd, end_of_quarter_month, days_in_month, \
-    days_in_year, is_leap_year
+    days_in_year, is_leap_year, _easter_dates, target_days
 
 
 def _silent(func, *args):
@@ -186,7 +185,8 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
 
     def test_easter(self):
         for y in self.easter:
-            self.assertEqual(easter(y), self.easter[y])
+            m, d = _easter_dates[y]
+            self.assertEqual(date(y, m, d), self.easter[y])
 
     def test_target_days(self):
         for y in self.target:
@@ -430,7 +430,7 @@ class BusinessDateUnitTests(unittest.TestCase):
 
     def test_business_day_adjustment(self):
         self.assertEqual(_silent(self.jan01.adjust), BusinessDate(20160101))
-        self.assertEqual(_silent(self.jan01.adjust,''), BusinessDate(20160101))
+        self.assertEqual(_silent(self.jan01.adjust, ''), BusinessDate(20160101))
         self.assertEqual(self.jan01.adjust('NO'), BusinessDate(20160101))
         # self.assertEqual(no(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS), BusinessDate(20160101).to_date())
 
@@ -589,11 +589,11 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertEqual(BusinessPeriod("3M"), BusinessPeriod("1M") + "2m")
         self.assertEqual(BusinessPeriod("1Y"), BusinessPeriod("12M"))
         self.assertEqual(BusinessPeriod("1Y"), BusinessPeriod("12M0D"))
-        #self.assertTrue(self._2y < '10Y')
-        #self.assertTrue(self._2y < BusinessPeriod('10Y'))
-        #self.assertTrue(self._2y < BusinessPeriod('1m') * 12 * 2 + '1d')
-        #self.assertFalse(self._3y < BusinessPeriod('1Y'))
-        #self.assertEqual(self._2y.__cmp__(BusinessPeriod('10Y')), -2976.0)
+        # self.assertTrue(self._2y < '10Y')
+        # self.assertTrue(self._2y < BusinessPeriod('10Y'))
+        # self.assertTrue(self._2y < BusinessPeriod('1m') * 12 * 2 + '1d')
+        # self.assertFalse(self._3y < BusinessPeriod('1Y'))
+        # self.assertEqual(self._2y.__cmp__(BusinessPeriod('10Y')), -2976.0)
         self.assertNotEqual(self._2y, self._5y)
         self.assertEqual(BusinessPeriod('5y'), self._5y)
 
@@ -635,17 +635,17 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertFalse(BusinessPeriod('1B') == '2D3D')
         self.assertFalse(BusinessPeriod() == '2D3D')
 
-        #self.assertTrue(BusinessPeriod() <= BusinessPeriod('3D'))
-        #self.assertFalse(BusinessPeriod('6D') <= BusinessPeriod('3D'))
+        # self.assertTrue(BusinessPeriod() <= BusinessPeriod('3D'))
+        # self.assertFalse(BusinessPeriod('6D') <= BusinessPeriod('3D'))
 
-        #self.assertTrue(BusinessPeriod() < BusinessPeriod('3D'))
-        #self.assertFalse(BusinessPeriod('6D') < BusinessPeriod('3D'))
+        # self.assertTrue(BusinessPeriod() < BusinessPeriod('3D'))
+        # self.assertFalse(BusinessPeriod('6D') < BusinessPeriod('3D'))
 
-        #self.assertFalse(BusinessPeriod() >= BusinessPeriod('3D'))
-        #self.assertTrue(BusinessPeriod('6D') >= BusinessPeriod('3D'))
+        # self.assertFalse(BusinessPeriod() >= BusinessPeriod('3D'))
+        # self.assertTrue(BusinessPeriod('6D') >= BusinessPeriod('3D'))
 
-        #self.assertFalse(BusinessPeriod() > BusinessPeriod('3D'))
-        #self.assertTrue(BusinessPeriod('6D') > BusinessPeriod('3D'))
+        # self.assertFalse(BusinessPeriod() > BusinessPeriod('3D'))
+        # self.assertTrue(BusinessPeriod('6D') > BusinessPeriod('3D'))
 
     def test_calculations(self):
         self.assertEqual(self._2y + self._3y, self._5y)
@@ -702,7 +702,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertIsNone(BusinessPeriod('10b') < BusinessPeriod('393d'))  # not well defined -> None
         self.assertFalse(BusinessPeriod('13m') < BusinessPeriod('392d'))
         self.assertIsNone(BusinessPeriod('13m') < BusinessPeriod('393d'))  # not well defined -> None
-        self.assertIsNone(BusinessPeriod('13m') < BusinessPeriod('397d')) # not well defined -> None
+        self.assertIsNone(BusinessPeriod('13m') < BusinessPeriod('397d'))  # not well defined -> None
         self.assertTrue(BusinessPeriod('13m') < BusinessPeriod('398d'))
         self.assertFalse(BusinessPeriod('13m') <= BusinessPeriod('392d'))
         self.assertIsNone(BusinessPeriod('13m') <= BusinessPeriod('393d'))  # not well defined -> None
@@ -901,7 +901,7 @@ class OldBusinessDateUnitTests(unittest.TestCase):
         e = BusinessDate('20011112')
         self.assertEqual(BusinessDate._add_ymd(s, 0, 0, e.day), BusinessDate('20011122'))
         self.assertEqual(BusinessDate._add_ymd(s, 0, 1, 0), BusinessDate('20011210'))
-        self.assertEqual(BusinessDate._add_ymd(s, 1, 0 ,0), BusinessDate('20021110'))
+        self.assertEqual(BusinessDate._add_ymd(s, 1, 0, 0), BusinessDate('20021110'))
 
     def test_diff(self):
         s = BusinessDate('20160101')

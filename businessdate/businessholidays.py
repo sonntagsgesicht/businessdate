@@ -13,7 +13,7 @@
 
 from datetime import date
 
-from .holidays import target_days
+from .ymd import target_days
 
 
 class BusinessHolidays(list):
