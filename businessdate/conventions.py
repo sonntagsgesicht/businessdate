@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -27,26 +27,26 @@ def is_business_day(business_date, holidays=list()):
 
 
 def adjust_no(business_date, holidays=()):
-    """ does no adjusts. """
+    """ does no adjustment. """
     return business_date
 
 
 def adjust_previous(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions). """
+    """ adjusts to Business Day Convention "Preceding". """
     while not is_business_day(business_date, holidays):
         business_date -= ONE_DAY
     return business_date
 
 
 def adjust_follow(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Following" (4.12(a) (i) 2006 ISDA Definitions). """
+    """ adjusts to Business Day Convention "Following". """
     while not is_business_day(business_date, holidays):
         business_date += ONE_DAY
     return business_date
 
 
 def adjust_mod_follow(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Modified [Following]" (4.12(a) (ii) 2006 ISDA Definitions). """
+    """ adjusts to Business Day Convention "Modified [Following]". """
     month = business_date.month
     new = adjust_follow(business_date, holidays)
     if month != new.month:
@@ -56,7 +56,7 @@ def adjust_mod_follow(business_date, holidays=()):
 
 
 def adjust_mod_previous(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons). """
+    """ adjusts to Business Day Convention "Modified Preceding". """
     month = business_date.month
     new = adjust_previous(business_date, holidays)
     if month != new.month:
@@ -81,7 +81,7 @@ def adjust_end_of_month(business_date, holidays=()):
 
 
 def adjust_imm(business_date, holidays=()):
-    """ adjusts to Business Day Convention of  "International Monetary Market". """
+    """ adjusts to Business Day Convention of "International Monetary Market". """
     business_date = date(business_date.year, end_of_quarter_month(business_date.month), 15)
     while business_date.weekday() == WEDNESDAY:
         business_date += ONE_DAY
@@ -89,6 +89,6 @@ def adjust_imm(business_date, holidays=()):
 
 
 def adjust_cds_imm(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Single Name CDS" (not in 2006 ISDA Definitions). """
+    """ adjusts to Business Day Convention "Single Name CDS". """
     business_date = date(business_date.year, end_of_quarter_month(business_date.month), 20)
     return business_date

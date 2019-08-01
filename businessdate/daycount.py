@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Sunday 28 July 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -21,14 +21,14 @@ def diff_in_days(start, end):
 
 
 def get_30_360(start, end):
-    """ implements 30/360 Day Count Convention (4.16(f) 2006 ISDA Definitions) """
+    """ implements 30/360 Day Count Convention. """
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
     return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
 
 
 def get_30e_360(start, end):
-    """ implements the 30E/360 Day Count Convention (4.16(g) 2006 ISDA Definitions) """
+    """ implements the 30E/360 Day Count Convention. """
 
     y1, m1, d1 = start.timetuple()[:3]
     # adjust to date immediately following the the last day
@@ -40,8 +40,8 @@ def get_30e_360(start, end):
     return (360 * (y2 - y1) + 30 * (m2 - m1) + (d2 - d1)) / 360.0
 
 
-def get_30e_360_isda(start, end):
-    """ implements the 30E/360 (ISDA) Day Count Convention (4.16(h) 2006 ISDA Definitions) """
+def get_30e_360i(start, end):
+    """ implements the 30E/360 I. Day Count Convention. """
     y1, m1, d1 = start.timetuple()[:3]
     # adjust to date immediately following the last day
     y2, m2, d2 = end.timetuple()[:3]
@@ -55,12 +55,12 @@ def get_30e_360_isda(start, end):
 
 
 def get_act_360(start, end):
-    """ implements Act/360 day count convention (4.16(e) 2006 ISDA Definitions) """
+    """ implements Act/360 day count convention. """
     return diff_in_days(start, end) / 360.0
 
 
 def get_act_365(start, end):
-    """ implements Act/365 day count convention (4.16(d) 2006 ISDA Definitions) """
+    """ implements Act/365 day count convention. """
     return diff_in_days(start, end) / 365.0
 
 
@@ -70,11 +70,11 @@ def get_act_36525(start, end):
 
 
 def get_act_act(start, end):
-    """ implements Act/Act day count convention (4.16(b) 2006 ISDA Definitions) """
+    """ implements Act/Act day count convention. """
 
     # if the period does not lie within a year split the days in the period as following:
     #           remaining days of start year / years in between / days in the end year
-    # REMARK: following the before mentioned ISDA Definition the first day of the period is included whereas the
+    # REMARK: following the before mentioned Definition the first day of the period is included whereas the
     # last day will be excluded
     # What remains to check now is only whether the start and end year are leap or non-leap years. The quotients
     # can be easily calculated and for the years in between they are always one (365/365 = 1; 366/366 = 1)

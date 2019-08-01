@@ -52,6 +52,8 @@ class BusinessPeriod(object):
             businessdays = period.businessdays
         elif isinstance(period, timedelta):
             days = period.days
+        elif period is None:
+            pass
         elif isinstance(period, str):
             if period.upper() == '':
                 pass
@@ -64,14 +66,6 @@ class BusinessPeriod(object):
             elif period.upper() == 'DD':
                 businessdays = 3
             else:
-                period = period.upper().replace(' ', '')
-                period = period.replace('BUSINESSDAYS', 'B')
-                period = period.replace('YEARS','Y')
-                period = period.replace('QUARTERS', 'Q')
-                period = period.replace('MONTHS', 'M')
-                period = period.replace('WEEKS', 'W')
-                period = period.replace('DAYS', 'D')
-
                 s, y, q, m, w, d, f = BusinessPeriod._parse_ymd(period)
                 # no final businesdays allowed
                 if f:
@@ -80,7 +74,7 @@ class BusinessPeriod(object):
                 sgn = [int(x / abs(x)) for x in (y, q, m, w, d) if x]
                 if [x for x in sgn[1:] if x < 0]:
                     raise ValueError(
-                        "Except at the beginning no signs allowed in %s as %s" % (period, self.__class__.__name__))
+                        "Except at the beginning no signs allowed in %s as %s" % (str(period), self.__class__.__name__))
                 y, q, m, w, d = (abs(x) for x in (y, q, m, w, d))
                 # consolidate a quarter as three month and a week as seven days
                 m += q * 3
@@ -88,6 +82,9 @@ class BusinessPeriod(object):
                 # use sign of first non vanishing of y,q,m,w,d
                 sgn = sgn[0] if sgn else 1
                 businessdays, years, months, days = s, sgn * y, sgn * m, sgn * d
+        else:
+            raise TypeError(
+                "%s of Type %s not valid to create BusinessPeriod." %(str(period), period.__class__.__name__))
 
         if months >= 12:
             years += int(months // 12)
@@ -115,6 +112,14 @@ class BusinessPeriod(object):
     @classmethod
     def _parse_ymd(cls, period):
         # can even parse strings like '-1B-2Y-4Q+5M' but also '0B', '-1Y2M3D' as well.
+        period = period.upper().replace(' ', '')
+        period = period.replace('BUSINESSDAYS', 'B')
+        period = period.replace('YEARS', 'Y')
+        period = period.replace('QUARTERS', 'Q')
+        period = period.replace('MONTHS', 'M')
+        period = period.replace('WEEKS', 'W')
+        period = period.replace('DAYS', 'D')
+
         def _parse(p, letter):
             if p.find(letter) >= 0:
                 s, p = p.split(letter, 1)
@@ -155,8 +160,8 @@ class BusinessPeriod(object):
         if isinstance(period, str):
             if period.isdigit():
                 return False
-            if period.upper().strip('+-0123456789BYQMWD'):
-                return False
+            #if period.upper().strip('+-0123456789BYQMWD'):
+            #    return False
             try:  # to be removed
                 BusinessPeriod._parse_ymd(period)
             except ValueError:
@@ -192,21 +197,22 @@ class BusinessPeriod(object):
         return self.__class__(years=y, months=m, days=d, businessdays=b)
 
     def __cmp__(self, other):
-        """ compare BusinessPeriods, comparison by (years*12+months)*31+days
-
-        :param BusinessPeriod other:
-        :return: int
-        """
-        # if not BusinessPeriod.is_businessperiod(other):
-        #     raise TypeError(
-        #         "Can't compare objects of type %s with an instance of BusinessPeriod." % other.__class__.__name__)
-        diff = self - other
-        if other and diff.businessdays and not other.businessdays:
-            raise ValueError(
-                "Can't compare businessdays with (years, months, days) as %s." % other.__class__.__name__)
+        other = self.__class__() if other == 0 else other
+        if not isinstance(other, BusinessPeriod):
+            other = BusinessPeriod(other)
         if self.businessdays:
-            return diff.businessdays
-        return (diff.years * 12 + diff.months) * 31 + diff.days
+            if other and not other.businessdays:
+                # log warning on non compatible pair
+                return None
+            return self.businessdays - other.businessdays
+        m = 12 * (self.years - other.years) + self.months - other.months
+        d = self.days - other.days
+        if m * 28 <= -d <= m * 31:
+            p = self.__class__(months=m)
+            if p.min_days() <= -d <= p.max_days():
+                # log warning on non orderable pair
+                return None
+        return m * 30.5 + d
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -218,16 +224,21 @@ class BusinessPeriod(object):
         return not self.__eq__(other)
 
     def __le__(self, other):
-        return self.__cmp__(other) <= 0
+        cmp = self.__cmp__(other)
+        cmp = self.__cmp__(other + '1D') if cmp is None else cmp
+        return cmp if cmp is None else cmp <= 0
 
     def __lt__(self, other):
-        return self.__cmp__(other) < 0
+        cmp = self.__cmp__(other)
+        return cmp if cmp is None else cmp < 0
 
     def __ge__(self, other):
-        return self.__cmp__(other) >= 0
+        lt = self.__lt__(other)
+        return None if lt is None else not lt
 
     def __gt__(self, other):
-        return self.__cmp__(other) > 0
+        le = self.__le__(other)
+        return None if le is None else not le
 
     def __hash__(self):
         return hash(repr(self))
@@ -272,3 +283,34 @@ class BusinessPeriod(object):
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def max_days(self):
+        if str(self).startswith('-'):
+            sgn = -1
+            days_in_month = 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28  # days from mar to feb forwards
+        else:
+            sgn = 1
+            days_in_month = 31, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 28
+        m = sgn * (self.years *12 + self.months)
+        d = sgn * self.days
+        # days from jan to feb backwards
+        days = 0
+        for i in range(m):
+            days += days_in_month[int(i % 12)]
+            days += 1 if int(i % 48) == 11 else 0
+        return sgn * (days + d)
+
+    def min_days(self):
+        if str(self).startswith('-'):
+            sgn = -1
+            days_in_month = 28, 31, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 # days from feb to jan backwards
+        else:
+            sgn = 1
+            days_in_month = 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 # days from feb to jan forwards
+        m, d  = self.years *12 + self.months, self.days
+        m, d = sgn * m, sgn * d
+        days = 0
+        for i in range(m):
+            days += days_in_month[int(i % 12)]
+            days += 1 if int(i % 48) == 36 else 0
+        return sgn * (days + d)

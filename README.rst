@@ -42,7 +42,20 @@ Python library *businessdate*
    :target: https://pypi.org/project/businessdate/
    :alt: PyPI Downloads
 
-A fast, efficient Python library for generating `business dates` for fast date operations.
+A fast, efficient Python library for generating `business dates` for simple and fast date operations.
+
+.. doctest::
+
+   >>> from businessdate import BusinessDate
+
+   >>> BusinessDate(2017,12,31) + '2 weeks'
+   BusinessDate(20180114)
+
+   >>> BusinessDate(20171231) + '2w'  # same but shorter
+   BusinessDate(20180114)
+
+   >>> BusinessDate(20180114).to_date()
+   datetime.date(2018, 1, 14)
 
 Typical banking business features are provided like `holiday adjustments`
 to move dates away from weekend days or `holidays`. As well as functionality to get

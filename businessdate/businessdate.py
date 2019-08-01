@@ -22,6 +22,7 @@ from .businessperiod import BusinessPeriod
 
 
 class BusinessDate(BaseDateDatetimeDate):
+    ADJUST = 'No'
     BASE_DATE = None
     DATE_FORMAT = '%Y%m%d'
     DAY_COUNT = 'act_36525'
@@ -38,6 +39,7 @@ class BusinessDate(BaseDateDatetimeDate):
         'modprv': conventions.adjust_mod_previous,
         'follow': conventions.adjust_follow,
         'flw': conventions.adjust_follow,
+        'modified': conventions.adjust_mod_follow,
         'mod_follow': conventions.adjust_mod_follow,
         'modfollow': conventions.adjust_mod_follow,
         'modflw': conventions.adjust_mod_follow,
@@ -59,9 +61,9 @@ class BusinessDate(BaseDateDatetimeDate):
         '30e_360': daycount.get_30e_360,
         '30e360': daycount.get_30e_360,
         'thirtye360': daycount.get_30e_360,
-        '30e_360_isda': daycount.get_30e_360_isda,
-        '30e360isda': daycount.get_30e_360_isda,
-        'thirtye360isda': daycount.get_30e_360_isda,
+        '30e_360_i': daycount.get_30e_360i,
+        '30e360i': daycount.get_30e_360i,
+        'thirtye360i': daycount.get_30e_360i,
         'act_360': daycount.get_act_360,
         'act360': daycount.get_act_360,
         'act_365': daycount.get_act_365,
@@ -338,7 +340,7 @@ class BusinessDate(BaseDateDatetimeDate):
 
     def diff_in_days(self, end_date):
         """ calculates the distance to a :class:`BusinessDate` in days """
-        return self._diff_in_days(end_date)
+        return int(self._diff_in_days(end_date))
 
     def diff_in_ymd(self, end_date):
 
@@ -367,61 +369,61 @@ class BusinessDate(BaseDateDatetimeDate):
                 m += 12
             d = self._add_ymd(y, m, 0)._diff_in_days(end_date)
 
-        if False:
-            if not any((0 <= y, 0 <= m < 12, 0 <= d < 31)):
-                raise AssertionError((y,m,d))
-            if not end_date == self._add_ymd(y, m, d):
-                raise AssertionError('%s!=%s==%s._add_ymd(%d,%d,%d)' %
-                               (end_date, self._add_ymd(y, m, d), self, y, m, d))
-            if not self == end_date._add_ymd(-y, -m, -d) and min(end_date, self).day < 29:
-                raise AssertionError('%s!=%s==%s._add_ymd(%d,%d,%d)' %
-                               (self, end_date._add_ymd(-y, -m, -d), end_date, -y,-m,-d))
+        # if not any((0 <= y, 0 <= m < 12, 0 <= d < 31)):
+        #     raise AssertionError((y,m,d))
+        # if not end_date == self._add_ymd(y, m, d):
+        #     raise AssertionError('%s!=%s==%s._add_ymd(%d,%d,%d)' %
+        #                    (end_date, self._add_ymd(y, m, d), self, y, m, d))
+        # if not self == end_date._add_ymd(-y, -m, -d) and min(end_date, self).day < 29:
+        #     raise AssertionError('%s!=%s==%s._add_ymd(%d,%d,%d)' %
+        #                    (self, end_date._add_ymd(-y, -m, -d), end_date, -y,-m,-d))
 
         return int(y), int(m), int(d)
 
     # --- business day adjustment and day count fraction methods -----------------------------------------
 
-    def get_day_count(self, end, convention=''):
+    def get_day_count(self, end=None, convention=''):
         """ counts the days as a year fraction to given date following the specified convention.
-
-        For possible conventions invoke
-        :meth:`BusinessDate().get_day_count(BusinessDate()) <BusinessDate.get_day_count>`.
 
         For more details on the conventions see module :mod:`businessdate.daycount`.
         """
+        convention = convention if convention else BusinessDate.DAY_COUNT
         dc_func = self.__class__._dc_func
-        default_cf_func = dc_func[self.__class__.DAY_COUNT]
-        if not convention:
-            s = '\n' \
-                'In order to get the year fraction according a day count convention' \
-                'use `BusinessDate().get_day_count(BusinessDate(), convention)` \n' \
-                'and provide one of the following convention key words: \n'
-            print(s)
-            for k, v in dc_func.items():
-                print('  ' + ("'%s'" % k).ljust(16) + '' + v.__doc__)
-            print('\n Default value is %s.' % self.__class__.DAY_COUNT)
-            return default_cf_func(self.to_date(), BusinessDate(end).to_date())
         return dc_func[convention.lower()](self.to_date(), BusinessDate(end).to_date())
+
+    def get_year_fraction(self, end=None, convention=''):
+        """ wrapper for :meth:`BusinessDate.get_day_count` method for different naming preferences """
+        return self.get_day_count(end, convention)
 
     def adjust(self, convention='', holidays=None):
         """ returns an adjusted :class:`BusinessDate` if it was not a business day following the specified convention.
 
         For details on business days see :meth:`BusinessDate.is_business_day`.
 
-        For possible conventions invoke :meth:`BusinessDate().adjust() <BusinessDate.adjust>`
-
-        For more details on the conventions see module :mod:`businessdate.conventions`)
+        For more details on the conventions see module :mod:`businessdate.conventions`
         """
+        convention = convention if convention else BusinessDate.ADJUST
         adj_func = self.__class__._adj_func
-        if not convention:
-            s = '\n' \
-                'In order to adjust according a business day convention' \
-                'use `BusinessDate().adjust(convention, holidays=None)` \n' \
-                'and provide one of the following convention key words: \n'
-            print(s)
-            for k, v in adj_func.items():
-                print('  ' + ("'%s'" % k).ljust(16) + '' + v.__doc__)
-            print('')
-            return self
         holidays = self.__class__.DEFAULT_HOLIDAYS if holidays is None else holidays
         return BusinessDate(adj_func[convention.lower()](self.to_date(), holidays))
+
+
+# add additional __doc__ at runtime (during import)
+try:
+    s = '\n' \
+        '        In order to get the year fraction according a day count convention \n' \
+        '        provide one of the following convention key words: \n\n'
+    for k, v in BusinessDate._dc_func.items():
+         s +='           * ' + (":code:`%s`" % k).ljust(16) + '' + v.__doc__ + '\n\n'
+    BusinessDate.get_day_count.__doc__ +=s
+
+    s = '\n' \
+        '        In order to adjust according a business day convention \n' \
+        '        provide one of the following convention key words: \n\n'
+    for k, v in BusinessDate._adj_func.items():
+        s += '           * ' + (":code:`%s`" % k).ljust(16) + '' + v.__doc__ + '\n\n'
+    BusinessDate.adjust.__doc__ +=s
+
+    del s
+except AttributeError:
+    pass

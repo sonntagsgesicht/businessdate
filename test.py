@@ -136,7 +136,7 @@ class DayCountUnitTests(unittest.TestCase):
             'ACT/360': 'get_act_360',
             'ACT/365': 'get_act_365',
             '30E/360': 'get_30e_360',
-            '30E/360/ISDA': 'get_30e_360_isda',
+            '30E/360/I': 'get_30e_360_i',
             'ACT/ACT': 'get_act_act',
             'ACT/365.25': 'get_act_36525'
             }
@@ -232,6 +232,8 @@ class BusinessDateUnitTests(unittest.TestCase):
     def test_base_date(self):
         BusinessDate.BASE_DATE = '20160606'
         self.assertEqual(BusinessDate(), BusinessDate('20160606'))
+        BusinessDate.BASE_DATE = None
+        self.assertEqual(BusinessDate(), BusinessDate(date.today()))
         BusinessDate.BASE_DATE = date.today()
 
     def test_parse(self):
@@ -240,6 +242,7 @@ class BusinessDateUnitTests(unittest.TestCase):
 
     def test_constructors(self):
         self.assertEqual(BusinessDate(date.today()), BusinessDate())
+        self.assertEqual(BusinessDate(date.today() + timedelta(2)), BusinessDate(timedelta(2)))
         self.assertEqual(self.jan02, BusinessDate('2016-01-02'))
         self.assertEqual(self.jan02, BusinessDate('01/02/2016'))
         self.assertEqual(self.jan02, BusinessDate('02.01.2016'))
@@ -417,9 +420,9 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'ACT_ACT'), delta / total)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'ACTACT'), delta / total)
 
-        self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, '30_360'), 90. / 360.)
+        self.assertAlmostEqual(self.jan01.get_year_fraction(self.mar31, '30_360'), 90. / 360.)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, '30e_360'), 0.24722222)
-        self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, '30e_360_isda'), 0.247222222)
+        self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, '30e_360_i'), 0.247222222)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'act_360'), delta / 360.)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'act_365'), delta / 365.)
         self.assertAlmostEqual(self.jan01.get_day_count(self.mar31, 'act_36525'), delta / 365.25)
@@ -498,6 +501,8 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(BusinessDate() + '1B', BusinessDate('1B'))
         self.assertEqual(BusinessDate() + '1w', BusinessDate('1w'))
         self.assertEqual(BusinessDate().adjust('mod_follow'),
+                         BusinessDate('MODFLW'))
+        self.assertEqual(BusinessDate().adjust('mod_follow'),
                          BusinessDate('0BMODFLW'))
         self.assertEqual(BusinessDate('20171231').adjust('mod_follow'),
                          BusinessDate('0BMODFLW20171231'))
@@ -539,6 +544,8 @@ class BusinessPeriodUnitTests(unittest.TestCase):
             self.assertEquals(d(p), BusinessPeriod._parse_ymd(f(p)))
 
     def test_constructors(self):
+        self.assertEqual(BusinessPeriod(), BusinessPeriod(years=0))
+        self.assertEqual(BusinessPeriod(None), BusinessPeriod(years=0))
         self.assertEqual(self._1y, BusinessPeriod(years=1))
         self.assertEqual(self._1y6m, BusinessPeriod(years=1, months=6))
         # self.assertEqual(self._1y6m, BusinessPeriod('6m', years=1))
@@ -564,6 +571,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertRaises(ValueError, BusinessPeriod, '1B2D1B')
         self.assertRaises(ValueError, BusinessPeriod, '1Y-2W1D')
         self.assertRaises(ValueError, BusinessPeriod, years=-1, months=1)
+        self.assertRaises(TypeError, BusinessPeriod, BusinessDate())
 
     def test_properties(self):
         self.assertEqual(self._1y.years, 1)
@@ -622,9 +630,9 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertFalse(BusinessPeriod.is_businessperiod(123))
         self.assertFalse(BusinessPeriod.is_businessperiod(True))
         self.assertFalse(BusinessPeriod.is_businessperiod('2D3D'))
-
-        self.assertRaises(TypeError, BusinessPeriod().__cmp__, None)
+        self.assertRaises(TypeError, BusinessPeriod().__cmp__, BusinessDate())
         self.assertRaises(TypeError, BusinessPeriod().__cmp__, 123)
+        self.assertFalse(BusinessPeriod('1B') == '2D3D')
         self.assertFalse(BusinessPeriod() == '2D3D')
 
         #self.assertTrue(BusinessPeriod() <= BusinessPeriod('3D'))
@@ -673,6 +681,49 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertNotEqual(hash(BusinessPeriod('3D')), hash(BusinessPeriod('3W')))
         self.assertNotEqual(hash(BusinessPeriod('3D')), hash(BusinessPeriod('1D')))
         self.assertNotEqual(hash(BusinessPeriod('3D')), hash(BusinessPeriod('3B')))
+
+    def test_max_min_days(self):
+        jan31 = BusinessDate(20010131)
+        for date in BusinessRange(jan31, jan31 + '5y'):
+            for m in range(12):
+                period = BusinessPeriod(months=m)
+                mn, mx = period.min_days(), period.max_days()
+                fwd, bck = date.diff_in_days(date + period), (date - period).diff_in_days(date)
+                self.assertTrue(mn <= fwd <= mx)
+                self.assertTrue(mn <= bck <= mx)
+        self.assertEqual(BusinessPeriod('3m').min_days(), 89)
+        self.assertEqual(BusinessPeriod('-3m').min_days(), -90)
+        self.assertEqual(BusinessPeriod('3m').max_days(), 92)
+        self.assertEqual(BusinessPeriod('-3m').max_days(), -92)
+
+    def test_cmp(self):
+        self.assertFalse(BusinessPeriod('10b') < BusinessPeriod('9b'))
+        self.assertFalse(BusinessPeriod('10b') < BusinessPeriod('9b'))
+        self.assertIsNone(BusinessPeriod('10b') < BusinessPeriod('393d'))  # not well defined -> None
+        self.assertFalse(BusinessPeriod('13m') < BusinessPeriod('392d'))
+        self.assertIsNone(BusinessPeriod('13m') < BusinessPeriod('393d'))  # not well defined -> None
+        self.assertIsNone(BusinessPeriod('13m') < BusinessPeriod('397d')) # not well defined -> None
+        self.assertTrue(BusinessPeriod('13m') < BusinessPeriod('398d'))
+        self.assertFalse(BusinessPeriod('13m') <= BusinessPeriod('392d'))
+        self.assertIsNone(BusinessPeriod('13m') <= BusinessPeriod('393d'))  # not well defined -> None
+        self.assertTrue(BusinessPeriod('13m') <= BusinessPeriod('397d'))
+        self.assertTrue(BusinessPeriod('13m') <= BusinessPeriod('398d'))
+
+        self.assertFalse(BusinessPeriod('393d') > BusinessPeriod('13m'))
+        self.assertIsNone(BusinessPeriod('13m') <= BusinessPeriod('393d'))
+        self.assertFalse(BusinessPeriod('393d') >= BusinessPeriod('13m'))
+        self.assertFalse(BusinessPeriod('13m') < BusinessPeriod('393d'))
+
+        self.assertFalse(BusinessPeriod('395d') > BusinessPeriod('13m'))
+        self.assertFalse(BusinessPeriod('395d') >= BusinessPeriod('13m'))
+        self.assertFalse(BusinessPeriod('396d') > BusinessPeriod('13m'))
+        self.assertTrue(BusinessPeriod('397d') > BusinessPeriod('13m'))
+        self.assertTrue(BusinessPeriod('397d') >= BusinessPeriod('13m'))
+        self.assertTrue(BusinessPeriod('ON') == BusinessPeriod('1B'))
+        self.assertTrue(BusinessPeriod('7D') == BusinessPeriod('1W'))
+
+        self.assertFalse(BusinessPeriod('30D') == BusinessPeriod('1M'))
+        self.assertFalse(BusinessPeriod('1D') == BusinessPeriod('1B'))
 
 
 class BusinessRangeUnitTests(unittest.TestCase):

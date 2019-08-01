@@ -550,8 +550,29 @@ which offer holidays in many different countries, regions and calendars.
 
 .. _target_holidays:
 
-Build in are |TargetHolidays| which are bank holidays in
+Build-in are |TargetHolidays| which are bank holidays in
 euro banking system `TARGET <https://en.wikipedia.org/wiki/TARGET2#Holidays>`_.
+
+They serve as default value if no holidays are given.
+They can be changed on demand via the class attribute |BusinessDate.DEFAULT_HOLIDAYS|.
+
+.. testsetup:: holidays
+
+   from businessdate import BusinessDate
+   default_holidays = BusinessDate.DEFAULT_HOLIDAYS
+
+.. doctest:: holidays
+
+   >>> BusinessDate(20100101) in BusinessDate.DEFAULT_HOLIDAYS
+   True
+
+   >>> BusinessDate.DEFAULT_HOLIDAYS = list()
+   >>> BusinessDate(20100101) in BusinessDate.DEFAULT_HOLIDAYS
+   False
+
+.. testcleanup:: holidays
+
+   BusinessDate.DEFAULT_HOLIDAYS = default_holidays
 
 
 Calculating Dates and Periods
@@ -836,13 +857,29 @@ For those pairs of month and days any comparison of **<** or **>** is not well d
 
    .. doctest::
 
-      >>> BusinessPeriod('13m') < BusinessPeriod('395d')  # not well defined -> None
-      None
-
-      >>> BusinessPeriod('13m') < BusinessPeriod('397d')
+      >>> BusinessPeriod('13m') < BusinessPeriod('392d')
       False
 
+      >>> BusinessPeriod('13m') < BusinessPeriod('393d') # not well defined -> None
+
+      >>> BusinessPeriod('13m') < BusinessPeriod('397d') # not well defined -> None
+
+      >>> BusinessPeriod('13m') < BusinessPeriod('398d')
+      True
+
+But
+
+   .. doctest::
+
+      >>> BusinessPeriod('13m') <= BusinessPeriod('392d')
+      False
+
+      >>> BusinessPeriod('13m') <= BusinessPeriod('393d') # not well defined -> None
+
       >>> BusinessPeriod('13m') <= BusinessPeriod('397d')
+      True
+
+      >>> BusinessPeriod('13m') <= BusinessPeriod('398d')
       True
 
 So comparison of arbitrary instances or :class:`BusinessPeriod` only works for **==**.
@@ -858,49 +895,111 @@ So comparison of arbitrary instances or :class:`BusinessPeriod` only works for *
       >>> BusinessPeriod('30D') == BusinessPeriod('1M')
       False
 
-      >>> BusinessPeriod('1D') == BusinessPeriod('1B')  # not well defined -> None
-      None
-
-Nevertheless, most of the time `(years * 12 month) * 31 + days` induce an useful ordering.
+      >>> BusinessPeriod('1D') == BusinessPeriod('1B')
+      False
 
 
 Adjusting
 ---------
-
 Dates
 ~~~~~
 
-Moving dates away from weekend or holidays requires holidays
+When adding a period to a date results on a weekend day
+may make no sense in terms of business date.
+This happens frequently when a interst payment plan is rolled out.
+In such a case all dates which fall either on weekend days
+or on holidays have to be moved (`adjusted`) to a business day.
 
-If no holidays are give the |BusinessDate.DEFAULT_HOLIDAYS| are used.
-They can be set on demand.
+In financial markets different conventions of business day adjustments are kown.
+Most of them are part of the `ISDA Definitions <https://www.isda.org/book/2006-isda-definitions/>`_
+which are not open to public.
+But see `date rolling <https://en.wikipedia.org/wiki/Date_rolling>`_ for more details.
 
+.. doctest::
+
+   >>> weekend_day = BusinessDate(20141129)
+   >>> weekend_day.weekday()  # Monday is 0 and Sunday is 6
+   5
+
+   >>> weekend_day.adjust('follow')  # move to next business day
+   BusinessDate(20141201)
+
+   >>> weekend_day.adjust('previous')  # move to previous business day
+   BusinessDate(20141128)
+
+   >>> weekend_day.adjust('mod_follow')  # move to next business day in same month else pervious
+   BusinessDate(20141128)
+
+   >>> BusinessDate(20141122).adjust('mod_follow')  # move to next business day in same month else pervious
+   BusinessDate(20141124)
+
+   >>> weekend_day.adjust('mod_previous')  # move to previous business day in same month else follow
+   BusinessDate(20141128)
+
+   >>> weekend_day.adjust('start_of_month')  # move to first business day in month
+   BusinessDate(20141103)
+
+   >>> weekend_day.adjust('end_of_month')  # move to last business day in month
+   BusinessDate(20141128)
+
+In order to provide specific holidays a list of
+|datetime.date| objects can be given as an extra argument.
+It can convenient to use a |BusinessHolidays| instance instead but any
+type that implements `__contain__` will work.
+
+.. doctest::
+
+   >>> weekend_day.adjust('follow', holidays=[BusinessDate(20141201)])  # move to next business day
+   BusinessDate(20141202)
+
+If no holidays are given the |BusinessDate.DEFAULT_HOLIDAYS| are used.
 By default those are the :ref:`TARGET holidays <target_holidays>`.
 
-.. testsetup:: holidays
+To view all possible `convention` key words see |BusinessDate.adjust()| documentation.
 
-   from businessdate import BusinessDate
-   default_holidays = BusinessDate.DEFAULT_HOLIDAYS
+.. BusinessDate().adjust()
 
-.. doctest:: holidays
+.. In order to adjust according a business day conventionuse `BusinessDate().adjust(convention, holidays=None)`
+   and provide one of the following convention key words:
 
-   >>> BusinessDate(20100101) in BusinessDate.DEFAULT_HOLIDAYS
-   True
+     'no'             does no adjusts.
+     'previous'       adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions).
+     'prev'           adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions).
+     'prv'            adjusts to Business Day Convention "Preceding" (4.12(a) (iii) 2006 ISDA Definitions).
+     'mod_previous'   adjusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons).
+     'modprevious'    adjusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons).
+     'modprev'        adjusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons).
+     'modprv'         adjusts to Business Day Convention "Modified Preceding" (not in 2006 ISDA Definitons).
+     'follow'         adjusts to Business Day Convention "Following" (4.12(a) (i) 2006 ISDA Definitions).
+     'flw'            adjusts to Business Day Convention "Following" (4.12(a) (i) 2006 ISDA Definitions).
+     'mod_follow'     adjusts to Business Day Convention "Modified [Following]" (4.12(a) (ii) 2006 ISDA Definitions).
+     'modfollow'      adjusts to Business Day Convention "Modified [Following]" (4.12(a) (ii) 2006 ISDA Definitions).
+     'modflw'         adjusts to Business Day Convention "Modified [Following]" (4.12(a) (ii) 2006 ISDA Definitions).
+     'start_of_month' adjusts to Business Day Convention "Start of month", i.e. first business day.
+     'startofmonth'   adjusts to Business Day Convention "Start of month", i.e. first business day.
+     'som'            adjusts to Business Day Convention "Start of month", i.e. first business day.
+     'end_of_month'   adjusts to Business Day Convention "End of month", i.e. last business day.
+     'endofmonth'     adjusts to Business Day Convention "End of month", i.e. last business day.
+     'eom'            adjusts to Business Day Convention "End of month", i.e. last business day.
+     'imm'            adjusts to Business Day Convention of  "International Monetary Market".
+     'cds_imm'        adjusts to Business Day Convention "Single Name CDS" (not in 2006 ISDA Definitions).
+     'cdsimm'         adjusts to Business Day Convention "Single Name CDS" (not in 2006 ISDA Definitions).
+     'cds'            adjusts to Business Day Convention "Single Name CDS" (not in 2006 ISDA Definitions).
 
-   >>> BusinessDate.DEFAULT_HOLIDAYS = list()
-   >>> BusinessDate(20100101) in BusinessDate.DEFAULT_HOLIDAYS
-   False
+.. BusinessDate(20151225)
 
-.. testcleanup:: holidays
+Beside |BusinessDate| there is also |BusinessRange.adjust()| (same for |BusinessSchedule|)
+which adjust all items in the |BusinessRange|.
 
-   BusinessDate.DEFAULT_HOLIDAYS = default_holidays
+.. doctest:: rolling
 
+   >>> start = BusinessDate(20151231)
+   >>> BusinessRange(start)
+   [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20151227), BusinessDate(20151228), BusinessDate(20151229), BusinessDate(20151230)]
 
-..  admonition:: ToDo
+   >>> BusinessRange(start).adjust('mod_follow')
+   [BusinessDate(20151228), BusinessDate(20151228), BusinessDate(20151228), BusinessDate(20151228), BusinessDate(20151229), BusinessDate(20151230)]
 
-   adjust BusinessDate / BusinessRange / BusinessSchedule to by conventions
-
-   .. https://www.academia.edu/25629409/Isda_definitions_
 
 Measuring
 ---------
@@ -908,15 +1007,51 @@ Measuring
 Periods
 ~~~~~~~
 
-neither classical nor businessdays but following fm day count conventions
-to give distance between two BusinessDates as a year fraction.
+Interest rates are agree and settled as annual rate. In contrast to this annual definition,
+interest payments are often semi-annually, quarterly or monthly
+or even `daily <https://en.wikipedia.org/wiki/Overnight_rate>`_.
 
-..  admonition:: ToDo
+In order to calculate an less than annal interest payment from an annual interest rate
+the `year fraction` of each particular period is used as
 
-   get day count for BusinessDate
+   `interest payment = annual interest rate * year fraction * notional`
 
-Here more background information on
+The `year fraction` depends on the days between the `start date` and `end date` of a period.
+In order to simplify calculation in the past there various financial markets convention
+to count days between dates, see detail on
 `day count conventions <https://en.wikipedia.org/wiki/Day_count_convention>`_.
+
+The most common `day count conventions`, i.e. `year fraction`,
+are available by |BusinessDate.get_day_count()| and |BusinessDate.get_year_fraction()|
+(different name but same fuctionality).
+
+To view all possible `convention` see |BusinessDate.get_day_count()|  documentation.
+
+.. doctest::
+
+   >>> start_date = BusinessDate()
+   >>> end_date = start_date + '3M'
+
+   >>> start_date.get_day_count(end_date, 'act_act')
+   0.25205479452054796
+
+   >>> start_date.get_day_count(end_date, 'act_36525')
+   0.2518822724161533
+
+   >>> start_date.get_day_count(end_date, 'act_365')
+   0.25205479452054796
+
+   >>> start_date.get_day_count(end_date, 'act_360')
+   0.25555555555555554
+
+   >>> start_date.get_day_count(end_date, '30_360')
+   0.25
+
+   >>> start_date.get_day_count(end_date, '30E_360')
+   0.25
+
+   >>> start_date.get_day_count(end_date, '30E_360_I')
+   0.25
 
 BusinessDate Details
 ====================
