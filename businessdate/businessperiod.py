@@ -207,7 +207,7 @@ class BusinessPeriod(object):
             return self.businessdays - other.businessdays
         m = 12 * (self.years - other.years) + self.months - other.months
         d = self.days - other.days
-        if m * 28 <= -d <= m * 31:
+        if m * 28 < -d < m * 31:
             p = self.__class__(months=m)
             if p.min_days() <= -d <= p.max_days():
                 # log warning on non orderable pair

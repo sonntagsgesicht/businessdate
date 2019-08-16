@@ -12,3 +12,4 @@ dev.py
 .coverage
 coverage.xml
 doc/coverage/
+htmlcov/
