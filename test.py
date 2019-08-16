@@ -571,7 +571,7 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertRaises(ValueError, BusinessPeriod, '2D1B')
         self.assertRaises(ValueError, BusinessPeriod, '1B2D1B')
         self.assertRaises(ValueError, BusinessPeriod, '1Y-2W1D')
-        self.assertRaises(ValueError, BusinessPeriod, years=-1, months=1)
+        self.assertRaises(ValueError, BusinessPeriod, days=-1, months=1)
         self.assertRaises(TypeError, BusinessPeriod, BusinessDate())
 
     def test_properties(self):

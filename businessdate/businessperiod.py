@@ -16,7 +16,7 @@ from datetime import timedelta
 
 class BusinessPeriod(object):
 
-    def __init__(self, period='', years=0, months=0, days=0, businessdays=0):
+    def __init__(self, period='', years=0, quarters=0, months=0, weeks=0, days=0, businessdays=0):
         """ class to store and calculate date periods as combinations of days, weeks, years etc.
 
         :param str period: encoding a business period.
@@ -31,8 +31,10 @@ class BusinessPeriod(object):
          E.g. **1Y2W3D** what gives a period of 1 year plus 2 weeks and 3 days
          (see :doc:`tutorial <tutorial>` for details).
 
-        :param int years: number of years in the period
+        :param int years: number of years in the period (equivalent to 12 months)
+        :param int quarters: number of quarters in the period (equivalent to 3 months)
         :param int months: number of month in the period
+        :param int weeks: number of weeks in the period (equivalent to 7 days)
         :param int days: number of days in the period
         :param int businessdays: number of business days,
          i.e. days which are neither weekend nor :class:`holidays <BusinessHolidays>`,  in the period.
@@ -76,36 +78,40 @@ class BusinessPeriod(object):
                     raise ValueError(
                         "Except at the beginning no signs allowed in %s as %s" % (str(period), self.__class__.__name__))
                 y, q, m, w, d = (abs(x) for x in (y, q, m, w, d))
-                # consolidate a quarter as three month and a week as seven days
-                m += q * 3
-                d += w * 7
                 # use sign of first non vanishing of y,q,m,w,d
                 sgn = sgn[0] if sgn else 1
-                businessdays, years, months, days = s, sgn * y, sgn * m, sgn * d
+                businessdays, years, quarters, months, weeks, days = s, sgn * y, sgn * q, sgn * m, sgn * w, sgn * d
         else:
             raise TypeError(
                 "%s of Type %s not valid to create BusinessPeriod." %(str(period), period.__class__.__name__))
 
-        if months >= 12:
-            years += int(months // 12)
-            months = int(months % 12)
-        if months <= -12:
-            months, years = -months, -years
-            years += int(months // 12)
-            months = int(months % 12)
-            months, years = -months, -years
+        self._months = 12 * years + 3 * quarters + months
+        self._days = 7 * weeks + days
+        self._businessdays = businessdays
 
-        ymd = years, months, days
-        if businessdays and any(ymd):
-            raise ValueError("Either (years,months,days) or businessdays must be zero for %s" % self.__class__.__name__)
-        if len(set(x / abs(x) for x in ymd if x)) > 1:
+        if businessdays and (self._months or self._days):
+            raise ValueError(
+                "Either (years,months,days) or businessdays must be zero for %s" % self.__class__.__name__)
+        if self._months and not self._days / self._months >= 0:
+            ymd = self.years, self.months, self.days
             raise ValueError(
                 "(years, months, days)=%s must have equal sign for %s" % (str(ymd), self.__class__.__name__))
 
-        self.years = years
-        self.months = months
-        self.days = days
-        self.businessdays = businessdays
+    @property
+    def years(self):
+        return int(-1 * (-1 * self._months // 12) if self._months < 0 else self._months // 12)
+
+    @property
+    def months(self):
+        return int(-1 * (-1 * self._months % 12) if self._months < 0 else self._months % 12)
+
+    @property
+    def days(self):
+        return int(self._days)
+
+    @property
+    def businessdays(self):
+        return int(self._businessdays)
 
     # --- validation and information methods ---------------------------------
 
@@ -249,7 +255,7 @@ class BusinessPeriod(object):
 
     def __bool__(self):
         # return self.__nonzero__()
-        return any((self.years, self.months, self.days, self.businessdays))
+        return any((self._months, self._days, self._businessdays))
 
     def __add__(self, other):
         if isinstance(other, (list, tuple)):
@@ -274,43 +280,40 @@ class BusinessPeriod(object):
         if isinstance(other, (list, tuple)):
             return [self * o for o in other]
         if isinstance(other, int):
-            y = other * self.years
-            m = other * self.months
-            d = other * self.days
-            b = other * self.businessdays
-            return BusinessPeriod(years=y, months=m, days=d, businessdays=b)
+            m = other * self._months
+            d = other * self._days
+            b = other * self._businessdays
+            return BusinessPeriod(months=m, days=d, businessdays=b)
         raise TypeError("expected int type but got %s" % other.__class__.__name__)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def max_days(self):
-        if str(self).startswith('-'):
+        if self._months < 0:
             sgn = -1
             days_in_month = 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28  # days from mar to feb forwards
         else:
             sgn = 1
             days_in_month = 31, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 28
-        m = sgn * (self.years *12 + self.months)
-        d = sgn * self.days
+        m = sgn * self._months
         # days from jan to feb backwards
         days = 0
         for i in range(m):
             days += days_in_month[int(i % 12)]
             days += 1 if int(i % 48) == 11 else 0
-        return sgn * (days + d)
+        return sgn * days + self._days
 
     def min_days(self):
-        if str(self).startswith('-'):
+        if self._months < 0 :
             sgn = -1
             days_in_month = 28, 31, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 # days from feb to jan backwards
         else:
             sgn = 1
             days_in_month = 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 # days from feb to jan forwards
-        m, d  = self.years *12 + self.months, self.days
-        m, d = sgn * m, sgn * d
+        m  = sgn * self.months
         days = 0
         for i in range(m):
             days += days_in_month[int(i % 12)]
             days += 1 if int(i % 48) == 36 else 0
-        return sgn * (days + d)
+        return sgn * days + self._days
