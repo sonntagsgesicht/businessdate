@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # script to run automated test framework on POSIX systems
 #
@@ -12,17 +13,15 @@
 
 if [ $1 -eq 1 ]; then
   echo '*** setup test environment ***';
+  pyenv 3.7
   python -m pip freeze > freeze_requirements.txt;
-  python3 -m pip freeze > freeze3_requirements.txt;
     if [ -e requirements.txt ]; then
         python -m pip install --upgrade -r requirements.txt;
-        python3 -m pip install --upgrade -r requirements.txt;
     else
         echo "no requirements.txt to install";
     fi;
     if [ -e upgrade_requirements.txt ]; then
         python -m pip install --upgrade -r upgrade_requirements.txt;
-        python3 -m pip install --upgrade -r upgrade_requirements.txt;
     else
         echo "no upgrade_requirements.txt to install";
     fi;
@@ -36,6 +35,7 @@ if [ $1 -eq 2 ]; then
     echo '*** run test scripts ***';
     if [ -e test.py ];
         then
+            # todo add python setup.py bdist_wheel
             # todo send coverage report only once
             cc-test-reporter before-build
             coverage run test.py;
@@ -52,27 +52,20 @@ fi;
 # 3. clean up afterwards
 
 if [ $1 == 3 ]; then
-    rm .coverage
-    rm coverage.xml
+    coverage erase;
     echo '*** clean up test environment ***';
     if [ -e requirements.txt ]; then
         python -m pip uninstall -r requirements.txt;
-        python3 -m pip uninstall -r requirements.txt;
     else
         echo "no requirements.txt to remove";
     fi;
     if [ -e upgrade_requirements.txt ]; then
         python -m pip uninstall -r upgrade_requirements.txt;
-        python3 -m pip uninstall -r upgrade_requirements.txt;
     else
         echo "no upgrade_requirements.txt to remove";
     fi;
     if [ -e freeze_requirements.txt ]; then
         # todo replace ">=" by "=="; see txt=">=, >=";echo ${txt//>=/==}
         python -m pip install --upgrade -r freeze_requirements.txt;
-    fi;
-    if [ -e freeze3_requirements.txt ]; then
-        # todo replace ">=" by "=="; see txt=">=, >=";echo ${txt//>=/==}
-        python3 -m pip install --upgrade -r freeze3_requirements.txt;
     fi;
 fi;
