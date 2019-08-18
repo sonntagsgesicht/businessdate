@@ -73,7 +73,7 @@ run_setup_coverage()
                 ;;
             "Linux" )
                 echo '*** download coverage reporter for Linux ***';
-                curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-darwin-amd64 > "${BIN}/cc-test-reporter";
+                curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > "${BIN}/cc-test-reporter";
                 ;;
         esac;
         chmod +x "${BIN}/cc-test-reporter";
