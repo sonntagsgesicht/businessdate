@@ -13,14 +13,16 @@
 
 BIN="$(pwd)/.bin"
 
-if [[ ! -e ${TEST_FILE} ]]; then
-    echo '*** no test.py, please make sure to have a text file ***';
-    exit
-fi;
-
 # ----------------------------------------------------------------------------
 # define environment maintenance functions
 # ----------------------------------------------------------------------------
+
+switch_pyenv()
+{
+    pyenv global $1
+    ver=$(pyenv version)
+    echo "*** use new python environment ${ver} ***"
+}
 
 run_setup()
 {
@@ -33,6 +35,7 @@ run_setup()
     if [[ -s upgrade_requirements.txt ]]; then
         python -m pip install --upgrade -r upgrade_requirements.txt;
     fi;
+    if [[ ! $? ]]; then exit 1; fi;
 }   # end of run_setup
 
 run_cleanup()
@@ -66,7 +69,7 @@ run_setup_coverage()
 {
     echo '*** install coverage scripts ***';
     pip install coverage
-    mkdir ${BIN};
+    mkdir -p ${BIN};
     if !([[ -e "${BIN}/cc-test-reporter" ]]); then
         case $(uname) in
             "Darwin" )

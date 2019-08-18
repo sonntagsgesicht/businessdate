@@ -957,9 +957,7 @@ if __name__ == "__main__":
     print('----------------------------------------------------------------------')
     print('')
 
-    suite = unittest.TestLoader().loadTestsFromModule(__import__("__main__"))
-    testrunner = unittest.TextTestRunner(stream=sys.stdout, descriptions=2, verbosity=2)
-    testrunner.run(suite)
+    unittest.main(verbosity=2)
 
     print('')
     print('======================================================================')
