@@ -164,7 +164,7 @@ class DayCountUnitTests(unittest.TestCase):
     def test_day_count(self):
         for start, end, daycount in self.test_data:
             for k, v in daycount.items():
-                self.assertAlmostEquals(float(v), start.get_day_count(end, DayCountUnitTests.ncor[k].lstrip('get_')))
+                self.assertAlmostEqual(float(v), start.get_day_count(end, DayCountUnitTests.ncor[k].lstrip('get_')))
 
 
 class BusinessHolidaysUnitTests(unittest.TestCase):
@@ -540,9 +540,9 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         f = lambda x: '%sb%sy%sq%sm%sw%sd%sb' % tuple(x)
         d = lambda x: tuple(map(int, x))
         for p in ('1000000', '0100000', '0010000', '0001000', '0000100', '0000010', '0000001'):
-            self.assertEquals(d(p), BusinessPeriod._parse_ymd(f(p)))
+            self.assertEqual(d(p), BusinessPeriod._parse_ymd(f(p)))
         for p in ('1000001', '0100001', '1010001', '1101011', '0110100', '0010010', '1111111'):
-            self.assertEquals(d(p), BusinessPeriod._parse_ymd(f(p)))
+            self.assertEqual(d(p), BusinessPeriod._parse_ymd(f(p)))
 
     def test_constructors(self):
         self.assertEqual(BusinessPeriod(), BusinessPeriod(years=0))
@@ -741,25 +741,25 @@ class BusinessRangeUnitTests(unittest.TestCase):
 
         br = BusinessRange(self.sd, self.ed)
         b2 = BusinessRange(self.sd, self.ed, '1d', self.ed)
-        self.assertEquals(br, b2)
+        self.assertEqual(br, b2)
 
         ck = BusinessRange(self.sd, self.ed, '1y', self.sd)
         ex = BusinessRange(self.sd, self.ed, '1y', self.ed + '1y')
         sx = BusinessRange(self.sd, self.ed, '1y', self.sd - '1y')
-        self.assertEquals(ck, ex)
-        self.assertEquals(ex, sx)
+        self.assertEqual(ck, ex)
+        self.assertEqual(ex, sx)
 
         bs = BusinessRange(20151231, 20160630, '1M', 20151231)
         ck = BusinessDate([20151231, 20160131, 20160229, 20160331, 20160430, 20160531])
-        self.assertEquals(bs, ck)
+        self.assertEqual(bs, ck)
 
         bs = BusinessRange(20151231, 20160531, '1M', 20151231)
         ck = BusinessRange(20151231, 20160531, '1M', 20160531)
-        self.assertEquals(bs, ck)
+        self.assertEqual(bs, ck)
 
         bs = BusinessRange(20151231, 20160531, '1M', 20151231)
         ck = BusinessRange(20151231, 20160531, '-1M', 20151231)
-        self.assertEquals(bs, ck)
+        self.assertEqual(bs, ck)
 
         BusinessDate.BASE_DATE = 20151231
         bs = BusinessRange(20201231, step='1y')
@@ -768,16 +768,16 @@ class BusinessRangeUnitTests(unittest.TestCase):
               BusinessDate('20171231'),
               BusinessDate('20181231'),
               BusinessDate('20191231')]
-        self.assertEquals(bs, ck)
+        self.assertEqual(bs, ck)
 
     def test_adjust(self):
         BusinessDate.BASE_DATE = 20151231
         bs = BusinessRange(20201231, step='1m')
         for k, v in BusinessDate._adj_func.items():
             val = [d.adjust(k) for d in bs]
-            self.assertEquals(bs.adjust(k), BusinessDate(val))
+            self.assertEqual(bs.adjust(k), BusinessDate(val))
             h = [BusinessDate.DEFAULT_HOLIDAYS] * len(bs)
-            self.assertEquals(bs.adjust(k), BusinessDate(list(map(v, bs, h))))
+            self.assertEqual(bs.adjust(k), BusinessDate(list(map(v, bs, h))))
         BusinessDate.BASE_DATE = date.today()
 
 

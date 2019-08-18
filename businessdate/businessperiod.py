@@ -311,7 +311,7 @@ class BusinessPeriod(object):
         else:
             sgn = 1
             days_in_month = 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31 # days from feb to jan forwards
-        m  = sgn * self.months
+        m  = sgn * self._months
         days = 0
         for i in range(m):
             days += days_in_month[int(i % 12)]
