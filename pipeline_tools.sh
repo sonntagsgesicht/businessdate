@@ -10,7 +10,7 @@
 #
 # required variables are TEST_FILE, PYPI_USR, PYPI_PWD and CC_TEST_REPORTER_ID
 
-
+set -e
 BIN="$(pwd)/.bin"
 
 # ----------------------------------------------------------------------------
@@ -132,8 +132,26 @@ run_setuptools()
 run_deploy()
 {
     echo '*** run deployment scripts ***';
+    python setup.py sdist bdist_wheel
     python -m pip install --upgrade twine;
     python -m twine upload -u ${PYPI_USR} -p ${PYPI_PWD} --repository-url https://test.pypi.org/legacy/ dist/*;
     python -m pip uninstall twine
 }
 
+run_simple()
+{
+    switch_pyenv $1;
+    run_setup;
+    run_test;
+}
+
+run_full()
+{
+    switch_pyenv $1;
+    run_setup;
+    run_test;
+    run_sphinx;
+    run_setup_coverage;
+    run_coverage;
+    run_setuptools;
+}

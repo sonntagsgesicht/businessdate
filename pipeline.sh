@@ -9,7 +9,6 @@
 # All steps can be run in a single task or invokes individually providing command arguments
 #
 
-set -e
 # import utility functions
 . pipeline_tools.sh;
 if [[ -e pipeline_info.sh ]]; then . pipeline_info.sh; fi;
@@ -19,31 +18,13 @@ if [[ -e pipeline_info.sh ]]; then . pipeline_info.sh; fi;
 # ----------------------------------------------------------------------------
 
 echo ''
-switch_pyenv 2.7
-run_setup
-run_test
-run_cleanup
+run_simple 2.7
 
 echo ''
-switch_pyenv 3.5
-run_setup
-run_test
-run_cleanup
+run_simple 3.5
 
 echo ''
-switch_pyenv 3.6
-run_setup
-run_test
-run_cleanup
+run_simple 3.6
 
 echo ''
-switch_pyenv 3.7
-run_setup
-run_setup_coverage
-run_test
-run_coverage
-run_sphinx
-run_setuptools
-#run_deploy
-run_cleanup_coverage
-run_cleanup
+run_full 3.7
