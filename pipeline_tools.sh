@@ -107,8 +107,10 @@ run_sphinx()
 {
     # todo add sphinx build and doctest
     echo '*** run sphinx scripts ***';
+    pip install sphinx;
+    pip install sphinx_rtd_theme;
     cd ./doc/sphinx/;
-    mkdir -p _build;
+    #mkdir -p _build;
     make clean;
     make html;
     make doctest;
