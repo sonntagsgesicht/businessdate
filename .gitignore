@@ -1,6 +1,4 @@
 .DS_Store
-dev.py
-pipline.sh
 build/
 dist/
 *.egg-info
@@ -15,3 +13,6 @@ htmlcov/
 .coverage
 coverage.xml
 doc/coverage/
+/dev.py
+/pipeline_info.sh
+/freeze_requirements.txt
