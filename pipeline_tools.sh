@@ -17,13 +17,6 @@ BIN="$(pwd)/.bin"
 # define environment maintenance functions
 # ----------------------------------------------------------------------------
 
-switch_pyenv()
-{
-    pyenv global $1
-    ver=$(pyenv version)
-    echo "*** use new python environment ${ver} ***"
-}
-
 run_setup()
 {
     # 1. setup the environment
@@ -115,7 +108,7 @@ run_sphinx()
     # todo add sphinx build and doctest
     echo '*** run sphinx scripts ***';
     cd ./doc/sphinx/;
-    make clean;
+    if [[ -e _build ]]; then make clean; fi;
     make html;
     make doctest;
     cd ../..;
@@ -138,8 +131,16 @@ run_deploy()
     python -m pip uninstall twine
 }
 
+switch_pyenv()
+{
+    pyenv global $1
+    ver=$(pyenv version)
+    echo "*** use new python environment ${ver} ***"
+}
+
 run_simple()
 {
+    echo "*** run simple test pipeline ***"
     switch_pyenv $1;
     run_setup;
     run_test;
@@ -147,6 +148,7 @@ run_simple()
 
 run_full()
 {
+    echo "*** run full test pipeline ***"
     switch_pyenv $1;
     run_setup;
     run_test;
