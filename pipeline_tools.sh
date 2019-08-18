@@ -108,7 +108,8 @@ run_sphinx()
     # todo add sphinx build and doctest
     echo '*** run sphinx scripts ***';
     cd ./doc/sphinx/;
-    if [[ -e _build ]]; then make clean; fi;
+    mkdir -p _build;
+    make clean;
     make html;
     make doctest;
     cd ../..;
