@@ -63,7 +63,9 @@ run_setup_coverage()
     echo '*** install coverage scripts ***';
     pip install coverage
     mkdir -p ${BIN};
-    if !([[ -e "${BIN}/cc-test-reporter" ]]); then
+    if [[ -e "${BIN}/cc-test-reporter" ]]; then
+        echo '*** coverage reporter found ***'
+    else
         case $(uname) in
             "Darwin" )
                 echo '*** download coverage reporter for macOS ***';
