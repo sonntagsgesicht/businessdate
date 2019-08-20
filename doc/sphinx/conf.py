@@ -23,7 +23,8 @@ import sys
 sys.path.insert(0, os.path.abspath('../../'))  #  needed to import pkg
 sys.path.insert(0, os.path.abspath('.'))  #  needed to import pkg
 
-pkg = __import__(os.getcwd().split(os.sep)[-3])
+#pkg = __import__(os.getcwd().split(os.sep)[-3])
+pkg = __import__('businessdate') # fix for ReadTheDocs (where project dir is 'latest')
 sys.path.insert(0, os.path.abspath('../../' + pkg.__name__))  #  needed to import pkg
 
 import rsttools
