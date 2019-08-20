@@ -21,6 +21,8 @@ run_setup()
 {
     # 1. setup the environment
     echo '*** setup environment requirements ***';
+    echo "pip freeze:"
+    python -m pip freeze;
     python -m pip freeze > freeze_requirements.txt;
     if [[ -s requirements.txt ]]; then
         python -m pip install -r requirements.txt;
@@ -36,11 +38,11 @@ run_cleanup()
     echo '*** clean environment ***';
     # 3. clean up afterwards
     if [[ -s requirements.txt ]]; then
-        python -m pip uninstall -q -q -y -r requirements.txt;
+        python -m pip uninstall -y -r requirements.txt;
     fi;
-    if [[ -s upgrade_requirements.txt ]]; then
-        python -m pip uninstall -q -q -y -r upgrade_requirements.txt;
-    fi;
+    # if [[ -s upgrade_requirements.txt ]]; then
+    #     python -m pip uninstall -y -r upgrade_requirements.txt;
+    # fi;
     # sed -i 's/==/>=/g' freeze_requirements.txt
     python -m pip install --upgrade -r freeze_requirements.txt;
     rm freeze_requirements.txt
@@ -61,7 +63,7 @@ run_test()
 run_setup_coverage()
 {
     echo '*** install coverage scripts ***';
-    pip install coverage
+    pip install -q coverage
     mkdir -p ${BIN};
     if [[ -e "${BIN}/cc-test-reporter" ]]; then
         echo '*** coverage reporter found ***'
@@ -89,7 +91,7 @@ run_cleanup_coverage()
     coverage erase;
     rm coverage.xml
     rm -f -r htmlcov;
-    pip uninstall -y coverage
+    #pip uninstall -y coverage
 }   # end run_cleanup_coverage
 
 run_coverage()
@@ -109,8 +111,8 @@ run_sphinx()
 {
     # todo add sphinx build and doctest
     echo '*** run sphinx scripts ***';
-    pip install sphinx;
-    pip install sphinx_rtd_theme;
+    pip install -q sphinx;
+    pip install -q sphinx_rtd_theme;
     cd ./doc/sphinx/;
     #mkdir -p _build;
     make clean;
@@ -131,9 +133,9 @@ run_deploy()
 {
     echo '*** run deployment scripts ***';
     python setup.py sdist bdist_wheel
-    python -m pip install --upgrade twine;
+    python -m pip install -q --upgrade twine;
     python -m twine upload -u ${PYPI_USR} -p ${PYPI_PWD} --repository-url https://test.pypi.org/legacy/ dist/*;
-    python -m pip uninstall twine
+    #python -m pip uninstall twine
 }
 
 switch_pyenv()

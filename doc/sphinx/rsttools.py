@@ -1,4 +1,5 @@
-from os import linesep
+import os
+import sys
 import inspect
 import types
 
@@ -75,13 +76,16 @@ def _replacements_str(_replacements):
         for k, v in d.items():
             s = k if v is None else v
             _lines.append(".. |%s| replace:: :%s:`%s`" % (k, c, s))
-    return """   x""".replace('x', (linesep + '   ').join(_lines))
+    return """   x""".replace('x', (os.linesep + '   ').join(_lines))
 
 
 if __name__ == '__main__':
-    import datetime
-    import businessdate as pkg
-    # _replacements = _replacements_from_pkg(_replacements, datetime)
+    sys.path.insert(0, os.path.abspath('../../'))  # needed to import pkg
+    sys.path.insert(0, os.path.abspath('.'))  # needed to import pkg
+
+    pkg = __import__(os.getcwd().split(os.sep)[-3])
+
+    sys.path.insert(0, os.path.abspath('../../' + pkg.__name__))  # needed to import pkg
+
     _replacements = _replacements_from_pkg(_replacements, pkg)
-    #_replacements = _replacements_from_cls(_replacements, datetime.date, datetime)
     print(_replacements_str(_replacements))

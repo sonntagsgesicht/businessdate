@@ -17,6 +17,10 @@ if [[ -e pipeline_info.sh ]]; then . pipeline_info.sh; fi;
 # run full test pine line
 # ----------------------------------------------------------------------------
 
+
+run_sphinx;
+exit 0;
+
 echo ''
 run_simple 2.7
 

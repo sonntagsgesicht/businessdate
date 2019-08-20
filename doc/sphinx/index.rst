@@ -4,11 +4,9 @@
    contain the root `toctree` directive.
 
 
-=======================
-Welcome to businessdate
-=======================
-
-
+========
+Welcome!
+========
 
 .. toctree::
     :maxdepth: 3
