@@ -6,6 +6,9 @@ Python library *businessdate*
    :target: https://codeship.com//projects/356697
    :alt: Codechip
 
+.. image:: https://travis-ci.org/sonntagsgesicht/businessdate.svg?branch=master
+    :target: https://travis-ci.org/sonntagsgesicht/businessdate
+
 .. image:: https://img.shields.io/readthedocs/businessdate
    :target: http://businessdate.readthedocs.io
    :alt: Read the Docs
