@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Thursday, 29 August 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -68,6 +68,11 @@ autodoc_default_options = {
 numpydoc_show_class_members=True
 autoclass_content = 'both'
 #autosummary_generate = True
+
+# needed for version 1.8.5 (python 2.7)
+autodoc_default_flags = [ 'members', 'show-inheritance']
+autodoc_member_order = 'bysource' #'groupwise'
+autodoc_inherit_docstrings = True
 
 #source_suffix = ['.rst', '.md']
 source_suffix = '.rst'
