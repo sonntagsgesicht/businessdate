@@ -1,4 +1,17 @@
 
+These changes are listed in decreasing version number order.
+
+
+Release 0.6
+===========
+
+Release date was |today|
+
+
+# moved target_days into BusinessHolidays and removed businessdate.holidays
+
+
+
 Release 0.5
 ===========
 
@@ -27,3 +40,27 @@ Release date was August 1th, 2019
 # new __cmp__ paradigm
 
 # adding max_days and min_day method to `BusinessPeriod`
+
+
+Release 0.4
+===========
+
+Release date was December 31th, 2017
+
+
+Release 0.3
+===========
+
+Release date was July 7th, 2017
+
+
+Release 0.2
+===========
+
+Release date was April 2nd, 2017
+
+
+Release 0.1
+===========
+
+Release date was April 1st, 2017

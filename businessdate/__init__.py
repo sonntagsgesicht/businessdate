@@ -4,23 +4,25 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-#
+# 
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
-# Version:  0.5, copyright Sunday 28 July 2019
+# Version:  0.5, copyright Thursday, 29 August 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
 # License:  Apache License 2.0 (see LICENSE file)
 
 
-from datetime import datetime
-
 __doc__ = 'Python library for generating business dates for fast date operations and rich functionality.'
 __version__ = '0.5'
-__date__ = datetime.today().strftime('%A %d %B %Y')
+__dev_status__ = '4 - Beta'
+__date__ = 'Thursday, 29 August 2019'
 __author__ = 'sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]'
 __email__ = 'sonntagsgesicht@icloud.com'
 __url__ = 'https://github.com/sonntagsgesicht/' + __name__
 __license__ = 'Apache License 2.0'
 __dependencies__ = ()
+__dependency_links__ = ()
+__data__ = ()
+__scripts__ = ()
 
 import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())

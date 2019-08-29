@@ -9,11 +9,11 @@ Welcome!
 ========
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 4
 
     intro
     tutorial
-    api
+    doc
     releases
 
 

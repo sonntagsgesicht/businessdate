@@ -6,7 +6,7 @@
 # and rich functionality.
 #
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
-# Version:  0.5, copyright Sunday 28 July 2019
+# Version:  0.5, copyright Thursday, 29 August 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
 # License:  Apache License 2.0 (see LICENSE file)
 
@@ -16,6 +16,8 @@ import sys
 import unittest
 
 from datetime import datetime, date, timedelta
+
+sys.path.append('..')
 
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
 from businessdate.businessholidays import TargetHolidays
@@ -30,6 +32,7 @@ def _silent(func, *args):
     _stout = sys.stdout
     sys.stdout = open(os.devnull, 'w')
     _res = func(*args)
+    sys.stdout.close()
     sys.stdout = _stout
     return _res
 
@@ -142,7 +145,6 @@ class DayCountUnitTests(unittest.TestCase):
 
     def setUp(self):
         testfile = open('test_data/daycount_test_data.csv')
-
         header = testfile.readline().rstrip().split(';')
 
         start = header.index('StartDate')
@@ -160,6 +162,7 @@ class DayCountUnitTests(unittest.TestCase):
             end_date = BusinessDate(data.pop(end))
             daycount = dict(zip(header, data))
             self.test_data.append((start_date, end_date, daycount))
+        testfile.close()
 
     def test_day_count(self):
         for start, end, daycount in self.test_data:

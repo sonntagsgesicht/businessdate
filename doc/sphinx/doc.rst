@@ -2,9 +2,9 @@
 .. module:: businessdate
 
 
------------------
-API Documentation
------------------
+---------------------
+Project Documentation
+---------------------
 
 .. toctree::
 
