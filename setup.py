@@ -39,6 +39,7 @@ setup(
         'Development Status :: ' + pkg.__dev_status__,
         'Intended Audience :: Education',
         'Intended Audience :: Developers',
+        'Intended Audience :: Financial and Insurance Industry',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
@@ -49,7 +50,13 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Topic :: Education',
-        'Topic :: Software Development',
+        'Topic :: Office/Business',
+        'Topic :: Office/Business :: Financial',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Utilities',
+        'Topic :: Office/Business :: Scheduling',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 )
 

@@ -17,6 +17,7 @@ import unittest
 
 from datetime import datetime, date, timedelta
 
+sys.path.append('.')
 sys.path.append('..')
 
 from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
@@ -27,6 +28,7 @@ from businessdate.ymd import from_ymd_to_excel, from_excel_to_ymd, \
     is_valid_ymd, end_of_quarter_month, days_in_month, \
     days_in_year, is_leap_year, easter
 
+TEST_DATA = "test/test_data/" if os.path.exists('test/test_data/') else "test_data/"
 
 def _silent(func, *args):
     _stout = sys.stdout
@@ -40,7 +42,7 @@ def _silent(func, *args):
 class BaseDateUnitTest(unittest.TestCase):
     def setUp(self):
         self.pairs = list()  # to store date(as string), exceldate[int](as string)
-        f = open("test_data/excel_date_test_data.csv")
+        f = open(TEST_DATA + "excel_date_test_data.csv")
         for line in f:
             dmy, i = line.strip().split(';', 1)
             d, m, y = dmy.split('.', 2)
@@ -144,7 +146,7 @@ class DayCountUnitTests(unittest.TestCase):
             }
 
     def setUp(self):
-        testfile = open('test_data/daycount_test_data.csv')
+        testfile = open(TEST_DATA + 'daycount_test_data.csv')
         header = testfile.readline().rstrip().split(';')
 
         start = header.index('StartDate')
@@ -349,7 +351,7 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(n, a._diff_in_days(b))
         self.assertEqual(-n, b._diff_in_days(a))
 
-        a, b = BusinessDate(), BusinessDate() + BusinessPeriod(years=1, months=27, days=46)
+        a, b = BusinessDate(20150630), BusinessDate(20150630) + BusinessPeriod(years=1, months=27, days=46)
         self.assertEqual(1234, a._diff_in_days(b))
         self.assertEqual(-1234, b._diff_in_days(a))
 
