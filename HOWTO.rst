@@ -1029,7 +1029,7 @@ To view all possible `convention` see |BusinessDate.get_day_count()|  documentat
 
 .. doctest::
 
-   >>> start_date = BusinessDate()
+   >>> start_date = BusinessDate(20190829)
    >>> end_date = start_date + '3M'
 
    >>> start_date.get_day_count(end_date, 'act_act')
