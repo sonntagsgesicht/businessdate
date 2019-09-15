@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Thursday, 29 August 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -406,6 +406,13 @@ class BusinessDate(BaseDateDatetimeDate):
         adj_func = self.__class__._adj_func
         holidays = self.__class__.DEFAULT_HOLIDAYS if holidays is None else holidays
         return BusinessDate(adj_func[convention.lower()](self.to_date(), holidays))
+
+
+    def __getattr__(self, item):
+        if item.startswith('adjust_'):
+            return  lambda h=None: self.adjust(item.replace('adjust_',''), h)
+        if item.startswith('get_'):
+            return  lambda e: self.get_year_fraction(e, item.replace('get_',''))
 
 
 # add additional __doc__ at runtime (during import)
