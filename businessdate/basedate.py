@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Thursday, 29 August 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -126,6 +126,9 @@ class BaseDateDatetimeDate(date):
     def to_float(self):
         """ returns :class:`float` counting the days since Jan, 1st 1900 """
         return float(from_ymd_to_excel(*self.to_ymd()))
+
+    def to_serializable(self, *args, **kwargs):
+        return str(self)
 
     # --- calculation methods ------------------------------------------------
 
