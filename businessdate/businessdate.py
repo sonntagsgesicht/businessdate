@@ -413,6 +413,7 @@ class BusinessDate(BaseDateDatetimeDate):
             return  lambda h=None: self.adjust(item.replace('adjust_',''), h)
         if item.startswith('get_'):
             return  lambda e: self.get_year_fraction(e, item.replace('get_',''))
+        raise AttributeError("'%s' object has no attribute '%s'" % (self.__class__.__name__, item))
 
 
 # add additional __doc__ at runtime (during import)
