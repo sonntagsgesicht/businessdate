@@ -4,10 +4,11 @@ Python library *businessdate*
 
 .. image:: https://img.shields.io/codeship/43157680-92f7-0137-34fd-0e3da511fc50/master.svg
    :target: https://codeship.com//projects/356697
-   :alt: Codechip
+   :alt: Codeship
 
 .. image:: https://travis-ci.org/sonntagsgesicht/businessdate.svg?branch=master
-    :target: https://travis-ci.org/sonntagsgesicht/businessdate
+   :target: https://travis-ci.org/sonntagsgesicht/businessdate
+   :alt: Travis ci
 
 .. image:: https://img.shields.io/readthedocs/businessdate
    :target: http://businessdate.readthedocs.io
@@ -24,6 +25,10 @@ Python library *businessdate*
 .. image:: https://img.shields.io/codeclimate/coverage/sonntagsgesicht/businessdate
    :target: https://codeclimate.com/github/sonntagsgesicht/businessdate/test_coverage
    :alt: Code Climate Coverage
+
+.. image:: https://img.shields.io/codecov/c/github/Sonntagsgesicht/unicum
+   :target: https://codeclimate.com/github/sonntagsgesicht/unicum/test_coverage
+   :alt: Covecov
 
 .. image:: https://img.shields.io/lgtm/grade/python/g/sonntagsgesicht/businessdate.svg
    :target: https://lgtm.com/projects/g/sonntagsgesicht/businessdate/context:python/
