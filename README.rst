@@ -26,8 +26,8 @@ Python library *businessdate*
    :target: https://codeclimate.com/github/sonntagsgesicht/businessdate/test_coverage
    :alt: Code Climate Coverage
 
-.. image:: https://img.shields.io/codecov/c/github/Sonntagsgesicht/unicum
-   :target: https://codeclimate.com/github/sonntagsgesicht/unicum/test_coverage
+.. image:: https://img.shields.io/codecov/c/github/Sonntagsgesicht/businessdate
+   :target: https://codecov.io/gh/sonntagsgesicht/businessdate
    :alt: Covecov
 
 .. image:: https://img.shields.io/lgtm/grade/python/g/sonntagsgesicht/businessdate.svg
