@@ -56,7 +56,7 @@ Python library *businessdate*
 
 A fast, efficient Python library for generating `business dates` for simple and fast date operations.
 
-.. doctest::
+.. code-block::
 
    >>> from businessdate import BusinessDate
 
@@ -101,7 +101,7 @@ Example Usage
    BusinessDate() == BusinessDate(date.today())
    BusinessDate('1Y3M20140101')
 
-.. doctest::
+.. code-block::
 
     >>> from datetime import date
     >>> from businessdate import BusinessDate, BusinessPeriod
