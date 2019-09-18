@@ -24,6 +24,9 @@ Business Object Classes
 
 BusinessDate
 ------------
+
+.. module:: businessdate.businessdate
+
 .. autoclass:: BusinessDate
 
 .. _base_class_warning:
@@ -31,34 +34,48 @@ BusinessDate
 BusinessDate Base Classes
 *************************
 
-:class:`BusinessDate` inherits from one of two possible base classes.
-One itself inherited by a native :class:`float` class.
-The other inherited from :class:`datetime.date` class.
+|BusinessDate| inherits from one of two possible base classes.
+One itself inherited by a native |float| class.
+The other inherited from |datetime.date| class.
 
 Both classes are implemented to offer future releases the flexibility to switch
 from one super class to another if such offers better performance.
 
-Currently :class:`BusinessDate` inherits from
-:class:`BaseDateDatetimeDate <basedate.BaseDateDatetimeDate>` which offers more
+Currently |BusinessDate| inherits from |BaseDateDatetimeDate| which offers more
 elaborated functionality.
 
 .. Warning:: Future releases of :mod:`businessdate` may be backed by different base classes.
 
+.. module:: businessdate.basedate
 
-.. autoclass:: businessdate.basedate.BaseDateFloat
-.. autoclass:: businessdate.basedate.BaseDateDatetimeDate
+.. autoclass:: BaseDateFloat
+.. autoclass:: BaseDateDatetimeDate
 
 BusinessPeriod
 --------------
+
+.. module:: businessdate.businessperiod
+
 .. autoclass:: BusinessPeriod
 
 BusinessSchedule
 ----------------
+
+.. module:: businessdate.businessschedule
+
 .. autoclass:: BusinessSchedule
+
+
+.. module:: businessdate.businessrange
+
 .. autoclass:: BusinessRange
+
 
 BusinessHolidays
 ----------------
+
+.. module:: businessdate.businessholidays
+
 .. autoclass:: businessdate.businessholidays.TargetHolidays
 .. autoclass:: BusinessHolidays
 
