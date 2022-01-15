@@ -54,9 +54,13 @@ Python library *businessdate*
    :target: https://pypi.org/project/businessdate/
    :alt: PyPI Downloads
 
+.. image:: https://pepy.tech/badge/businessdate
+   :target: https://pypi.org/project/businessdate/
+   :alt: PyPI Downloads
+
 A fast, efficient Python library for generating `business dates` for simple and fast date operations.
 
-.. code-block::
+.. code-block:: python
 
    >>> from businessdate import BusinessDate
 
@@ -101,7 +105,7 @@ Example Usage
    BusinessDate() == BusinessDate(date.today())
    BusinessDate('1Y3M20140101')
 
-.. code-block::
+.. code-block:: python
 
     >>> from datetime import date
     >>> from businessdate import BusinessDate, BusinessPeriod

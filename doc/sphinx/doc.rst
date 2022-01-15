@@ -35,8 +35,8 @@ BusinessDate Base Classes
 *************************
 
 |BusinessDate| inherits from one of two possible base classes.
-One itself inherited by a native |float| class.
-The other inherited from |datetime.date| class.
+One itself inherited by a native **float** class.
+The other inherited from **datetime.date** class.
 
 Both classes are implemented to offer future releases the flexibility to switch
 from one super class to another if such offers better performance.

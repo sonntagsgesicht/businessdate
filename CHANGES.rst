@@ -1,7 +1,6 @@
 
 These changes are listed in decreasing version number order.
 
-
 Release 0.6
 ===========
 
@@ -10,12 +9,16 @@ Release date was |today|
 
 # moved target_days into BusinessHolidays and removed businessdate.holidays
 
+# added convention, holidays and day_count as BusinessDate
+  arguments as well as properties
+
+# moved to `auxilium <https://pypi.org/auxilium>`_, development workflow manager
 
 
 Release 0.5
 ===========
 
-Release date was August 1th, 2019
+Release date was August 1st, 2019
 
 
 # first beta release (but still work in progress)

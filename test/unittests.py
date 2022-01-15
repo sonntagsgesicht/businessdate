@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -71,7 +71,7 @@ class BaseDateUnitTest(unittest.TestCase):
             quarter = m if m % 3 == 0 else m + 3 - m % 3
             self.assertEqual(quarter, end_of_quarter_month(m))
 
-            days = 30 if m in (4, 6, 9, 11) else 31 if m is not 2 else 29 if leap else 28
+            days = 30 if m in (4, 6, 9, 11) else 31 if m != 2 else 29 if leap else 28
             self.assertEqual(days, days_in_month(y, m))
 
     def test_base_date_float(self):
@@ -443,7 +443,7 @@ class BusinessDateUnitTests(unittest.TestCase):
 
     def test_business_day_adjustment(self):
         self.assertEqual(_silent(self.jan01.adjust), BusinessDate(20160101))
-        self.assertEqual(_silent(self.jan01.adjust, ''), BusinessDate(20160101))
+        self.assertEqual(_silent(self.jan01.adjust, None), BusinessDate(20160101))
         self.assertEqual(self.jan01.adjust('NO'), BusinessDate(20160101))
         self.assertEqual(self.jan01.adjust_no(), BusinessDate(20160101))
         # self.assertEqual(no(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS), BusinessDate(20160101).to_date())
@@ -451,11 +451,17 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01.adjust('FOLLOW'), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust('FLW'), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust_follow(), BusinessDate(20160104))
+        self.assertEqual(
+            BusinessDate(self.jan01, convention='FOLLOW').adjust(),
+            BusinessDate(20160104))
         # self.assertEqual(follow(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS), BusinessDate(20160104).to_date())
 
         self.assertEqual(self.jan01.adjust('mod_follow'), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust('modflw'), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust_mod_follow(), BusinessDate(20160104))
+        self.assertEqual(
+            BusinessDate(self.jan01, convention='modflw').adjust(),
+            BusinessDate(20160104))
         # self.assertEqual(modfollow(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS),
         #                 BusinessDate(20160104).to_date())
 
@@ -463,12 +469,18 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01.adjust('prev'), BusinessDate(20151231))
         self.assertEqual(self.jan01.adjust('prv'), BusinessDate(20151231))
         self.assertEqual(self.jan01.adjust_previous(), BusinessDate(20151231))
+        self.assertEqual(
+            BusinessDate(self.jan01, convention='prv').adjust(),
+            BusinessDate(20151231))
         # self.assertEqual(previous(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS),
         #                 BusinessDate(20151231).to_date())
 
         self.assertEqual(self.jan01.adjust('mod_previous'), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust('modprev'), BusinessDate(20160104))
         self.assertEqual(self.jan01.adjust('modprv'), BusinessDate(20160104))
+        self.assertEqual(
+            BusinessDate(self.jan01, convention='modprv').adjust(),
+            BusinessDate(20160104))
         # self.assertEqual(modprevious(self.jan01.to_date(), BusinessDate.DEFAULT_HOLIDAYS),
         #                 BusinessDate(20160104).to_date())
 
@@ -493,6 +505,11 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(self.jan01.adjust('cds_imm'), BusinessDate(20160320))
         self.assertEqual(self.jan01.adjust('cds'), BusinessDate(20160320))
         self.assertEqual(self.jan01.adjust_cds_imm(), BusinessDate(20160320))
+
+    def test_business_day_adjustment_property(self):
+        day = BusinessDate(self.jan01, convention='FOLLOW')
+        self.assertEqual(day.adjust(), BusinessDate(20160104))
+
 
     def test_business_day_is(self):
         self.assertFalse(self.jan01.is_business_day())
@@ -853,6 +870,20 @@ class BusinessScheduleUnitTests(unittest.TestCase):
         bs.last_stub_long()
         ck = BusinessDate([20150331, 20150715, 20151015, 20160115, 20160415, 20160930])
         self.assertEqual(bs, ck)
+
+    def test_properties(self):
+        rolling = BusinessDate(20160401, convention='modprv')
+        bs = BusinessRange(20150331, 20160930, '3M', rolling).adjust()
+        es = BusinessRange(20150331, 20160930, '3M', 20160401).adjust('modprv')
+        self.assertEqual(es, bs)
+        for d in bs:
+            self.assertEqual(rolling.convention, d.convention, d.convention)
+
+        bs = BusinessSchedule(20150331, 20160930, '3M', rolling).adjust()
+        es = BusinessSchedule(20150331, 20160930, '3M', 20160401).adjust('modprv')
+        self.assertEqual(es, bs)
+        for d in bs:
+            self.assertEqual(rolling.convention, d.convention, d.convention)
 
 
 class BusinessHolidayUnitTests(unittest.TestCase):

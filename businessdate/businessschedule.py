@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -32,7 +32,15 @@ class BusinessSchedule(BusinessRange):
         start and end slice the relevant dates.
         """
         roll = roll if roll else end
-        start, end = list(map(BusinessDate, (start, end)))
+        roll = BusinessDate(roll)
+        start = BusinessDate(start,
+                             convention=roll.convention,
+                             holidays=roll.holidays,
+                             day_count=roll.day_count)
+        end = BusinessDate(end,
+                           convention=roll.convention,
+                           holidays=roll.holidays,
+                           day_count=roll.day_count)
         super(BusinessSchedule, self).__init__(start, end, step, roll)
         if start not in self:
             self.insert(0, start)

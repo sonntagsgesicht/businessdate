@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -12,9 +12,9 @@
 
 
 __doc__ = 'Python library for generating business dates for fast date operations and rich functionality.'
-__version__ = '0.5'
+__version__ = '0.6'
 __dev_status__ = '4 - Beta'
-__date__ = 'Wednesday, 18 September 2019'
+__date__ = 'Saturday, 15 January 2022'
 __author__ = 'sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]'
 __email__ = 'sonntagsgesicht@icloud.com'
 __url__ = 'https://github.com/sonntagsgesicht/' + __name__
@@ -23,6 +23,7 @@ __dependencies__ = ()
 __dependency_links__ = ()
 __data__ = ()
 __scripts__ = ()
+__theme__ = 'sphinx_rtd_theme'
 
 import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())

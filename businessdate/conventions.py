@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -19,11 +19,17 @@ ONE_DAY = timedelta(1)
 
 
 def is_business_day(business_date, holidays=list()):
-    """ method to check if a date falls neither on weekend nor is in holidays. """
+    """ method to check if a date falls neither on weekend
+    nor is in holidays. """
 
     if business_date.weekday() > FRIDAY:
         return False
-    return business_date not in holidays
+    if business_date in holidays:
+        return False
+    if hasattr(business_date, 'to_date') and \
+            business_date.to_date() in holidays:
+        return False
+    return True
 
 
 def adjust_no(business_date, holidays=()):

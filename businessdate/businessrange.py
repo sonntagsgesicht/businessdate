@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -35,6 +35,8 @@ class BusinessRange(list):
         Second, this grid is sliced by `start` (included ,
         if meeting the grid) and `end` (excluded).
 
+        All dates will have same **convention**, **holidays**
+        and **day_count** property as **rolling**.
         """
 
         # set default args and build range grid
@@ -50,6 +52,9 @@ class BusinessRange(list):
         if stop is None:
             stop = start
             start = BusinessDate()
+            start.convention = getattr(stop, 'convention', None)
+            start.holidays = getattr(stop, 'holidays', None)
+            start.day_count = getattr(stop, 'day_count', None)
         if step is None:
             step = BusinessPeriod(days=1)
         if rolling is None:
@@ -59,7 +64,7 @@ class BusinessRange(list):
         rolling = BusinessDate(rolling)
         stop = BusinessDate(stop)
         step = BusinessPeriod(step)
-        return BusinessDate(start), BusinessDate(stop), BusinessPeriod(step), BusinessDate(rolling)
+        return start, stop, step, rolling
 
     @staticmethod
     def _build_grid(start, stop, step, rolling):
@@ -82,7 +87,7 @@ class BusinessRange(list):
 
         return grid
 
-    def adjust(self, convention='', holidays=None):
+    def adjust(self, convention=None, holidays=None):
         """ returns adjusted :class:`BusinessRange` following given convention
 
         For details of adjusting :class:`BusinessDate` see :meth:`BusinessDate.adjust`.

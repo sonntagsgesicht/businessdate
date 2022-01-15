@@ -2,8 +2,8 @@
 .. currentmodule:: businessdate
 
 To start with |businessdate| import it.
-Note that, since we work with dates, |datetime.date| might be useful, too.
-But not required. Nevertheless |datetime.date| is used inside |BusinessDate| from time to time.
+Note that, since we work with dates, **datetime.date** might be useful, too.
+But not required. Nevertheless **datetime.date** is used inside |BusinessDate| from time to time.
 
 .. paste this into python console to generate code block contents
    from datetime import date
@@ -77,12 +77,12 @@ Even iterators like :class:`list` or :class:`tuple` work well.
 .. doctest::
 
     >>> BusinessDate((20140216, 23011230, 19991111, 20200202))
-    [BusinessDate(20140216), BusinessDate(23011230), BusinessDate(19991111), BusinessDate(20200202)]
+    (BusinessDate(20140216), BusinessDate(23011230), BusinessDate(19991111), BusinessDate(20200202))
 
 Much easier to generate container with periodical items is using |BusinessRange|.
 
 By default an empty |BusinessDate()|
-is initiated with the system date as given by |datetime.date.today()|.
+is initiated with the system date as given by *+datetime.date.today()**.
 To change this behavior: just set the *classattribute*
 |BusinessDate.BASE_DATE| to anything that can be understood as a
 business date, i.e. anything that meets |Businessdate.is_businessdate()|.
@@ -108,8 +108,8 @@ business date, i.e. anything that meets |Businessdate.is_businessdate()|.
 .. attention::
 
    Setting |BusinessDate.BASE_DATE| to
-   |datetime.date.today()| is different to setting to **None**
-   since |datetime.date.today()| changes at midnight!
+   *+datetime.date.today()** is different to setting to **None**
+   since *+datetime.date.today()** changes at midnight!
 
 
 BusinessPeriod
@@ -194,8 +194,8 @@ But this cannot be performed for days.
           raise ValueError("Either (years,months,days) or businessdays must be zero for %s" % self.__class__.__name__)
       ValueError: Either (years,months,days) or businessdays must be zero for BusinessPeriod
 
-Moreover, the difference of two instances of |datetime.date| or resp.
-a |datetime.timedelta| instance can be used to init, too.
+Moreover, the difference of two instances of **datetime.date*+ or resp.
+a **datetime.timedelta** instance can be used to init, too.
 
 .. paste this into python console to generate code block contents
    from datetime import date, timedelta
@@ -538,10 +538,10 @@ BusinessHolidays
 ----------------
 
 Since we deal with |BusinessDate| the container class |BusinessHolidays|
-is useful as it converts nearly anything input into |datetime.date|.
+is useful as it converts nearly anything input into **datetime.date**.
 
 
-Provide list of |datetime.date| or anything having attributes `year`, `month` and `days`,
+Provide list of **datetime.date** or anything having attributes `year`, `month` and `days`,
 e.g. iterable that yields of |BusinessDate|.
 
 For example you can use projects like `python-holidays <https://pypi.org/project/holidays/>`_
@@ -554,7 +554,8 @@ Build-in are |TargetHolidays| which are bank holidays in
 euro banking system `TARGET <https://en.wikipedia.org/wiki/TARGET2#Holidays>`_.
 
 They serve as default value if no holidays are given.
-They can be changed on demand via the class attribute |BusinessDate.DEFAULT_HOLIDAYS|.
+They can be changed on demand via the class attribute **DEFAULT_HOLIDAYS**
+in |BusinessDate|.
 
 .. testsetup:: holidays
 
@@ -943,7 +944,7 @@ But see `date rolling <https://en.wikipedia.org/wiki/Date_rolling>`_ for more de
    BusinessDate(20141128)
 
 In order to provide specific holidays a list of
-|datetime.date| objects can be given as an extra argument.
+**datetime.date** objects can be given as an extra argument.
 It can convenient to use a |BusinessHolidays| instance instead but any
 type that implements `__contain__` will work.
 
@@ -952,10 +953,10 @@ type that implements `__contain__` will work.
    >>> weekend_day.adjust('follow', holidays=[BusinessDate(20141201)])  # move to next business day
    BusinessDate(20141202)
 
-If no holidays are given the |BusinessDate.DEFAULT_HOLIDAYS| are used.
+If no holidays are given the **DEFAULT_HOLIDAYS**  of |BusinessDate| are used.
 By default those are the :ref:`TARGET holidays <target_holidays>`.
 
-To view all possible `convention` key words see |BusinessDate.adjust()| documentation.
+To view all possible `convention` key words see |BusinessDate().adjust()| documentation.
 
 .. BusinessDate().adjust()
 
@@ -988,7 +989,7 @@ To view all possible `convention` key words see |BusinessDate.adjust()| document
 
 .. BusinessDate(20151225)
 
-Beside |BusinessDate| there is also |BusinessRange.adjust()| (same for |BusinessSchedule|)
+Beside |BusinessDate| there is also |BusinessRange().adjust()| (same for |BusinessSchedule|)
 which adjust all items in the |BusinessRange|.
 
 .. doctest:: rolling
@@ -1022,10 +1023,10 @@ to count days between dates, see detail on
 `day count conventions <https://en.wikipedia.org/wiki/Day_count_convention>`_.
 
 The most common `day count conventions`, i.e. `year fraction`,
-are available by |BusinessDate.get_day_count()| and |BusinessDate.get_year_fraction()|
+are available by |BusinessDate().get_day_count()| and |BusinessDate().get_year_fraction()|
 (different name but same fuctionality).
 
-To view all possible `convention` see |BusinessDate.get_day_count()|  documentation.
+To view all possible `convention` see |BusinessDate().get_day_count()|  documentation.
 
 .. doctest::
 
@@ -1255,7 +1256,7 @@ BusinessDate Inheritance
 ------------------------
 
 Finally some lines on :ref:`base classes <base_class_warning>`
-|BaseDateFloat| backed by |float| ...
+|BaseDateFloat| backed by **float** ...
 
 .. paste this into python console to generate code block contents
    from datetime import date
@@ -1303,7 +1304,7 @@ Finally some lines on :ref:`base classes <base_class_warning>`
 
 
 ... and |BaseDateDatetimeDate|
-backed by |datetime.date|.
+backed by **datetime.date**.
 
 .. paste this into python console to generate code block contents
    from datetime import date

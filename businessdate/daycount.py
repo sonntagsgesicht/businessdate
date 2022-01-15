@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -17,6 +17,10 @@ from .ymd import is_leap_year
 
 def diff_in_days(start, end):
     """ calculates days between start and end date """
+    if hasattr(start, 'to_date'):
+        start = start.to_date()
+    if hasattr(end, 'to_date'):
+        end = end.to_date()
     return float((end-start).days)
 
 
