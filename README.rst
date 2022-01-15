@@ -6,33 +6,9 @@ Python library *businessdate*
    :target: https://codeship.com//projects/356697
    :alt: Codeship
 
-.. image:: https://travis-ci.org/sonntagsgesicht/businessdate.svg?branch=master
-   :target: https://travis-ci.org/sonntagsgesicht/businessdate
-   :alt: Travis ci
-
 .. image:: https://img.shields.io/readthedocs/businessdate
    :target: http://businessdate.readthedocs.io
    :alt: Read the Docs
-
-.. image:: https://img.shields.io/codefactor/grade/github/sonntagsgesicht/businessdate/master
-   :target: https://www.codefactor.io/repository/github/sonntagsgesicht/businessdate
-   :alt: CodeFactor Grade
-
-.. image:: https://img.shields.io/codeclimate/maintainability/sonntagsgesicht/businessdate
-   :target: https://codeclimate.com/github/sonntagsgesicht/businessdate/maintainability
-   :alt: Code Climate maintainability
-
-.. image:: https://img.shields.io/codecov/c/github/sonntagsgesicht/businessdate
-   :target: https://codecov.io/gh/sonntagsgesicht/businessdate
-   :alt: Codecov
-
-.. image:: https://img.shields.io/lgtm/grade/python/g/sonntagsgesicht/businessdate.svg
-   :target: https://lgtm.com/projects/g/sonntagsgesicht/businessdate/context:python/
-   :alt: lgtm grade
-
-.. image:: https://img.shields.io/lgtm/alerts/g/sonntagsgesicht/businessdate.svg
-   :target: https://lgtm.com/projects/g/sonntagsgesicht/businessdate/alerts/
-   :alt: total lgtm alerts
 
 .. image:: https://img.shields.io/github/license/sonntagsgesicht/businessdate
    :target: https://github.com/sonntagsgesicht/businessdate/raw/master/LICENSE
