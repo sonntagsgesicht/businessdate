@@ -177,4 +177,4 @@ pytype_buildins = False  # not implemented in v0.1
 pytype_short_ref = True  # drop module from reference (if it does not conflict)
 pytype_match_pattern = ''  # regex to filter entities to ref to
 pytype_exclude_pattern = ''  # regex to exclude entities to ref to
-pytype_show = True
+pytype_show = False
