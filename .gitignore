@@ -17,3 +17,4 @@ doc/coverage/
 /freeze_requirements.txt
 .bin/
 setenv
+.aux/
