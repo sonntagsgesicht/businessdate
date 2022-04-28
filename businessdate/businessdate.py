@@ -448,6 +448,7 @@ class BusinessDate(BaseDateDatetimeDate):
         For more details on the conventions
         see module :mod:`businessdate.conventions`
         """
+
         convention = self.convention if convention is None else convention
         convention = self.__class__.DEFAULT_CONVENTION \
             if convention is None else convention

@@ -8,6 +8,7 @@ Release date was |today|
 
 # `repr` on |BusinessDate()| shows convention, holidays and day_count if given
 
+
 Release 0.6
 ===========
 
