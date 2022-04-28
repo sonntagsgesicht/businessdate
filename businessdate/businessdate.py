@@ -295,7 +295,14 @@ class BusinessDate(BaseDateDatetimeDate):
         return self.to_date().strftime(date_format)
 
     def __repr__(self):
-        return self.__class__.__name__ + "(%s)" % str(self)
+        args = [str(self)]
+        if self.convention:
+            args.append(f"convention={self.convention}")
+        if self.holidays:
+            args.append(f"holidays={self.holidays}")
+        if self.day_count:
+            args.append(f"day_count={self.day_count}")
+        return self.__class__.__name__ + "(" + ", ".join(args) + ")"
 
     # --- validation and information methods ------------------------
 
@@ -416,15 +423,16 @@ class BusinessDate(BaseDateDatetimeDate):
         For more details on the conventions
         see module :mod:`businessdate.daycount`.
         """
-        day_count = self.day_count if day_count is None else day_count
-        day_count = self.DEFAULT_DAY_COUNT \
-            if day_count is None else day_count
-
+        end = BusinessDate(end)
         if isinstance(day_count, str):
             dc_func = self.__class__._dc_func[day_count.lower()]
             return dc_func(self, BusinessDate(end))
+        elif day_count:
+            return day_count(self, end)
+        elif self.day_count:
+            return self.day_count(self, end)
         else:
-            return day_count(BusinessDate(end))
+            return self.__class__.DEFAULT_DAY_COUNT(self, end)
 
     def get_year_fraction(self, end=None, day_count=None):
         """ wrapper for :meth:`BusinessDate.get_day_count`
@@ -441,17 +449,18 @@ class BusinessDate(BaseDateDatetimeDate):
         see module :mod:`businessdate.conventions`
         """
         convention = self.convention if convention is None else convention
-        convention = self.DEFAULT_CONVENTION \
+        convention = self.__class__.DEFAULT_CONVENTION \
             if convention is None else convention
 
         holidays = self.holidays if holidays is None else holidays
-        holidays = self.DEFAULT_HOLIDAYS if holidays is None else holidays
+        holidays = self.DEFAULT_HOLIDAYS \
+            if holidays is None else holidays
 
         if isinstance(convention, str):
             adj_func = self.__class__._adj_func[convention.lower()]
             return BusinessDate(adj_func(self, holidays))
         else:
-            return convention(holidays)
+            return convention(self, holidays)
 
     def __getattr__(self, item):
         if item.startswith('adjust_'):

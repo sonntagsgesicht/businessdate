@@ -1,18 +1,24 @@
 
 These changes are listed in decreasing version number order.
 
-Release 0.6
+Release 0.7
 ===========
 
 Release date was |today|
 
+# `repr` on |BusinessDate()| shows convention, holidays and day_count if given
+
+Release 0.6
+===========
+
+Release date was Saturday, 15 January 2022
+
 
 # moved target_days into BusinessHolidays and removed businessdate.holidays
 
-# added convention, holidays and day_count as BusinessDate
-  arguments as well as properties
+# added convention, holidays and day_count as BusinessDate arguments as well as properties
 
-# moved to `auxilium <https://pypi.org/auxilium>`_, development workflow manager
+# moved to `auxilium <https://pypi.org/project/auxilium>`_, development workflow manager
 
 
 Release 0.5
@@ -35,8 +41,7 @@ Release date was August 1st, 2019
   (BusinessDate.add_years, etc),
   better use `+` or `-` instead
 
-# made some static methods to instance methods
-  (BusinessDate.days_in_month, BusinessDate.end_of_month, BusinessDate.end_of_quarter)
+# made some static methods to instance methods (BusinessDate.days_in_month, BusinessDate.end_of_month, BusinessDate.end_of_quarter)
 
 # swapped the order of arguments in `BusinessDate.diff_in_ymd`
 

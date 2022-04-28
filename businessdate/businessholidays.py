@@ -4,7 +4,7 @@
 # ------------
 # Python library for generating business dates for fast date operations
 # and rich functionality.
-# 
+#
 # Author:   sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]
 # Version:  0.5, copyright Wednesday, 18 September 2019
 # Website:  https://github.com/sonntagsgesicht/businessdate
@@ -35,9 +35,39 @@ class BusinessHolidays(list):
         super(BusinessHolidays, self).__init__(iterable)
 
     def __contains__(self, item):
-        if super(BusinessHolidays, self).__contains__(item):
+        if super().__contains__(item):
             return True
-        return super(BusinessHolidays, self).__contains__(date(item.year, item.month, item.day))
+        item = date(item.year, item.month, item.day)
+        return super().__contains__(item)
+
+
+class BusinessHolidaysSet(set):
+    """ holiday calendar class
+
+    A :class:`BusinessHolidays` instance imitated a list of :class:`datetime.date`
+    which can be used to check if a :class:`BusinessDate` is
+    included as holiday.
+
+    For convenience input need not to be of type :class:`datetime.date`.
+    Duck typing is enough, i.e. having properties
+    `year`, `month` and `day`.
+    """
+
+    def __init__(self, iterable=()):
+        if iterable:
+            iterable = [bd if isinstance(bd, date) else date(bd.year, bd.month, bd.day) for bd in iterable]
+        super().__init__({iterable})
+
+    def __contains__(self, item):
+        for item_list in self:
+            if item in item_list:
+                return True
+        if not type(item) == date:
+            try:
+                return date(item.year, item.month, item.day) in self
+            except TypeError:
+                pass
+        return False
 
 
 class TargetHolidays(BusinessHolidays):
