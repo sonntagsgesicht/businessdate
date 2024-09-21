@@ -363,7 +363,9 @@ A `BusinessDateList` is a simple list of objects that admits simple filtering
    >>> l
    [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20160125), BusinessDate(20161225)]
 
-   Slicing with `int` slices word as always.
+Slicing with `int` slices word as always.
+
+.. doctest:: bdlist
 
    >>> l[0]
    BusinessDate(20151225)
@@ -374,7 +376,9 @@ A `BusinessDateList` is a simple list of objects that admits simple filtering
    >>> l[1::-1]
    [BusinessDate(20151226), BusinessDate(20151225)]
 
-   But slicing with inputs to give `BusinessDate` works as well (as long third argument in slice is `None`).
+But slicing with inputs to give `BusinessDate` works as well (as long third argument in slice is `None`).
+
+.. doctest:: bdlist
 
    >>> l['20151225']
    [BusinessDate(20151225)]
@@ -382,12 +386,16 @@ A `BusinessDateList` is a simple list of objects that admits simple filtering
    >>> l['20151226':'20160128']
    [BusinessDate(20151226), BusinessDate(20160125)]
 
-   But it behaves more like filtering
+But it behaves more like filtering
+
+.. doctest:: bdlist
 
    >>> l['20151220':'20160128']
    [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20160125)]
 
-   Same for `float` slices which filters by casting list items as `float`.
+Same for `float` slices which filters by casting list items as `float`.
+
+.. doctest:: bdlist
 
    >>> l[0.:1.]
    [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20160125)]
