@@ -62,6 +62,10 @@ class BusinessDateList(list):
     def __str__(self):
         return f"[{', '.join(str(v) for v in list(self))}]"
 
-    def x__repr__(self):
-        cls = self.__class__.__name__
-        return f"{cls}({super().__repr__()})"
+    def dict(self):
+        r = {}
+        for v in self:
+            k = BusinessDate(v)
+            r[k] = r.get(k, [])
+            r[k].append(v)
+        return r
