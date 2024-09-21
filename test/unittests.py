@@ -20,7 +20,8 @@ from datetime import datetime, date, timedelta
 sys.path.append('.')
 sys.path.append('..')
 
-from businessdate import BusinessDate, BusinessPeriod, BusinessRange, BusinessSchedule, BusinessHolidays
+from businessdate import (BusinessDate, BusinessPeriod, BusinessDateList,
+                          BusinessRange, BusinessSchedule, BusinessHolidays)
 from businessdate.businessholidays import TargetHolidays
 
 from businessdate.basedate import BaseDateFloat, BaseDateDatetimeDate
@@ -245,6 +246,45 @@ class BusinessDateUnitTests(unittest.TestCase):
     def test_parse(self):
         self.assertRaises(ValueError, BusinessDate._parse_date_string, 'sdfasd')
         self.assertRaises(ValueError, BusinessDate, 'rtzwrwetzwe')
+
+    def test_constructor_methods(self):
+
+        class _base:
+            def __init__(self, d, func=None):
+                self._date = d
+                self._func = func
+
+            def date(self):
+                d = self._date
+                return d if self._func is None else self._func(d)
+
+        class _ts(_base):
+            @property
+            def __ts__(self):
+                return self.date
+
+        class _timestamp(_base):
+            @property
+            def __timestamp__(self):
+                return self.date
+
+        class _date(_base):
+            @property
+            def __date__(self):
+                return date(self._date.year, self._date.month, self._date.day)
+
+        class _datetime(_base):
+            @property
+            def __datetime__(self):
+                return datetime(self._date.year, self._date.month, self._date.day)
+
+        for f in (None, str, int, BusinessDate):
+            for d in self.dates:
+                self.assertEqual(d, BusinessDate(_ts(d, f)))
+                self.assertEqual(d, BusinessDate(_timestamp(d, f)))
+                self.assertEqual(d, BusinessDate(_date(d, f)))
+                self.assertEqual(d, BusinessDate(_datetime(d, f)))
+                self.assertEqual(d, BusinessDate(_datetime(d, f).__datetime__))
 
     def test_constructors(self):
         self.assertEqual(BusinessDate(date.today()), BusinessDate())
@@ -510,6 +550,23 @@ class BusinessDateUnitTests(unittest.TestCase):
         day = BusinessDate(self.jan01, convention='FOLLOW')
         self.assertEqual(day.adjust(), BusinessDate(20160104))
 
+    def test_float(self):
+        BusinessDate.BASE_DATE = 20100101
+        f = float(self.dec31_15)
+        self.assertAlmostEqual(5.99880219028063, f)
+        f = float(self.dec31_15 - BusinessDate())
+        self.assertAlmostEqual(5.99880219028063, f)
+        f = float(self.dec31_15 - (BusinessDate() + '1y2m'))
+        self.assertAlmostEqual(4.832135523613963, f)
+
+    def test_int(self):
+        BusinessDate.BASE_DATE = 20100101
+        f = int(self.dec31_15)
+        self.assertAlmostEqual(20151231, f)
+        f = int(self.dec31_15 - BusinessDate())
+        self.assertAlmostEqual(2191, f)
+        f = int(self.dec31_15 - (BusinessDate() + '1y2m'))
+        self.assertAlmostEqual(1764, f)
 
     def test_business_day_is(self):
         self.assertFalse(self.jan01.is_business_day())
@@ -663,14 +720,14 @@ class BusinessPeriodUnitTests(unittest.TestCase):
         self.assertTrue(BusinessPeriod.is_businessperiod('-2b1y6m'))
         self.assertTrue(BusinessPeriod.is_businessperiod('-2b-1y6m'))
         self.assertTrue(BusinessPeriod.is_businessperiod('-2b-1y6m-2b'))
+        self.assertTrue(BusinessPeriod.is_businessperiod(123))
+        self.assertTrue(BusinessPeriod.is_businessperiod(True))
 
-        self.assertFalse(BusinessPeriod.is_businessperiod(None))
         self.assertFalse(BusinessPeriod.is_businessperiod('123'))
-        self.assertFalse(BusinessPeriod.is_businessperiod(123))
-        self.assertFalse(BusinessPeriod.is_businessperiod(True))
+        self.assertFalse(BusinessPeriod.is_businessperiod(None))
         self.assertFalse(BusinessPeriod.is_businessperiod('2D3D'))
         self.assertRaises(TypeError, BusinessPeriod().__cmp__, BusinessDate())
-        self.assertRaises(TypeError, BusinessPeriod().__cmp__, 123)
+        self.assertRaises(ValueError, BusinessPeriod().__cmp__, '123')
         self.assertFalse(BusinessPeriod('1B') == '2D3D')
         self.assertFalse(BusinessPeriod() == '2D3D')
 
@@ -763,6 +820,59 @@ class BusinessPeriodUnitTests(unittest.TestCase):
 
         self.assertFalse(BusinessPeriod('30D') == BusinessPeriod('1M'))
         self.assertFalse(BusinessPeriod('1D') == BusinessPeriod('1B'))
+
+
+class BusinessDateListUnitTests(unittest.TestCase):
+    def setUp(self):
+        self.sd = BusinessDate(20151231)
+        self.ed = BusinessDate(20201231)
+
+    def test_constructors(self):
+        l = BusinessDateList([self.sd, self.sd + '1M', self.ed, self.ed + '1M'])
+
+        self.assertEqual(len(l), 4)
+
+        self.assertEqual(l[0], self.sd)
+        self.assertEqual(len(l[:1]), 1)
+        self.assertEqual(len(l[1:]), 3)
+        self.assertEqual(len(l[1:3:2]), 1)
+
+        s = float(self.sd - BusinessDate())
+        e = float(self.ed - BusinessDate())
+
+        self.assertEqual(len(l[s]), 1)
+        self.assertEqual(l[s][0], self.sd)
+        self.assertEqual(len(l[e]), 1)
+        self.assertEqual(l[e][0], self.ed)
+
+        self.assertEqual(len(l[e+0.1]), 0)
+
+        self.assertEqual(len(l[s:]), 4)
+        self.assertEqual(len(l[:s]), 0)
+        self.assertEqual(len(l[:e]), 2)
+        self.assertEqual(len(l[e:]), 2)
+        self.assertEqual(len(l[s:e]), 2)
+
+        self.assertEqual(len(l[s+0.01:e]), 1)
+        self.assertEqual(len(l[s+0.01:e + 0.01]), 2)
+        self.assertEqual(len(l[s+0.01:e + 1.01]), 3)
+
+        self.assertEqual(len(l[self.sd]), 1)
+        self.assertEqual(l[self.sd][0], self.sd)
+        self.assertEqual(len(l[self.ed]), 1)
+        self.assertEqual(l[self.ed][0], self.ed)
+
+        self.assertEqual(len(l[self.ed + '1w']), 0)
+
+        self.assertEqual(len(l[self.sd:]), 4)
+        self.assertEqual(len(l[:self.sd]), 0)
+        self.assertEqual(len(l[self.ed:]), 2)
+        self.assertEqual(len(l[:self.ed]), 2)
+        self.assertEqual(len(l[self.sd:self.ed]), 2)
+
+        self.assertEqual(len(l[self.sd + '1W':self.ed]), 1)
+        self.assertEqual(len(l[self.sd + '1W':self.ed + '1D']), 2)
+        self.assertEqual(len(l[self.sd + '1W':self.ed + '1Y']), 3)
 
 
 class BusinessRangeUnitTests(unittest.TestCase):
@@ -976,7 +1086,7 @@ class OldBusinessDateUnitTests(unittest.TestCase):
 class OldBusinessPeriodUnittests(unittest.TestCase):
     def test_add(self):
         p = BusinessPeriod(years=1, months=2, days=3)
-        self.assertRaises(TypeError, lambda: p + 2)
+        self.assertRaises(TypeError, lambda: p + '2')
         p = BusinessPeriod(years=1, months=2, days=3)
         self.assertEqual(p + '1M', BusinessPeriod(years=1, months=3, days=3))
         self.assertEqual(p + '10Y', BusinessPeriod(years=11, months=2, days=3))

@@ -10,12 +10,12 @@
 # Website:  https://github.com/sonntagsgesicht/businessdate
 # License:  Apache License 2.0 (see LICENSE file)
 
-
 from .businessperiod import BusinessPeriod
 from .businessdate import BusinessDate
+from .businessdatelist import BusinessDateList
 
 
-class BusinessRange(list):
+class BusinessRange(BusinessDateList):
     def __init__(self, start, stop=None, step=None, rolling=None):
         """ class to build list of business days
 
@@ -46,6 +46,9 @@ class BusinessRange(list):
         # push to super and sort
         super(BusinessRange, self).__init__(set(schedule))
         self.sort()
+
+    def __getitem__(self, key):
+        return BusinessDateList(self).__getitem__(key)
 
     @staticmethod
     def _default_args(start, stop, step, rolling):

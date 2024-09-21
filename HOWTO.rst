@@ -1,4 +1,4 @@
-
+from build.lib.businessdate import BusinessDate
 .. currentmodule:: businessdate
 
 To start with |businessdate| import it.
@@ -341,6 +341,57 @@ Please note the behavior of the preceding sign!
 
 
 .. _create_business_range:
+
+BusinessDateList
+----------------
+
+A `BusinessDateList` is a simple list of objects that admits simple filtering
+
+.. testsetup:: bdlist
+
+   from businessdate import BusinessDate, BusinessDateList
+   BusinessDate.BASE_DATE = 20151225
+
+.. doctest:: bdlist
+
+   >>> b = BusinessDate()
+   >>> b
+   BusinessDate(20151225)
+
+   >>> p = '0d', '1d', '1m', '1y'
+   >>> l = BusinessDateList(b + p)
+   >>> l
+   [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20160125), BusinessDate(20161225)]
+
+   Slicing with `int` slices word as always.
+
+   >>> l[0]
+   BusinessDate(20151225)
+
+   >>> l[1:3]
+   [BusinessDate(20151226), BusinessDate(20160125)]
+
+   >>> l[1::-1]
+   [BusinessDate(20151226), BusinessDate(20151225)]
+
+   But slicing with inputs to give `BusinessDate` works as well (as long third argument in slice is `None`).
+
+   >>> l['20151225']
+   [BusinessDate(20151225)]
+
+   >>> l['20151226':'20160128']
+   [BusinessDate(20151226), BusinessDate(20160125)]
+
+   But it behaves more like filtering
+
+   >>> l['20151220':'20160128']
+   [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20160125)]
+
+   Same for `float` slices which filters by casting list items as `float`.
+
+   >>> l[0.:1.]
+   [BusinessDate(20151225), BusinessDate(20151226), BusinessDate(20160125)]
+
 
 BusinessRange
 -------------

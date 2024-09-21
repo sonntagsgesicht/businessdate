@@ -6,7 +6,20 @@ Release 0.7
 
 Release date was |today|
 
+
 # `repr` on |BusinessDate()| shows convention, holidays and day_count if given
+
+# added |BusinessDayCount()| and |BusinessDayAdjustment()| classes
+
+# added auto `float` conversion to get `year_fraction` of |BusinessDate()|
+
+# added auto `int` conversion to `YYYYMMDD` format
+
+# added |BusinessDateList()|
+
+# added |BusinessDate().yf()| as shortcut for |BusinessDate().get_year_fraction()|
+
+# added |BusinessDate()| creation via construction dunder attributes like `__ts__`, `__timestamp__`, `__date__`, `__datetime__` or `.date()`  method
 
 
 Release 0.6

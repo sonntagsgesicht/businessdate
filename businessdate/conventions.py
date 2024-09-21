@@ -18,7 +18,7 @@ from .ymd import days_in_month, end_of_quarter_month
 ONE_DAY = timedelta(1)
 
 
-def is_business_day(business_date, holidays=list()):
+def is_business_day(business_date, holidays=()):
     """ method to check if a date falls neither on weekend
     nor is in holidays. """
 

@@ -94,3 +94,18 @@ def get_act_act(start, end):
 
     return years_in_between + rest_year1 / (366.0 if is_leap_year(start.year) else 365.0) + rest_year2 / (
         366.0 if is_leap_year(end.year) else 365.0)
+
+
+def get_act_act_icma(start, end, period_start=None, period_end=None, frequency=None):
+    """ implements Act/Act ICMA day count convention. """
+    period_start = start if period_start is None else period_start
+    period_end = end if period_end is None else period_end
+    period_days = diff_in_days(period_start, period_end)
+    if frequency is None:
+        year_days = diff_in_days(start, start + '1y')
+        frequency = round(year_days/period_days)
+    return diff_in_days(start, end) / (frequency * period_days)
+
+
+def get_rational_period(start, end):
+    return 1 / round(365.25 / diff_in_days(start, end))
