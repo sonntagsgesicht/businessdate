@@ -2,9 +2,9 @@
 Python library *businessdate*
 -----------------------------
 
-.. image:: https://img.shields.io/codeship/43157680-92f7-0137-34fd-0e3da511fc50/master.svg
-   :target: https://codeship.com//projects/356697
-   :alt: Codeship
+.. image:: https://github.com/sonntagsgesicht/businessdate/actions/workflows/python-package.yml/badge.svg
+    :target: https://github.com/sonntagsgesicht/businessdate/actions/workflows/python-package.yml
+    :alt: GitHubWorkflow
 
 .. image:: https://img.shields.io/readthedocs/businessdate
    :target: http://businessdate.readthedocs.io
