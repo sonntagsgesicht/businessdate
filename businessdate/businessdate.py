@@ -16,13 +16,49 @@ from datetime import date, datetime, timedelta
 from . import conventions
 from . import daycount
 from .ymd import is_leap_year, days_in_year, days_in_month, \
-    end_of_quarter_month
+    end_of_quarter_month, from_excel_to_ymd
 from .basedate import BaseDateFloat, BaseDateDatetimeDate
 from .businessholidays import TargetHolidays
 from .businessperiod import BusinessPeriod
 
 
+DATE_TYPES = date, BaseDateFloat, BaseDateDatetimeDate
+
+
+class BusinessDayCount(object):
+
+    def __int__(self, day_count=None, first_in_last_out=True,
+                icma_frequency=None, icma_period_days=None,
+                date_cls=date):
+        self._day_count = getattr(self, str(day_count), day_count)
+        self._first_in_last_out = first_in_last_out
+        self._icma_frequency = icma_frequency
+        self._icma_period_days = icma_period_days
+
+    def __call__(self, start, end):
+        return self._day_count(start, end)
+
+    def __str__(self):
+        return str(self._day_count)
+
+
+class BusinessDayAdjustment(object):
+
+    def __init__(self, convention=None, holidays=None):
+        self._convention = getattr(self, str(convention))
+        self._holidays = holidays or ()
+
+    def __call__(self, business_date, holiday=None):
+        self._convention(business_date, holiday or self._holidays)
+
+    def __str__(self):
+        return str(self._convention)
+
+
 class BusinessDate(BaseDateDatetimeDate):
+    __slots__ = '_year', '_month', '_day', '_hashcode', \
+                'convention', 'holidays', 'origin', 'day_count'
+
     ADJUST = 'No'
     BASE_DATE = None
     DATE_FORMAT = '%Y%m%d'
@@ -99,45 +135,16 @@ class BusinessDate(BaseDateDatetimeDate):
         """
 
         '''
-        :param str convention: keyword to select a business day adjustment convention
-         which is used as default for :meth:`BusinessDate.adjust`.
-         For more details on the conventions see module :mod:`businessdate.conventions`.
-        :param list holidays: container containing items of type :class:`datetime.date`
-         which is used as default for :meth:`BusinessDate.adjust`.
+        :param str convention: keyword to select a business day adjustment 
+            convention which is used as default for 
+            :meth:`BusinessDate.adjust`. For more details on the conventions 
+            see module :mod:`businessdate.conventions`.
+        :param list holidays: container containing items of type 
+            :class:`datetime.date` which is used as default for 
+            :meth:`BusinessDate.adjust`.
         '''
-
-        if year is None:
-            base_date = date.today() if cls.BASE_DATE is None else cls.BASE_DATE
-            return cls(base_date, convention=convention, holidays=holidays,
-                       day_count=day_count)
-
-        if isinstance(year, (list, tuple)):
-            kwargs = ({'year': y,
-                       'convention': convention,
-                       'holidays': holidays,
-                       'day_count': day_count} for y in year)
-            return year.__class__((BusinessDate(**kw) for kw in kwargs))
-
-        if isinstance(year, str):
-            year, month, day = \
-                cls._parse_date_string(year, default=(year, month, day))
-
-        if isinstance(year, (date, BaseDateFloat,
-                             BaseDateDatetimeDate, BusinessDate)):
-            if convention is None:
-                convention = getattr(year, 'convention', None)
-            if holidays is None:
-                holidays = getattr(year, 'holidays', None)
-            if day_count is None:
-                day_count = getattr(year, 'day_count', None)
-            year, month, day = year.year, year.month, year.day
-
-        if isinstance(year, (int, float)) and 10000101 <= year:
-            # start 20191231 representation from 1000 a.d.
-            ymd = str(year)
-            year, month, day = int(ymd[:4]), int(ymd[4:6]), int(ymd[6:])
-
-        if isinstance(year, int) and month and day:
+        if year and month and day:
+            # native construction
             if 12 < month:
                 year += int(month // 12)
                 month = int(month % 12)
@@ -145,26 +152,88 @@ class BusinessDate(BaseDateDatetimeDate):
                 new = cls.from_ymd(year, month, day)
             else:
                 new = super(BusinessDate, cls).__new__(cls, year, month, day)
+            new.convention = convention
+            new.holidays = holidays
+            new.day_count = day_count
+            return new
+
+        if isinstance(year, BusinessDate):
+            # second most native construction
+            if convention is None:
+                convention = getattr(year, 'convention', None)
+            if holidays is None:
+                holidays = getattr(year, 'holidays', None)
+            if day_count is None:
+                day_count = getattr(year, 'day_count', None)
+            year, month, day = year.year, year.month, year.day
+            return cls(year, month, day, convention, holidays, day_count)
+
+        if isinstance(year, timedelta):
+            return cls()._add_days(year.days)
+
+        if isinstance(year, (list, tuple)):
+            # vectorize
+            kwargs = {
+                'convention': convention,
+                'holidays': holidays,
+                'day_count': day_count
+            }
+            return year.__class__((BusinessDate(y, **kwargs) for y in year))
+
+        # use date construction attribute
+
+        if hasattr(year, '__ts__'):
+            year = year.__ts__
+            year = year() if callable(year) else year
+        elif hasattr(year, '__timestamp__'):
+            year = year.__timestamp__
+            year = year() if callable(year) else year
+        elif hasattr(year, '__date__'):
+            year = year.__date__
+            year = year() if callable(year) else year
+        elif hasattr(year, '__datetime__'):
+            year = year.__datetime__
+            year = year() if callable(year) else year
+        elif hasattr(year, 'date'):
+            year = year.date
+            year = year() if callable(year) else year
+
+        # gather year, month and day from year
+
+        if year is None:
+            year = date.today() if cls.BASE_DATE is None else cls.BASE_DATE
+
+        if isinstance(year, DATE_TYPES):
+            year, month, day = year.year, year.month, year.day
+
+        elif isinstance(year, (int, float)) and 10000101 <= year:
+            # start 20191231 representation from 1000 a.d.
+            ymd = str(year)
+            year, month, day = int(ymd[:4]), int(ymd[4:6]), int(ymd[6:])
 
         elif isinstance(year, (int, float)) and 1 < year < 10000101:
             # excel representation before 1000 a.d.
-            if issubclass(cls, BaseDateDatetimeDate):
-                new = cls.from_float(year)
+            year, month, day = from_excel_to_ymd(int(year))
+
+        elif isinstance(year, str):
+            year, month, day = \
+                cls._parse_date_string(year, default=(year, None, None))
+
+        if month and day:
+            if issubclass(cls, BaseDateFloat):
+                new = cls.from_ymd(year, month, day)
             else:
-                new = super(BusinessDate, cls).__new__(cls, year)
-        else:
-            if isinstance(year, timedelta):
-                year = '%sD' % year.days
+                new = super(BusinessDate, cls).__new__(cls, year, month, day)
+            # set additional properties
+            new.convention = convention
+            new.holidays = holidays
+            new.day_count = day_count
+            return new
 
-            # try to split complex or period input,
-            # e.g. '0B1D2BMOD20191231' or '3Y2M1D' or '-2B'
-            new = cls._from_complex_input(str(year))
+        # finally, try to split complex or period input,
+        # e.g. '0B1D2BMOD20191231' or '3Y2M1D' or '-2B'
+        return cls._from_complex_input(str(year))
 
-        # set additional properties
-        new.convention = convention
-        new.holidays = holidays
-        new.day_count = day_count
-        return new
 
     @classmethod
     def _parse_date_string(cls, date_str, default=None):
@@ -271,7 +340,8 @@ class BusinessDate(BaseDateDatetimeDate):
         if BusinessPeriod.is_businessperiod(other):
             return self.add_period(other)
         raise TypeError(
-            'addition of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
+            'addition of BusinessDates cannot handle objects of type %s.'
+            % other.__class__.__name__)
 
     def __sub__(self, other):
         """
@@ -286,9 +356,17 @@ class BusinessDate(BaseDateDatetimeDate):
             return self + (-1 * BusinessPeriod(other))
         if BusinessDate.is_businessdate(other):
             y, m, d = BusinessDate(other).diff_in_ymd(self)
-            return BusinessPeriod(years=y, months=m, days=d)
+            return BusinessPeriod(years=y, months=m, days=d, origin=self)
         raise TypeError(
-            'subtraction of BusinessDates cannot handle objects of type %s.' % other.__class__.__name__)
+            'subtraction of BusinessDates cannot handle objects of type %s.'
+            % other.__class__.__name__)
+
+    def __float__(self):
+        return float(self - BusinessDate())
+
+    def __int__(self):
+        y, m, d = self.to_ymd()
+        return int(f"{y:04}{m:02}{d:02}")
 
     def __str__(self):
         date_format = self.__class__.DATE_FORMAT
@@ -297,11 +375,17 @@ class BusinessDate(BaseDateDatetimeDate):
     def __repr__(self):
         args = [str(self)]
         if self.convention:
-            args.append(f"convention={self.convention}")
+            c = self.convention
+            c = c.__qualname__ if callable(c) else repr(c)
+            args.append(f"convention={c}")
         if self.holidays:
-            args.append(f"holidays={self.holidays}")
+            h = self.convention
+            h = h.__qualname__ if callable(h) else repr(h)
+            args.append(f"holidays={h}")
         if self.day_count:
-            args.append(f"day_count={self.day_count}")
+            d = self.convention
+            d = d.__qualname__ if callable(d) else repr(d)
+            args.append(f"day_count={d}")
         return self.__class__.__name__ + "(" + ", ".join(args) + ")"
 
     # --- validation and information methods ------------------------
@@ -435,6 +519,11 @@ class BusinessDate(BaseDateDatetimeDate):
             return self.__class__.DEFAULT_DAY_COUNT(self, end)
 
     def get_year_fraction(self, end=None, day_count=None):
+        """ wrapper for :meth:`BusinessDate.get_day_count`
+            method for different naming preferences """
+        return self.get_day_count(end, day_count)
+
+    def yf(self, end=None, day_count=None):
         """ wrapper for :meth:`BusinessDate.get_day_count`
             method for different naming preferences """
         return self.get_day_count(end, day_count)

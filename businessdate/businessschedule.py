@@ -47,6 +47,9 @@ class BusinessSchedule(BusinessRange):
         if end not in self:
             self.append(end)
 
+    def __getitem__(self, item):
+        return super().__getitem__(item)
+
     def first_stub_long(self):
         """ adjusts the schedule to have a long stub at the beginning,
             i.e. first period is longer a regular step.
