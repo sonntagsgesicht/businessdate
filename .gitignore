@@ -12,7 +12,7 @@ htmlcov/
 .coverage
 coverage.xml
 doc/coverage/
-/dev.py
+dev*.*
 /pipeline_info.sh
 /freeze_requirements.txt
 .bin/
