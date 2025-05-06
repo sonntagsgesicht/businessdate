@@ -42,7 +42,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 #  [ ] add docs for float and int conversion
 #  [ ] move holidays management to BusinessDayAdjustment
 #  [ ] move day_count management to BusinessDayCount
-
+#  [ ] remove duplicates from BusinessRange.adjust()
 
 from .businessholidays import BusinessHolidays
 from .businessperiod import BusinessPeriod
