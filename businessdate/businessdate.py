@@ -568,16 +568,14 @@ try:
         '        In order to get the year fraction according a day count convention \n' \
         '        provide one of the following convention key words: \n\n'
     for k, v in BusinessDate._dc_func.items():
-        s += '           * ' + (":code:`%s`" % k).ljust(
-            16) + '' + v.__doc__ + '\n\n'
+        s += '           * ' + (":code:`%s`" % k).ljust(16) + '' + str(v.__doc__) + '\n\n'
     BusinessDate.get_day_count.__doc__ += s
 
     s = '\n' \
         '        In order to adjust according a business day convention \n' \
         '        provide one of the following convention key words: \n\n'
     for k, v in BusinessDate._adj_func.items():
-        s += '           * ' + (":code:`%s`" % k).ljust(
-            16) + '' + v.__doc__ + '\n\n'
+        s += '           * ' + (":code:`%s`" % k).ljust(16) + '' + v.__doc__ + '\n\n'
     BusinessDate.adjust.__doc__ += s
 
     del s

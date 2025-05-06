@@ -217,6 +217,7 @@ class BusinessHolidaysUnitTests(unittest.TestCase):
 
 class BusinessDateUnitTests(unittest.TestCase):
     def setUp(self):
+        BusinessDate.DATE_FORMAT = '%Y%m%d'
         self.jan29_15 = BusinessDate(20150129)
         self.feb28_15 = BusinessDate(20150228)
         self.dec31_15 = BusinessDate(20151231)

@@ -1,6 +1,14 @@
 
 These changes are listed in decreasing version number order.
 
+Release 0.7.1
+=============
+
+Release date was |today|
+
+# added more day count methods like |get_act_act_icma|, |get_30_360_icma|, ...
+
+
 Release 0.7
 ===========
 
