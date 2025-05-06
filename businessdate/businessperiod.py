@@ -82,6 +82,22 @@ class BusinessPeriod:
                 businessdays = 2
             elif period.upper() == 'DD':
                 businessdays = 3
+            elif period.upper() in ('YEARLY', 'ANNUALLY', 'ANNUAL'):
+                years = 1
+            elif period.upper() in ('SEMI', 'SEMIANNUALLY', 'SEMIANNUAL'):
+                months =6
+            elif period.upper() in ('QUARTERLY',):
+                months = 3
+            elif period.upper() in ('MONTHLY',):
+                months = 1
+            elif period.upper() in ('BIWEAKLY',):
+                days = 14
+            elif period.upper() in ('WEAKLY',):
+                days = 7
+            elif period.upper() in ('DAILY',):
+                days = 1
+            elif period.upper() in ('BUSINNESDAILY',):
+                businessdays = 1
             else:
                 s, y, q, m, w, d, f = BusinessPeriod._parse_ymd(period)
                 # no final businesdays allowed
@@ -291,6 +307,9 @@ class BusinessPeriod:
     def __nonzero__(self):
         # return any((self.years, self.months, self.days, self.businessdays))
         return self.__bool__()
+
+    def __neg__(self):
+        return self * -1
 
     def __bool__(self):
         # return self.__nonzero__()
