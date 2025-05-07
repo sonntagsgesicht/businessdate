@@ -171,10 +171,11 @@ def get_act_act_bond(start, end):
 
 class icma:
 
-    def __init__(self, frequency: int | str = 1, rolling = None):
+    def __init__(self, frequency = 1, rolling = None):
         """ implements ICMA day count conventions.
 
-        :param frequency: coupon frequency
+        :param frequency: coupon frequency. Either integer 1, 2, 4, 12 or
+            string starting with 'a', 's', 'q', 'm'
             (optional: default is 1)
         :param rolling: rolling date for reference periods
             (optional: default is **None**,
