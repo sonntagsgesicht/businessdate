@@ -6,7 +6,11 @@ Release 0.7.1
 
 Release date was |today|
 
-# added more day count methods like |get_act_act_icma|, |get_30_360_icma|, ...
+# added more day count methods like |get_act_act_icma()|, |get_30_360_icma()|, ...
+
+# string input to |BusinessPeriod()| e.g. `BusinessPeriod('annually)`
+
+# negativ |BusinessPeriod()| e.g. `-BusinessPeriod(months=2)`
 
 
 Release 0.7
