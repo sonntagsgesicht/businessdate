@@ -12,6 +12,7 @@
 
 
 from datetime import date
+from warnings import warn
 from .ymd import is_leap_year
 
 
@@ -67,7 +68,8 @@ def get_30_360_nasd(start, end):
     # see QuantLib.Thirty360.NASD
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
-    return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
+    return (360 * (end.year - start.year) +
+            30 * (end.month - start.month) + (end_day - start_day)) / 360.0
 
 
 def get_30e_360(start, end):
@@ -136,11 +138,12 @@ def get_act_36525(start, end):
 
 
 def get_act_act(start, end):
+    """ implements Act/Act day count convention. """
     return get_act_act_isda(start, end)
 
 
 def get_act_act_isda(start, end):
-    """ implements Act/Act day count convention. """
+    """ implements Act/Act day count convention as defined by ISDA. """
 
     # QuantLib.ActualActual.ISDA
 
@@ -165,6 +168,7 @@ def get_act_act_isda(start, end):
 
 
 def get_act_act_bond(start, end):
+    """ implements Act/Act day count convention known as bond basis. """
     # QuantLib.ActualActual.Bond
     return get_act_act(start, end)
 
@@ -242,18 +246,19 @@ class icma:
 
 
 def get_act_act_icma(start, end, *, frequency=None, rolling=None):
+    """ implements Act/Act day count convention as defined by ICMA/ISMA. """
     if frequency is None:
         frequency = icma.gather_frequency(start, end)
     return icma(frequency, rolling).get_act_act(start, end)
 
 
-def ql_get_act_act_icma(start, end, period_start=None, period_end=None):
+def _ql_get_act_act_icma(start, end, period_start=None, period_end=None):
     """ implements Act/Act ICMA day count convention. """
     # QuantLib.ActualActual.Old_ISMA_Impl
     if start == end:
         return 0.0
     if start > end:
-        return -ql_get_act_act_icma(end, start, period_start, period_end)
+        return -_ql_get_act_act_icma(end, start, period_start, period_end)
 
     if period_start is None:
         period_start = start
@@ -332,10 +337,10 @@ def ql_get_act_act_icma(start, end, period_start=None, period_end=None):
     raise ValueError('wrong dates')
 
 
-def ql_get_act_act_isma(start, end, period_start=None, period_end=None):
+def _ql_get_act_act_isma(start, end, period_start=None, period_end=None):
     """ implements Act/Act ICMA day count convention. """
     # QuantLib.ActualActual.Old_ISMA_Impl
-    self = ql_get_act_act_isma
+    self = _ql_get_act_act_isma
     if start == end:
         return 0.0
     if start > end:
@@ -408,26 +413,35 @@ def ql_get_act_act_isma(start, end, period_start=None, period_end=None):
 
 
 def get_act_act_euro(start, end):
+    """ implements Act/Act day count convention known as euro bond. """
     # QuantLib.ActualActual.Euro
+    warn("uses 'get_act_act' as fallback")
     return get_act_act(start, end)
 
 
 def get_act_act_hist(start, end):
+    """ implements Act/Act day count convention known as historical. """
     # QuantLib.ActualActual.Historical
+    warn("uses 'get_act_act' as fallback")
     return get_act_act(start, end)
 
 
 def get_act_act_365(start, end):
+    """ implements Act/Act day count convention known as 365 basis. """
     # QuantLib.ActualActual.Actual365
+    warn("uses 'get_act_act' as fallback")
     return get_act_act(start, end)
 
 
 def get_act_act_afb(start, end):
+    """ implements Act/Act day count convention as defined by AFB. """
     # QuantLib.ActualActual.AFB
+    warn("uses 'get_act_act' as fallback")
     return get_act_act(start, end)
 
 
 def get_simple(start, end):
+    """ implements simple day count convention as defined by QuantLib. """
     """as defined in QuantLib"""
     return get_30_360(start, end)
 
@@ -440,4 +454,5 @@ def get_rational_period(start, end):
         years -= 1
         months += 12
     days = end.day - start.day
+    months += int(days / 365.25)
     return years + months / 12
