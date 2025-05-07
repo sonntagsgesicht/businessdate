@@ -77,6 +77,32 @@ class DayCountUnitTests(unittest.TestCase):
                 b = ql_day_count.yearFraction(s, e)
                 self.assertAlmostEqual(a, b, msg=f"{start} {end}")
 
+    def _ql_test_ref(self, bd_day_count, ql_day_count, m='', *, pbar=False):
+
+        def _test_ref(start, end, ref_start, ref_end):
+            s = ql.Date(str(start), '%Y-%m-%d')
+            e = ql.Date(str(end), '%Y-%m-%d')
+            rs = ql.Date(str(ref_start), '%Y-%m-%d')
+            re = ql.Date(str(ref_end), '%Y-%m-%d')
+
+            msg = f"{start} : {end} , {ref_start} : {ref_end} with {m}"
+            a = bd_day_count(start, end, ref_start, ref_end)
+            b = ql_day_count.yearFraction(s, e, rs, re)
+            if ref_end.day < 29:
+                # caveat due to different (perhaps wrong) rolling in QL
+                self.assertAlmostEqual(a, b, msg=f"\nat {msg}")
+
+        for j, start in enumerate(self.dates):
+            periods = self.periods
+            if pbar:
+                desc = f"periods {m}"
+                pfix = f"{j + 1}/{len(self.dates)}"
+                periods = I(periods, desc=desc, postfix=pfix)
+            for p in periods:
+                end = start + p
+                _test_ref(start, start + p, end - m, end)
+                _test_ref(start, end, start, start + m)
+
     def test_30_360(self):
         self._ql_test(get_30_360, ql.Thirty360(ql.Thirty360.USA))
 
@@ -115,37 +141,12 @@ class DayCountUnitTests(unittest.TestCase):
 
     def test_act_act_icma(self):
         # bd_day_count = ql_get_act_act_isma
-        bd_day_count = get_act_act_icma
+        # bd_day_count = get_act_act_icma
         ql_day_count = ql.ActualActual(ql.ActualActual.ISMA)
-        for j, start in enumerate(self.dates):
-            desc = f"periods from {start}"
-            pfix = f"{j + 1}/{len(self.dates)}"
-            for p in I(self.periods, desc=desc, postfix=pfix):
-                end = start + p
-                if not start < end:
-                    continue
-                s = ql.Date(str(start), '%Y-%m-%d')
-                e = ql.Date(str(end), '%Y-%m-%d')
-                for f in (1, 2, 4, 12):
-                    r_start = (end - f"{12 // f}m") if f else start
-                    rs = ql.Date(str(r_start), '%Y-%m-%d')
-                    msg = f"{start} - {end} ; {r_start} - {end} ; {f}"
-
-                    bd_day_count = icma(f, end).get_act_act
-                    a = bd_day_count(start, end)
-                    b = ql_day_count.yearFraction(s, e, rs, e)
-                    if end.day < 29:
-                        # caveat due to different (perhaps wrong) rolling in QL
-                        self.assertAlmostEqual(a, b, msg=f"\nat {msg}")
-
-                    r_end = (start + f"{12 // f}m") if f else end
-                    re = ql.Date(str(r_end), '%Y-%m-%d')
-                    msg = f"{start} - {end} ; {start} - {r_end} ; {f}"
-
-                    bd_day_count = icma(f, start).get_act_act
-                    a = bd_day_count(start, end)
-                    b = ql_day_count.yearFraction(s, e, s, re)
-                    self.assertAlmostEqual(a, b, msg=f"\nat {msg}")
+        for f in (1, 2, 4, 12):
+            def bd_day_count(s, e, rs, re):
+                return icma(f, re).get_act_act(s, e)
+            self._ql_test_ref(bd_day_count, ql_day_count, f"{12 // f}m")
 
     def test_simple(self):
         act_act = ql.SimpleDayCounter()
