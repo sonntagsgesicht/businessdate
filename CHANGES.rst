@@ -1,10 +1,24 @@
 
 These changes are listed in decreasing version number order.
 
-Release 0.7.1
+Release 0.7.2
 =============
 
 Release date was |today|
+
+# added more day count methods like |get_act_act_afb()|, ...
+
+# made |BusinessPeriod()| iterable to get `['1y', '2y', ...]`
+    by `list(BusinessPeriod('1y')`
+
+# added |BusinessDate().start_of_month()|, |BusinessDate().start_of_quarter()|,
+    |BusinessDate().start_of_year()| and |BusinessDate().end_of_year()|
+    as well as short versions as `BusinessDate().som()`, ...
+
+Release 0.7.1
+=============
+
+Release date was 7 May 2025
 
 # added more day count methods like |get_act_act_icma()|, |get_30_360_icma()|, ...
 
@@ -16,7 +30,7 @@ Release date was |today|
 Release 0.7
 ===========
 
-Release date was |today|
+Release date was 21 September 2024
 
 
 # `repr` on |BusinessDate()| shows convention, holidays and day_count if given

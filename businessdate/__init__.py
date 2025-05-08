@@ -20,9 +20,9 @@
 
 __doc__ = ('Python library for generating business dates '
            'for fast date operations and rich functionality.')
-__version__ = '0.7.1'
+__version__ = '0.7.2'
 __dev_status__ = '4 - Beta'
-__date__ = 'Wednesday, 07 May 2025'
+__date__ = 'Thursday, 08 May 2025'
 __author__ = 'sonntagsgesicht'
 __email__ = 'sonntagsgesicht@icloud.com'
 __url__ = 'https://github.com/sonntagsgesicht/' + __name__
