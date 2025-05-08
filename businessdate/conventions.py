@@ -72,16 +72,14 @@ def adjust_mod_previous(business_date, holidays=()):
 
 
 def adjust_start_of_month(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Start of month",
-    i.e. first business day. """
+    """ adjusts to Business Day Convention "Start of month", i.e. first business day. """  # noqa E501
     business_date = date(business_date.year, business_date.month, 1)
     business_date = adjust_follow(business_date, holidays)
     return business_date
 
 
 def adjust_end_of_month(business_date, holidays=()):
-    """ adjusts to Business Day Convention "End of month",
-    i.e. last business day. """
+    """ adjusts to Business Day Convention "End of month", i.e. last business day. """  # noqa E501
     y, m, _ = business_date.year, business_date.month, business_date.day
     business_date = date(y, m, days_in_month(y, m))
     business_date = adjust_previous(business_date, holidays)
@@ -89,8 +87,7 @@ def adjust_end_of_month(business_date, holidays=()):
 
 
 def adjust_imm(business_date, holidays=()):
-    """ adjusts to Business Day Convention of IMM,
-    i.e. "International Monetary Market". """
+    """ adjusts to Business Day Convention of IMM, i.e. "International Monetary Market". """  # noqa E501
     business_date = date(business_date.year,
                          end_of_quarter_month(business_date.month), 15)
     while business_date.weekday() == WEDNESDAY:
