@@ -19,6 +19,7 @@ DAYS_IN_YEAR = 365.25
 
 class BusinessPeriod:
     __slots__ = '_months', '_days', '_businessdays', 'origin'
+    MAXITER = 1_000_000
 
     def __init__(self, period='', years=0, quarters=0, months=0,
                  weeks=0, days=0, businessdays=0, origin=None):
@@ -346,6 +347,14 @@ class BusinessPeriod:
 
     def __rmul__(self, other):
         return self.__mul__(other)
+
+    def __iter__(self):
+        i = 1
+        while True:
+            yield self * i
+            i += 1
+            if i > self.MAXITER:
+                break
 
     def max_days(self):
         if self._months < 0:
