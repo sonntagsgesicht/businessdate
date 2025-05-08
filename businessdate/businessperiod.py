@@ -86,7 +86,7 @@ class BusinessPeriod:
             elif period.upper() in ('YEARLY', 'ANNUALLY', 'ANNUAL'):
                 years = 1
             elif period.upper() in ('SEMI', 'SEMIANNUALLY', 'SEMIANNUAL'):
-                months =6
+                months = 6
             elif period.upper() in ('QUARTERLY',):
                 months = 3
             elif period.upper() in ('MONTHLY',):
@@ -120,7 +120,7 @@ class BusinessPeriod:
         else:
             raise TypeError(
                 "%s of Type %s not valid to create BusinessPeriod."
-                %(str(period), period.__class__.__name__))
+                % (str(period), period.__class__.__name__))
 
         self._months = 12 * years + 3 * quarters + months
         self._days = 7 * weeks + days
@@ -160,7 +160,8 @@ class BusinessPeriod:
 
     @classmethod
     def _parse_ymd(cls, period):
-        # can even parse strings like '-1B-2Y-4Q+5M' but also '0B', '-1Y2M3D' as well.
+        # can even parse strings like '-1B-2Y-4Q+5M'
+        # but also '0B', '-1Y2M3D' as well.
         period = period.upper().replace(' ', '')
         period = period.replace('BUSINESSDAYS', 'B')
         period = period.replace('YEARS', 'Y')
@@ -175,14 +176,15 @@ class BusinessPeriod:
                 s = s[1:] if s.startswith('+') else s
                 sgn, s = (-1, s[1:]) if s.startswith('-') else (1, s)
                 if not s.isdigit():
-                    raise ValueError("Unable to parse %s in %s as %s" % (s, p, cls.__name__))
+                    msg = f"Unable to parse{s} in {p} as {cls.__name__}"
+                    raise ValueError(msg)
                 return sgn * int(s), p
             return 0, p
 
         p = period.upper()
 
         # p[-1] is not 'B', p.strip('0123456789+-B')==''
-        s, p = _parse(p, 'B') if not p[-1]=='B' else (0, p)
+        s, p = _parse(p, 'B') if not p[-1] == 'B' else (0, p)
         s, p = _parse(p, 'B') if not p.strip('0123456789+-B') else (s, p)
         s, p = _parse(p, 'B') if p.count('B') > 1 else (s, p)
         y, p = _parse(p, 'Y')
@@ -197,8 +199,7 @@ class BusinessPeriod:
 
     @classmethod
     def is_businessperiod(cls, period):
-        """ returns true if the argument can be understood
-        as :class:`BusinessPeriod` """
+        """True if the argument can be understood as `BusinessPeriod`"""
         if period is None:
             return False
         if isinstance(period, (list, set, dict, tuple)):
@@ -212,7 +213,7 @@ class BusinessPeriod:
         if isinstance(period, str):
             if period.isdigit():
                 return False
-            #if period.upper().strip('+-0123456789BYQMWD'):
+            # if period.upper().strip('+-0123456789BYQMWD'):
             #    return False
             try:  # to be removed
                 BusinessPeriod._parse_ymd(period)
@@ -231,7 +232,8 @@ class BusinessPeriod:
         if self.businessdays:
             period_str = str(self.businessdays) + 'B'
         else:
-            period_str = '-' if self.years < 0 or self.months < 0 or self.days < 0 else ''
+            period_str = '-' \
+                if self.years < 0 or self.months < 0 or self.days < 0 else ''
             if self.years:
                 period_str += str(abs(self.years)) + 'Y'
             if self.months:
@@ -255,7 +257,7 @@ class BusinessPeriod:
 
     def __abs__(self):
         ymdb = self.years, self.months, self.days, self.businessdays
-        y,m,d,b = tuple(map(abs, ymdb))
+        y, m, d, b = tuple(map(abs, ymdb))
         return self.__class__(years=y, months=m, days=d, businessdays=b)
 
     def __cmp__(self, other):
@@ -325,15 +327,18 @@ class BusinessPeriod:
             m = self.months + p.months
             d = self.days + p.days
             b = self.businessdays + p.businessdays
-            return self.__class__(years=y, months=m, days=d, businessdays=b, origin=self.origin)
-        raise TypeError('addition of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
+            return self.__class__(years=y, months=m, days=d,
+                                  businessdays=b, origin=self.origin)
+        raise TypeError('addition of BusinessPeriod cannot handle objects '
+                        'of type %s.' % other.__class__.__name__)
 
     def __sub__(self, other):
         if isinstance(other, (list, tuple)):
             return [self - o for o in other]
         if BusinessPeriod.is_businessperiod(other):
             return self + (-1 * BusinessPeriod(other))
-        raise TypeError('subtraction of BusinessPeriod cannot handle objects of type %s.' % other.__class__.__name__)
+        raise TypeError('subtraction of BusinessPeriod cannot handle objects '
+                        'of type %s.' % other.__class__.__name__)
 
     def __mul__(self, other):
         if isinstance(other, (list, tuple)):
@@ -342,8 +347,10 @@ class BusinessPeriod:
             m = other * self._months
             d = other * self._days
             b = other * self._businessdays
-            return BusinessPeriod(months=m, days=d, businessdays=b, origin=self.origin)
-        raise TypeError("expected int type but got %s" % other.__class__.__name__)
+            return BusinessPeriod(months=m, days=d,
+                                  businessdays=b, origin=self.origin)
+        raise TypeError("expected int type "
+                        "but got %s" % other.__class__.__name__)
 
     def __rmul__(self, other):
         return self.__mul__(other)

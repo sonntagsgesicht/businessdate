@@ -12,7 +12,6 @@
 
 
 from datetime import date
-from warnings import warn
 
 from .ymd import is_leap_year
 
@@ -31,7 +30,9 @@ def get_30_360(start, end):
     # see QuantLib.Thirty360.USA
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
-    return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
+    return (360 * (end.year - start.year)
+            + 30 * (end.month - start.month)
+            + (end_day - start_day)) / 360.0
 
 
 def get_30_360b(start, end):
@@ -39,7 +40,9 @@ def get_30_360b(start, end):
     # see QuantLib.Thirty360.BondBasis
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
-    return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
+    return (360 * (end.year - start.year)
+            + 30 * (end.month - start.month)
+            + (end_day - start_day)) / 360.0
 
 
 def get_30_360_icma(start, end):
@@ -47,21 +50,29 @@ def get_30_360_icma(start, end):
     # see QuantLib.Thirty360.ISMA
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
-    return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
+    return (360 * (end.year - start.year)
+            + 30 * (end.month - start.month)
+            + (end_day - start_day)) / 360.0
 
 
 def get_30_360_isda(start, end):
     """ implements 30/360 ISDA Count Convention. """
     # see QuantLib.Thirty360.ISDA
     start_day = min(start.day, 30)
-    if start.month == 2 and (start.day == 29 or (start.day == 28 and not is_leap_year(start.year))):
+    if (start.month == 2 and
+            (start.day == 29 or
+             (start.day == 28 and not is_leap_year(start.year)))):
         start_day = 30
 
     end_day = min(end.day, 30)
-    if end.month == 2  and (end.day == 29 or (end.day == 28 and not is_leap_year(end.year))):
+    if (end.month == 2 and
+            (end.day == 29 or
+             (end.day == 28 and not is_leap_year(end.year)))):
         end_day = 30
 
-    return (360 * (end.year - start.year) + 30 * (end.month - start.month) + (end_day - start_day)) / 360.0
+    return (360 * (end.year - start.year)
+            + 30 * (end.month - start.month)
+            + (end_day - start_day)) / 360.0
 
 
 def get_30_360_nasd(start, end):
@@ -70,7 +81,8 @@ def get_30_360_nasd(start, end):
     start_day = min(start.day, 30)
     end_day = 30 if (start_day == 30 and end.day == 31) else end.day
     return (360 * (end.year - start.year) +
-            30 * (end.month - start.month) + (end_day - start_day)) / 360.0
+            30 * (end.month - start.month)
+            + (end_day - start_day)) / 360.0
 
 
 def get_30e_360(start, end):
@@ -148,24 +160,31 @@ def get_act_act_isda(start, end):
 
     # QuantLib.ActualActual.ISDA
 
-    # if the period does not lie within a year split the days in the period as following:
-    #           remaining days of start year / years in between / days in the end year
-    # REMARK: following the before mentioned Definition the first day of the period is included whereas the
+    # if the period does not lie within a year
+    # split the days in the period as following:
+    #   remaining days of start year / years in between / days in the end year
+    # REMARK: following the before mentioned Definition
+    # the first day of the period is included whereas the
     # last day will be excluded
-    # What remains to check now is only whether the start and end year are leap or non-leap years. The quotients
-    # can be easily calculated and for the years in between they are always one (365/365 = 1; 366/366 = 1)
+    # What remains to check now is only whether
+    # the start and end year are leap or non-leap years. The quotients
+    # can be easily calculated and for the years in between they are always one
+    # (365/365 = 1; 366/366 = 1)
 
     if end.year - start.year == 0:
         if is_leap_year(start.year):
             return diff_in_days(start, end) / 366.0  # leap year: 366 days
         return diff_in_days(start, end) / 365.0  # non-leap year: 365 days
 
-    rest_year1 = diff_in_days(start, date(start.year, 12, 31)) + 1  # since the first day counts
-    rest_year2 = abs(diff_in_days(end, date(end.year, 1, 1)))  # here the last day is automatically not counted
+    # since the first day counts
+    rest_year1 = diff_in_days(start, date(start.year, 12, 31)) + 1
+    # here the last day is automatically not counted
+    rest_year2 = abs(diff_in_days(end, date(end.year, 1, 1)))
     years_in_between = end.year - start.year - 1
 
-    return years_in_between + rest_year1 / (366.0 if is_leap_year(start.year) else 365.0) + rest_year2 / (
-        366.0 if is_leap_year(end.year) else 365.0)
+    return (years_in_between
+            + rest_year1 / (366.0 if is_leap_year(start.year) else 365.0)
+            + rest_year2 / (366.0 if is_leap_year(end.year) else 365.0))
 
 
 def get_act_act_bond(start, end):
@@ -176,7 +195,7 @@ def get_act_act_bond(start, end):
 
 class icma:
 
-    def __init__(self, frequency = 1, rolling = None):
+    def __init__(self, frequency=1, rolling=None):
         """ implements ICMA day count conventions.
 
         :param frequency: coupon frequency. Either integer 1, 2, 4, 12 or
@@ -309,7 +328,7 @@ def _ql_get_act_act_icma(start, end, period_start=None, period_end=None):
     # calc yf
     def _yf(s, e, ps, pe, f):
         y = diff_in_days(s, e) / diff_in_days(ps, pe) / f
-        msg = f"QL: {s} - {e} ; {ps} - {pe} ; {f} ; {y}"
+        # msg = f"QL: {s} - {e} ; {ps} - {pe} ; {f} ; {y}"
         # print(msg)
         return y
 
@@ -415,7 +434,7 @@ def _ql_get_act_act_isma(start, end, period_start=None, period_end=None):
         # the part from period_end to end
         # count how many regular periods are in [period_end, end],
         # then add the remaining time
-        i=0
+        i = 0
         while True:
             new_start = period_end + f"{months * i}m"
             new_end = period_end + f"{months * (i + 1)}m"

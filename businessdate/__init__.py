@@ -18,11 +18,12 @@
 #  int(D) = int(D - BusinessDate()) = BusinessDate().diff_in_days(D)
 
 
-__doc__ = 'Python library for generating business dates for fast date operations and rich functionality.'
+__doc__ = ('Python library for generating business dates '
+           'for fast date operations and rich functionality.')
 __version__ = '0.7.1'
 __dev_status__ = '4 - Beta'
 __date__ = 'Wednesday, 07 May 2025'
-__author__ = 'sonntagsgesicht, based on a fork of Deutsche Postbank [pbrisk]'
+__author__ = 'sonntagsgesicht'
 __email__ = 'sonntagsgesicht@icloud.com'
 __url__ = 'https://github.com/sonntagsgesicht/' + __name__
 __license__ = 'Apache License 2.0'
@@ -44,9 +45,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 #  [ ] move day_count management to BusinessDayCount
 #  [ ] remove duplicates from BusinessRange.adjust()
 
-from .businessholidays import BusinessHolidays
-from .businessperiod import BusinessPeriod
-from .businessdate import BusinessDate
-from .businessdatelist import BusinessDateList
-from .businessrange import BusinessRange
-from .businessschedule import BusinessSchedule
+from .businessholidays import BusinessHolidays  # noqa F401 E402
+from .businessperiod import BusinessPeriod  # noqa F401 E402
+from .businessdate import BusinessDate  # noqa F401 E402
+from .businessdatelist import BusinessDateList  # noqa F401 E402
+from .businessrange import BusinessRange  # noqa F401 E402
+from .businessschedule import BusinessSchedule  # noqa F401 E402

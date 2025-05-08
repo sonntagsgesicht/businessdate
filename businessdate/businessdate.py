@@ -120,8 +120,8 @@ class BusinessDate(BaseDateDatetimeDate):
 
         :param year: number of year or some other input value t
          o create :class:`BusinessDate` instance.
-         When applying other input, this can be either
-         :class:`int`, :class:`float`, :class:`datetime.date` or :class:`string`
+         When applying other input, this can be either :class:`int`,
+         :class:`float`, :class:`datetime.date` or :class:`string`
          which will be parsed and transformed into equivalent
          :class:`tuple` of :class:`int` items `(year,month,day)`
          (See :doc:`tutorial <tutorial>` for details).
@@ -133,16 +133,13 @@ class BusinessDate(BaseDateDatetimeDate):
         For all input arguments exits read only properties.
 
         """
-
-        '''
-        :param str convention: keyword to select a business day adjustment 
-            convention which is used as default for 
-            :meth:`BusinessDate.adjust`. For more details on the conventions 
-            see module :mod:`businessdate.conventions`.
-        :param list holidays: container containing items of type 
-            :class:`datetime.date` which is used as default for 
-            :meth:`BusinessDate.adjust`.
-        '''
+        # :param str convention: keyword to select a business day adjustment
+        #     convention which is used as default for
+        #     :meth:`BusinessDate.adjust`. For more details on the conventions
+        #     see module :mod:`businessdate.conventions`.
+        # :param list holidays: container containing items of type
+        #     :class:`datetime.date` which is used as default for
+        #     :meth:`BusinessDate.adjust`.
         if year and month and day:
             # native construction
             if 12 < month:
@@ -234,7 +231,6 @@ class BusinessDate(BaseDateDatetimeDate):
         # e.g. '0B1D2BMOD20191231' or '3Y2M1D' or '-2B'
         return cls._from_complex_input(str(year))
 
-
     @classmethod
     def _parse_date_string(cls, date_str, default=None):
         date_str = str(date_str)
@@ -253,8 +249,9 @@ class BusinessDate(BaseDateDatetimeDate):
             return date_date.year, date_date.month, date_date.day
 
         if default is None:
-            raise ValueError("The input %s has not the right format for %s" % (
-            date_str, cls.__name__))
+            msg = (f"The input {date_str} has not "
+                   f"the right format for {cls.__name__}")
+            raise ValueError(msg)
         return default
 
     @classmethod
@@ -402,14 +399,38 @@ class BusinessDate(BaseDateDatetimeDate):
         """ returns number of days for the month """
         return days_in_month(self.year, self.month)
 
+    def start_of_year(self):
+        """ returns the day of the start of the year as `BusinessDate`"""
+        return BusinessDate(self.year, 1, 1)
+
+    def end_of_year(self):
+        """ returns the day of the end of the year as `BusinessDate`"""
+        return BusinessDate(self.year, 12, 31)
+
+    def start_of_month(self):
+        """ returns the day of the start of the month as `BusinessDate`"""
+        return BusinessDate(self.year, self.month, 1)
+
     def end_of_month(self):
-        """ returns the day of the end of the month as :class:`BusinessDate` object"""
+        """ returns the day of the end of the month as `BusinessDate`"""
         return BusinessDate(self.year, self.month, self.days_in_month())
 
+    def start_of_quarter(self):
+        """returns the day of the start of the quarter as `BusinessDate`"""
+        return BusinessDate(
+            self.year, end_of_quarter_month(self.month) - 2, 1)
+
     def end_of_quarter(self):
-        """ returns the day of the end of the quarter as :class:`BusinessDate` object"""
-        return BusinessDate(self.year, end_of_quarter_month(self.month),
-                            0o1).end_of_month()
+        """returns the day of the end of the quarter as `BusinessDate`"""
+        return BusinessDate(
+            self.year, end_of_quarter_month(self.month), 1).end_of_month()
+
+    soy = start_of_year
+    eoy = end_of_year
+    soq = start_of_quarter
+    eoq = end_of_quarter
+    som = start_of_month
+    eom = end_of_month
 
     def is_business_day(self, holidays=None):
         """ returns `True` if date falls neither on weekend
@@ -456,7 +477,8 @@ class BusinessDate(BaseDateDatetimeDate):
 
         It is simply adding the number of `years`, `months` and `days` or
         if `businessdays` given the number of business days,
-        i.e. days neither weekend nor in holidays (see also :meth:`BusinessDate.is_business_day`)
+        i.e. days neither weekend nor in holidays
+        (see also :meth:`BusinessDate.is_business_day`)
         """
 
         p = BusinessPeriod(period_obj)
@@ -565,17 +587,19 @@ class BusinessDate(BaseDateDatetimeDate):
 # add additional __doc__ at runtime (during import)
 try:
     s = '\n' \
-        '        In order to get the year fraction according a day count convention \n' \
+        '        To get the year fraction for a day count convention \n' \
         '        provide one of the following convention key words: \n\n'
     for k, v in BusinessDate._dc_func.items():
-        s += '           * ' + (":code:`%s`" % k).ljust(16) + '' + str(v.__doc__) + '\n\n'
+        s += '           * ' + (":code:`%s`" % k).ljust(16)
+        s += '' + str(v.__doc__) + '\n\n'
     BusinessDate.get_day_count.__doc__ += s
 
     s = '\n' \
         '        In order to adjust according a business day convention \n' \
         '        provide one of the following convention key words: \n\n'
     for k, v in BusinessDate._adj_func.items():
-        s += '           * ' + (":code:`%s`" % k).ljust(16) + '' + v.__doc__ + '\n\n'
+        s += '           * ' + (":code:`%s`" % k).ljust(16)
+        s += '' + str(v.__doc__) + '\n\n'
     BusinessDate.adjust.__doc__ += s
 
     del s

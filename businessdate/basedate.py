@@ -17,7 +17,7 @@ from .ymd import from_excel_to_ymd, from_ymd_to_excel
 
 
 class BaseDateFloat(float):
-    """ native :class:`float` backed base class
+    """ native `float` backed base class
     for a performing date calculations counting days since Jan, 1st 1900 """
 
     def __new__(cls, x=0):
@@ -52,23 +52,23 @@ class BaseDateFloat(float):
 
     @classmethod
     def from_ymd(cls, year, month, day):
-        """ creates instance from a :class:`tuple` of :class:`int` items `(year, month, day)` """
+        """creates instance from a `tuple` of `int` `(year, month, day)` """
         return cls(from_ymd_to_excel(year, month, day))
 
     @classmethod
     def from_date(cls, d):
-        """ creates instance from a :class:`datetime.date` object `d` """
+        """ creates instance from a `datetime.date` object `d` """
         return cls.from_ymd(d.year, d.month, d.day)
 
     @classmethod
     def from_float(cls, x):
-        """ creates from a :class:`float` `x` counting the days since Jan, 1st 1900 """
+        """ creates from `float` `x` counting the days since Jan, 1st 1900 """
         return cls(x)
 
     # --- cast method --------------------------------------------------------
 
     def to_ymd(self):
-        """ returns the :class:`tuple` of :class:`int` items `(year, month, day)` """
+        """ returns the `tuple` of `int` items `(year, month, day)` """
         if not self._ymd:
             self._ymd = from_excel_to_ymd(int(self))
         return self._ymd
@@ -80,7 +80,7 @@ class BaseDateFloat(float):
         return date(*self._ymd)
 
     def to_float(self):
-        """ returns :class:`float` counting the days since Jan, 1st 1900 """
+        """ returns `float` counting the days since Jan, 1st 1900 """
         return float(self)
 
     # --- calculation methods ------------------------------------------------
@@ -94,31 +94,31 @@ class BaseDateFloat(float):
 
 
 class BaseDateDatetimeDate(date):
-    """ :class:`datetime.date` backed base class
+    """ `datetime.date` backed base class
     for a performing date calculations """
 
     # --- constructor method -------------------------------------------------
 
     @classmethod
     def from_ymd(cls, year, month, day):
-        """ creates instance from a :class:`tuple` of :class:`int` items `(year, month, day)` """
+        """ creates instance from `tuple` of `int` `(year, month, day)` """
         return cls(year, month, day)
 
     @classmethod
     def from_date(cls, d):
-        """ creates instance from a :class:`datetime.date` object `d` """
+        """ creates instance from a `datetime.date` object `d` """
         return cls.from_ymd(d.year, d.month, d.day)
 
     @classmethod
     def from_float(cls, x):
-        """ creates from a :class:`float` `x` counting the days since Jan, 1st 1900 """
+        """ creates from `float` `x` counting the days since Jan, 1st 1900 """
         y, m, d = from_excel_to_ymd(x)
         return cls.from_ymd(y, m, d)
 
     # --- cast method --------------------------------------------------------
 
     def to_ymd(self):
-        """ returns the :class:`tuple` of :class:`int` items `(year, month, day)` """
+        """ returns the `tuple` of `int` items `(year, month, day)` """
         return self.year, self.month, self.day
 
     def to_date(self):
@@ -126,7 +126,7 @@ class BaseDateDatetimeDate(date):
         return date(*self.to_ymd())
 
     def to_float(self):
-        """ returns :class:`float` counting the days since Jan, 1st 1900 """
+        """ returns `float` counting the days since Jan, 1st 1900 """
         return float(from_ymd_to_excel(*self.to_ymd()))
 
     def to_serializable(self, *args, **kwargs):

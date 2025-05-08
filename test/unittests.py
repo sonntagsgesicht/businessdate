@@ -354,13 +354,29 @@ class BusinessDateUnitTests(unittest.TestCase):
         self.assertEqual(29, BusinessDate(20160201).days_in_month())
         self.assertEqual(29, BusinessDate(20000201).days_in_month())
 
+        self.assertEqual(BusinessDate(20150101), BusinessDate(20150114).start_of_month())
+        self.assertEqual(BusinessDate(20160201), BusinessDate(20160213).start_of_month())
+        self.assertEqual(BusinessDate(20000301), BusinessDate(20000324).start_of_month())
+
         self.assertEqual(BusinessDate(20150131), BusinessDate(20150101).end_of_month())
         self.assertEqual(BusinessDate(20160229), BusinessDate(20160201).end_of_month())
         self.assertEqual(BusinessDate(20000331), BusinessDate(20000311).end_of_month())
 
+        self.assertEqual(BusinessDate(20150101), BusinessDate(20150131).start_of_quarter())
+        self.assertEqual(BusinessDate(20160101), BusinessDate(20160211).start_of_quarter())
+        self.assertEqual(BusinessDate(20001001), BusinessDate(20001111).start_of_quarter())
+
         self.assertEqual(BusinessDate(20150331), BusinessDate(20150101).end_of_quarter())
         self.assertEqual(BusinessDate(20160331), BusinessDate(20160201).end_of_quarter())
         self.assertEqual(BusinessDate(20000331), BusinessDate(20000311).end_of_quarter())
+
+        self.assertEqual(BusinessDate(20150101), BusinessDate(20150113).start_of_year())
+        self.assertEqual(BusinessDate(20160101), BusinessDate(20160201).start_of_year())
+        self.assertEqual(BusinessDate(20000101), BusinessDate(20000311).start_of_year())
+
+        self.assertEqual(BusinessDate(20151231), BusinessDate(20150101).end_of_year())
+        self.assertEqual(BusinessDate(20161231), BusinessDate(20160201).end_of_year())
+        self.assertEqual(BusinessDate(20001231), BusinessDate(20000311).end_of_year())
 
         self.assertTrue(BusinessDate(19000102).is_business_day())
         self.assertFalse(BusinessDate(20160101).is_business_day())

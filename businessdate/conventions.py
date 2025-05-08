@@ -72,23 +72,27 @@ def adjust_mod_previous(business_date, holidays=()):
 
 
 def adjust_start_of_month(business_date, holidays=()):
-    """ adjusts to Business Day Convention "Start of month", i.e. first business day. """
+    """ adjusts to Business Day Convention "Start of month",
+    i.e. first business day. """
     business_date = date(business_date.year, business_date.month, 1)
     business_date = adjust_follow(business_date, holidays)
     return business_date
 
 
 def adjust_end_of_month(business_date, holidays=()):
-    """ adjusts to Business Day Convention "End of month", i.e. last business day. """
-    y, m, d = business_date.year, business_date.month, business_date.day
+    """ adjusts to Business Day Convention "End of month",
+    i.e. last business day. """
+    y, m, _ = business_date.year, business_date.month, business_date.day
     business_date = date(y, m, days_in_month(y, m))
     business_date = adjust_previous(business_date, holidays)
     return business_date
 
 
 def adjust_imm(business_date, holidays=()):
-    """ adjusts to Business Day Convention of "International Monetary Market". """
-    business_date = date(business_date.year, end_of_quarter_month(business_date.month), 15)
+    """ adjusts to Business Day Convention of IMM,
+    i.e. "International Monetary Market". """
+    business_date = date(business_date.year,
+                         end_of_quarter_month(business_date.month), 15)
     while business_date.weekday() == WEDNESDAY:
         business_date += ONE_DAY
     return business_date
@@ -96,5 +100,6 @@ def adjust_imm(business_date, holidays=()):
 
 def adjust_cds_imm(business_date, holidays=()):
     """ adjusts to Business Day Convention "Single Name CDS". """
-    business_date = date(business_date.year, end_of_quarter_month(business_date.month), 20)
+    business_date = date(business_date.year,
+                         end_of_quarter_month(business_date.month), 20)
     return business_date

@@ -19,11 +19,11 @@ from .ymd import easter
 class BusinessHolidays(list):
     """ holiday calendar class
 
-    A :class:`BusinessHolidays` instance imitated a list of :class:`datetime.date`
+    A |BusinessHolidays()| instance imitated a list of :class:`datetime.date`
     which can be used to check if a :class:`BusinessDate` is
     included as holiday.
 
-    For convenience input need not to be of type :class:`datetime.date`.
+    For convenience input need not tobe of type :class:`datetime.date`.
     Duck typing is enough, i.e. having properties
     `year`, `month` and `day`.
     """
@@ -31,7 +31,9 @@ class BusinessHolidays(list):
     def __init__(self, iterable=()):
         if iterable:
             # iterable = map(BusinessDate, iterable)
-            iterable = [bd if isinstance(bd, date) else date(bd.year, bd.month, bd.day) for bd in iterable]
+            iterable = [bd if isinstance(bd, date)
+                        else date(bd.year, bd.month, bd.day)
+                        for bd in iterable]
         super(BusinessHolidays, self).__init__(iterable)
 
     def __contains__(self, item):
@@ -44,7 +46,7 @@ class BusinessHolidays(list):
 class BusinessHolidaysSet(set):
     """ holiday calendar class
 
-    A :class:`BusinessHolidays` instance imitated a list of :class:`datetime.date`
+    A |BusinessHolidays()| instance imitated a list of :class:`datetime.date`
     which can be used to check if a :class:`BusinessDate` is
     included as holiday.
 
@@ -55,14 +57,16 @@ class BusinessHolidaysSet(set):
 
     def __init__(self, iterable=()):
         if iterable:
-            iterable = [bd if isinstance(bd, date) else date(bd.year, bd.month, bd.day) for bd in iterable]
+            iterable = [bd if isinstance(bd, date)
+                        else date(bd.year, bd.month, bd.day)
+                        for bd in iterable]
         super().__init__({iterable})
 
     def __contains__(self, item):
         for item_list in self:
             if item in item_list:
                 return True
-        if not type(item) == date:
+        if type(item) is not date:
             try:
                 return date(item.year, item.month, item.day) in self
             except TypeError:

@@ -40,7 +40,8 @@ class BusinessRange(BusinessDateList):
         """
 
         # set default args and build range grid
-        start, stop, step, rolling = self._default_args(start, stop, step, rolling)
+        start, stop, step, rolling = (
+            self._default_args(start, stop, step, rolling))
         schedule = self._build_grid(start, stop, step, rolling)
 
         # push to super and sort
@@ -91,13 +92,16 @@ class BusinessRange(BusinessDateList):
         return grid
 
     def adjust(self, convention=None, holidays=None):
-        """ returns adjusted :class:`BusinessRange` following given convention
+        """ returns adjusted |BusinessRange()| following given convention
 
-        For details of adjusting :class:`BusinessDate` see :meth:`BusinessDate.adjust`.
+        For details of adjusting
+        :class:`BusinessDate` see :meth:`BusinessDate.adjust`.
 
-        For possible conventions invoke :meth:`BusinessDate().adjust() <BusinessDate.adjust>`
+        For possible conventions invoke
+        :meth:`BusinessDate().adjust() <BusinessDate.adjust>`
 
-        For more details on the conventions see module :mod:`conventions <businessdate.conventions>`)
+        For more details on the conventions
+        see module :mod:`conventions <businessdate.conventions>`)
         """
 
         adj_list = [d.adjust(convention, holidays) for d in self]

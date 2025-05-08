@@ -11,7 +11,6 @@
 # License:  Apache License 2.0 (see LICENSE file)
 
 
-from .businessperiod import BusinessPeriod
 from .businessdate import BusinessDate
 from .businessrange import BusinessRange
 
