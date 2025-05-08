@@ -13,6 +13,7 @@
 
 from datetime import date
 from warnings import warn
+
 from .ymd import is_leap_year
 
 
@@ -205,30 +206,45 @@ class icma:
         0.75
 
         """
-        if isinstance(frequency, str):
-            frequency = {'a': 1, 's': 2, 'q': 4, 'm': 12}.get(frequency[0])
+        if not isinstance(frequency, int):
+            frequency = str(frequency).lower()
+            frequency = {
+                '1y': 1, '4q': 1, '12m': 1, '2q': 2,
+                '6m': 2, '1q': 4, '3m': 4, '1m': 12,
+            }.get(frequency, frequency)
+            if isinstance(frequency, str):
+                frequency = {
+                    'y': 1, 'a': 1, 's': 2, 'q': 4, 'm': 12
+                }.get(frequency[0])
         if frequency not in (1, 2, 4, 12):
             msg = ("frequency must be one of 1, 2, 4 or 12 or "
-                   "start with 'a' 's', 'q' or 'm'")
+                   # "'1y', '4q', '12m', '2q', '6m', '1q', '3m' or '1m'"
+                   f"start with 'a' 'y' 's', 'q' or 'm' not {frequency!r}")
             raise ValueError(msg)
         self.frequency = frequency
         self.rolling = rolling
 
     def get_act_act(self, start, end):
+        """implements Act/Act ICMA day count convention"""
+        if start >= end:
+            return 0.0 if start == end else -self.get_act_act(end, start)
+
         def yf(s, e):
             if start <= s and e <= end:
                 return 1 / self.frequency
             y = diff_in_days(max(start, s), min(end, e))
             return y / diff_in_days(s, e) / self.frequency
 
-        from businessdate import BusinessRange, BusinessPeriod
+        from businessdate import BusinessRange
 
-        step = BusinessPeriod(months=12 // self.frequency)
+        step = f"{12 // self.frequency}m"
         rolling = end if self.rolling is None else self.rolling
         r = BusinessRange(start - step, end + step, step, rolling=rolling)
         return sum(yf(s, e) for s, e in zip(r, r[1:]))
 
-    def get_30_360(self, start, end):
+    @staticmethod
+    def get_30_360(start, end):
+        """implements 30/360 ICMA day count convention"""
         return get_30_360_icma(start, end)
 
     @staticmethod
@@ -415,29 +431,48 @@ def _ql_get_act_act_isma(start, end, period_start=None, period_end=None):
 def get_act_act_euro(start, end):
     """ implements Act/Act day count convention known as euro bond. """
     # QuantLib.ActualActual.Euro
-    warn("uses 'get_act_act' as fallback")
-    return get_act_act(start, end)
+    return get_act_act_afb(start, end)
 
 
 def get_act_act_hist(start, end):
     """ implements Act/Act day count convention known as historical. """
     # QuantLib.ActualActual.Historical
-    warn("uses 'get_act_act' as fallback")
-    return get_act_act(start, end)
+    return get_act_act_isda(start, end)
 
 
 def get_act_act_365(start, end):
     """ implements Act/Act day count convention known as 365 basis. """
     # QuantLib.ActualActual.Actual365
-    warn("uses 'get_act_act' as fallback")
-    return get_act_act(start, end)
+    return get_act_act_isda(start, end)
 
 
 def get_act_act_afb(start, end):
     """ implements Act/Act day count convention as defined by AFB. """
     # QuantLib.ActualActual.AFB
-    warn("uses 'get_act_act' as fallback")
-    return get_act_act(start, end)
+    if start >= end:
+        return 0.0 if start == end else -get_act_act_afb(end, start)
+
+    _end = end
+    yf = 0
+    period_days = diff_in_days(start, end)
+    while period_days >= 365:
+        yf += 1
+        end = _end - f'{yf}y'
+        period_days = diff_in_days(start, end)
+
+    year_days = 365
+    if is_leap_year(start.year):
+        cls = start.__class__
+        leap_day = cls(year=start.year, month=2, day=29)
+        if start <= leap_day <= end:
+            year_days = 366
+    elif is_leap_year(end.year):
+        cls = start.__class__
+        leap_day = cls(year=end.year, month=2, day=29)
+        if start <= leap_day <= end:
+            year_days = 366
+
+    return yf + period_days / year_days
 
 
 def get_simple(start, end):

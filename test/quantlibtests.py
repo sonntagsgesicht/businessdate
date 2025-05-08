@@ -75,7 +75,7 @@ class DayCountUnitTests(unittest.TestCase):
                 e = ql.Date(str(end), '%Y-%m-%d')
                 a = bd_day_count(start, end)
                 b = ql_day_count.yearFraction(s, e)
-                self.assertAlmostEqual(a, b, msg=f"{start} {end}")
+                self.assertAlmostEqual(a, b, msg=f"\nat: {start} {end}")
 
     def _ql_test_ref(self, bd_day_count, ql_day_count, m='', *, pbar=False):
 
@@ -138,6 +138,9 @@ class DayCountUnitTests(unittest.TestCase):
 
     def test_act_act(self):
         self._ql_test(get_act_act, ql.ActualActual(ql.ActualActual.ISDA))
+
+    def test_act_act_afb(self):
+        self._ql_test(get_act_act_afb, ql.ActualActual(ql.ActualActual.AFB))
 
     def test_act_act_icma(self):
         # bd_day_count = ql_get_act_act_isma
