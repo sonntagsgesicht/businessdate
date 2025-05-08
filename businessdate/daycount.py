@@ -452,27 +452,24 @@ def get_act_act_afb(start, end):
     if start >= end:
         return 0.0 if start == end else -get_act_act_afb(end, start)
 
-    _end = end
-    yf = 0
-    period_days = diff_in_days(start, end)
-    while period_days >= 365:
-        yf += 1
-        end = _end - f'{yf}y'
-        period_days = diff_in_days(start, end)
+    _end, i = end, 0
+    while start < _end - f'{i + 1}y':
+        i += 1
+        end = _end - f'{i}y'
+        if end.month == 2 and end.day == 28 and is_leap_year(end.year):
+            end = end + '1d'
 
     year_days = 365
     if is_leap_year(start.year):
-        cls = start.__class__
-        leap_day = cls(year=start.year, month=2, day=29)
-        if start <= leap_day <= end:
+        leap_day = start.__class__(year=start.year, month=2, day=29)
+        if start <= leap_day < end:
             year_days = 366
     elif is_leap_year(end.year):
-        cls = start.__class__
-        leap_day = cls(year=end.year, month=2, day=29)
-        if start <= leap_day <= end:
+        leap_day = start.__class__(year=end.year, month=2, day=29)
+        if start <= leap_day < end:
             year_days = 366
 
-    return yf + period_days / year_days
+    return i + diff_in_days(start, end) / year_days
 
 
 def get_simple(start, end):

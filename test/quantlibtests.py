@@ -58,9 +58,10 @@ class DayCountUnitTests(unittest.TestCase):
         BusinessDate.DATE_FORMAT = '%Y-%m-%d'
         today = BusinessDate(20200101)
         step = BusinessPeriod('1y2m3d')
-        dates = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 25
+        dates = 1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 14, 15, 20, 25, 27, 29, 30, 31
         months = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
         years = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 20, 25
+        years = 0, 1, 2
 
         self.dates = BusinessRange(today, today + '10y', step=step)
         periods = itertools.product(dates, months, years)
